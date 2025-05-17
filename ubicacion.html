@@ -115,14 +115,7 @@
   margin: 1rem auto;
 }
 
-@media screen and (max-width: 600px) {
-  #tabla-cercanos table {
-    font-size: 0.85rem;
-    width: 100%;
-    border: 1px solid #999;
-  }
-
-  #tabla-cercanos table th,
+#tabla-cercanos table th,
   #tabla-cercanos table td {
     padding: 6px 8px;
     border: 1px solid #999;
@@ -162,14 +155,7 @@
   vertical-align: middle;
 }
 
-@media screen and (max-width: 600px) {
-  #tabla-cercanos table {
-    font-size: 0.75rem;
-    width: 98%;
-    border: 1px solid #999;
-  }
-
-  #tabla-cercanos table th,
+#tabla-cercanos table th,
   #tabla-cercanos table td {
     padding: 4px 6px;
     border: 1px solid #999;
@@ -177,6 +163,28 @@
     white-space: nowrap;
     word-break: normal;
     min-width: auto;
+  }
+
+  #tabla-cercanos {
+    overflow-x: auto;
+    padding: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  #tabla-cercanos table {
+    font-size: 0.68rem;
+    width: 98%;
+    border: 1px solid #999;
+  }
+
+  #tabla-cercanos table th,
+  #tabla-cercanos table td {
+    padding: 3px 5px;
+    border: 1px solid #999;
+    text-align: left;
+    white-space: nowrap;
+    word-break: normal;
   }
 
   #tabla-cercanos {
@@ -268,8 +276,8 @@ function buscarCercanos() {
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
     const popup = `<b>${p.nombre}</b><br>${p.lat}, ${p.lon}<br>${p.alimentador}<br>
-      <a href='${gmaps}' target='_blank'>📍Google Maps</a> | 
-      <a href='${waze}' target='_blank'>🚗Waze</a>`;
+      <a href='${gmaps}' target='_blank'>📍 Google Maps</a> | 
+      <a href='${waze}' target='_blank'>🚗 Waze</a>`;
     L.marker([p.lat, p.lon]).addTo(markerLayer).bindPopup(popup);
   });
 }
@@ -278,13 +286,13 @@ function mostrarTablaCercanos(cercanos, lat, lon) {
   let tablaHTML = `<div style='text-align:center;'>
     <h3 style='margin-bottom:1rem;'>10 elementos más cercanos al punto ingresado</h3>
     <table border='1' cellpadding='10' style='border-collapse:collapse; margin:auto; width:90%; font-size:1rem; text-align:left;'>
-      <thead><tr><th>Elemento</th><th>Alimentador</th><th>Distancia(m)</th><th>Rutas</th></tr></thead>
+      <thead><tr><th>Elemento</th><th>Alimentador</th><th>Distancia (m)</th><th>Enlaces</th></tr></thead>
       <tbody>`;
   cercanos.forEach(p => {
     const distanciaM = (p.distancia * 111139).toFixed(1);
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
-    const links = `<a href='${gmaps}' target='_blank'>Maps</a> | <a href='${waze}' target='_blank'>Waze</a>`;
+    const links = `<a href='${gmaps}' target='_blank'>📍 Maps</a> | <a href='${waze}' target='_blank'>🚗 Waze</a>`;
     tablaHTML += `<tr><td>${p.nombre}</td><td>${p.alimentador}</td><td>${distanciaM}</td><td>${links}</td></tr>`;
   });
   tablaHTML += "</tbody></table></div>";
