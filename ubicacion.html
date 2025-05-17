@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
@@ -191,6 +192,12 @@
     padding: 0;
   }
 }
+
+#contenedor-tabla {
+  overflow-x: auto;
+  width: 100%;
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -275,8 +282,8 @@ function buscarCercanos() {
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
     const popup = `<b>${p.nombre}</b><br>${p.lat}, ${p.lon}<br>${p.alimentador}<br>
-      <a href='${gmaps}' target='_blank'>📍Google Maps</a> | 
-      <a href='${waze}' target='_blank'>🚗Waze</a>`;
+      <a href='${gmaps}' target='_blank'>📍 Google Maps</a> | 
+      <a href='${waze}' target='_blank'>🚗 Waze</a>`;
     L.marker([p.lat, p.lon]).addTo(markerLayer).bindPopup(popup);
   });
 }
@@ -284,17 +291,17 @@ function buscarCercanos() {
 function mostrarTablaCercanos(cercanos, lat, lon) {
   let tablaHTML = `<div style='text-align:center;'>
     <h3 style='margin-bottom:1rem;'>10 elementos más cercanos al punto ingresado</h3>
-    <table border='1' cellpadding='10' style='border-collapse:collapse; margin:auto; width:90%; font-size:1rem; text-align:left;'>
-      <thead><tr><th>Elemento</th><th>Alimentador</th><th>Dist.(m)</th><th>Rutas</th></tr></thead>
+    <div id='contenedor-tabla'><table border='1' cellpadding='10' style='border-collapse:collapse; width:100%; font-size:0.68rem; text-align:left;'>
+      <thead><tr><th>Elemento</th><th>Alimentador</th><th>Dist. (m)</th><th>Rutas</th></tr></thead>
       <tbody>`;
   cercanos.forEach(p => {
     const distanciaM = (p.distancia * 111139).toFixed(1);
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
-    const links = `<a href='${gmaps}' target='_blank'>Maps</a> | <a href='${waze}' target='_blank'>Waze</a>`;
+    const links = `<a href='${gmaps}' target='_blank'>📍 Maps</a> | <a href='${waze}' target='_blank'>🚗 Waze</a>`;
     tablaHTML += `<tr><td>${p.nombre}</td><td>${p.alimentador}</td><td>${distanciaM}</td><td>${links}</td></tr>`;
   });
-  tablaHTML += "</tbody></table></div>";
+  tablaHTML += "</tbody></table></div></div>";
   document.getElementById("tabla-cercanos").innerHTML = tablaHTML;
 }
 
