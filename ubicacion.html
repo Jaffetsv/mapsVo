@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
@@ -276,8 +275,8 @@ function buscarCercanos() {
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
     const popup = `<b>${p.nombre}</b><br>${p.lat}, ${p.lon}<br>${p.alimentador}<br>
-      <a href='${gmaps}' target='_blank'>📍 Google Maps</a> | 
-      <a href='${waze}' target='_blank'>🚗 Waze</a>`;
+      <a href='${gmaps}' target='_blank'>📍Google Maps</a> | 
+      <a href='${waze}' target='_blank'>🚗Waze</a>`;
     L.marker([p.lat, p.lon]).addTo(markerLayer).bindPopup(popup);
   });
 }
