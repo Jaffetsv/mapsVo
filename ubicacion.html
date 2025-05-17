@@ -161,6 +161,29 @@
   padding: 6px 10px;
   vertical-align: middle;
 }
+
+@media screen and (max-width: 600px) {
+  #tabla-cercanos table {
+    font-size: 0.85rem;
+    width: 100%;
+    border: 1px solid #999;
+  }
+
+  #tabla-cercanos table th,
+  #tabla-cercanos table td {
+    padding: 6px 8px;
+    border: 1px solid #999;
+    text-align: left;
+    word-break: break-word;
+    white-space: normal;
+    min-width: unset;
+  }
+
+  #tabla-cercanos {
+    overflow-x: auto;
+    padding: 0 0.5rem;
+  }
+}
 </style>
 </head>
 <body>
