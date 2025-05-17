@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>DELSUR MAPS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #d4eec9;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding-top: 1rem;
+    }
+    header img {
+      max-height: 110px;
+    }
+    h1 {
+      color: #1d522f;
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 1rem 0;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      margin: 2rem auto;
+      max-width: 420px;
+    }
+    .menu a {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      width: 90%;
+      max-width: 420px;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+      justify-content: flex-start;
+    }
+    .menu a img {
+      height: 24px;
+    }
+    .contrato {
+      background: #ffffff;
+      border: 2px solid #1a56db;
+      color: #1a56db;
+    }
+    .placa {
+      background: #ffffff;
+      border: 2px solid #19703a;
+      color: #19703a;
+    }
+    .ubicacion {
+      background: #1a56db;
+      border: 2px solid #1a56db;
+      color: white;
+    }
+    .menu a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <header style="background:#d4eec9;">
+    <img src="logo.png" alt="DELSUR MAPS">
+    <h1>Menú Principal</h1>
+  </header>
+
+  <div class="menu">
+    <a class="contrato" href="contrato.html">
+      <img src="https://cdn-icons-png.flaticon.com/512/281/281760.png" alt="Contrato">
+      Búsqueda por Contrato
+    </a>
+    <a class="placa" href="placa.html">
+      🗼 Búsqueda por Placa
+    </a>
+    <a class="ubicacion" href="ubicacion.html">
+      <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Ubicación">
+      Búsqueda por Ubicación
+    </a>
+  </div>
+</body>
+</html>
