@@ -292,7 +292,7 @@ function mostrarTablaCercanos(cercanos, lat, lon) {
     const distanciaM = (p.distancia * 111139).toFixed(1);
     const gmaps = `https://www.google.com/maps?q=${p.lat},${p.lon}`;
     const waze = `https://waze.com/ul?ll=${p.lat},${p.lon}&navigate=yes`;
-    const links = `<a href='${gmaps}' target='_blank'>📍Maps</a> | <a href='${waze}' target='_blank'>🚗 Waze</a>`;
+    const links = `<a href='${gmaps}' target='_blank'>Maps</a> | <a href='${waze}' target='_blank'>Waze</a>`;
     tablaHTML += `<tr><td>${p.nombre}</td><td>${p.alimentador}</td><td>${distanciaM}</td><td>${links}</td></tr>`;
   });
   tablaHTML += "</tbody></table></div>";
