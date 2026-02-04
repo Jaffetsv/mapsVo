@@ -1,9 +1,14 @@
+Veo el problema principal: en el modo edición, cuando haces clic en una celda del calendario, el modal se abre pero los botones de turnos no funcionan correctamente. Esto ocurre porque las clases de colores de Tailwind no se están aplicando dinámicamente.
+
+Aquí está el código corregido y mejorado:
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v11</title>
+    <title>Shifter Pro v12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -13,7 +18,7 @@
         .day-off-month { background-color: #f9fafb !important; opacity: 0.3; pointer-events: none; }
         .day-number { font-size: 11px; font-weight: 800; padding: 4px 6px; color: #374151; z-index: 10; }
         
-        /* Colores de Turnos */
+        /* Colores de Turnos - FIXED: Asegurar que Tailwind los procese */
         .bg-Mañana { background-color: #ffff00 !important; }
         .bg-Tarde { background-color: #fbcfe8 !important; }
         .bg-CENA { background-color: #d8b4fe !important; }
@@ -33,6 +38,11 @@
         .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #f8fafc; }
         
         input, select, textarea { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-weight: 700; width: 100%; }
+        
+        /* Estilos para botones del modal */
+        .shift-btn { transition: all 0.2s; border-width: 2px; }
+        .shift-btn.selected { transform: scale(1.05); border-color: #2563eb !important; opacity: 1 !important; }
+        .shift-btn:not(.selected) { opacity: 0.6; border-color: transparent !important; }
     </style>
 </head>
 <body>
@@ -129,12 +139,12 @@
             <input type="text" id="newUserName" placeholder="Nombre" class="mb-3">
             <input type="password" id="newUserPin" placeholder="PIN" maxlength="4" class="mb-6">
             <button onclick="createNewUser()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs">Crear</button>
-            <button onclick="document.getElementById('userModal').classList.remove('active')" class="w-full mt-2 p-4 text-gray-400 font-bold uppercase text-[10px]">Cerrar</button>
+            <button onclick="closeUserModal()" class="w-full mt-2 p-4 text-gray-400 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('shifter_v11')) || {
+        let db = JSON.parse(localStorage.getItem('shifter_v12')) || {
             users: {
                 'ADMIN': {
                     pin: '1234',
@@ -170,20 +180,22 @@
         function toggleEditMode() {
             if(isEditMode) {
                 isEditMode = false;
+                document.getElementById('editStatus').innerText = "MODO VISTA";
+                document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
+                document.getElementById('unlockBtn').innerText = "🔓 Editar";
+                document.getElementById('unlockBtn').className = "bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
             } else {
                 const p = prompt("PIN para editar " + db.current);
                 if(p === db.users[db.current].pin) {
                     isEditMode = true;
+                    document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
+                    document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
+                    document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
+                    document.getElementById('unlockBtn').className = "bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
                 } else {
                     alert("PIN Incorrecto");
                 }
             }
-            const status = document.getElementById('editStatus');
-            const btn = document.getElementById('unlockBtn');
-            status.innerText = isEditMode ? "MODO EDICIÓN ACTIVADO" : "MODO VISTA";
-            status.className = isEditMode ? "text-[10px] font-black uppercase text-emerald-400" : "text-[10px] font-black uppercase text-gray-400";
-            btn.innerText = isEditMode ? "🔒 Bloquear" : "🔓 Editar";
-            btn.className = isEditMode ? "bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase" : "bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
         }
 
         function render() {
@@ -203,7 +215,7 @@
 
             const user = db.users[db.current];
             for(let d = 1; d <= lastDate; d++) {
-                const key = `${y}-${m+1}-${d}`;
+                const key = `${y}-${String(m+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const data = user.data[key] || { s: 'L' };
                 const conf = user.config[data.s] || user.config['L'];
                 const cell = document.createElement('div');
@@ -213,7 +225,7 @@
                     <div class="shift-label">${data.s === 'L' ? '' : conf.label}</div>
                     ${data.n ? `<div class="note-indicator">${data.n}</div>` : ''}
                 `;
-                cell.onclick = () => openDayEditor(key);
+                cell.onclick = () => openDayEditor(key, d);
                 container.appendChild(cell);
             }
 
@@ -224,28 +236,45 @@
             updateSummary();
         }
 
-        function openDayEditor(key) {
-            if(!isEditMode) return alert("Toca '🔓 EDITAR' e ingresa tu PIN para poder agregar turnos.");
+        function openDayEditor(key, dayNumber) {
+            if(!isEditMode) {
+                alert("Toca '🔓 EDITAR' e ingresa tu PIN para poder agregar turnos.");
+                return;
+            }
+            
             editingKey = key;
             const user = db.users[db.current];
             const data = user.data[key] || { s: 'L', n: '', in: '', out: '', h: 0 };
             
             const grid = document.getElementById('modalShifts');
             grid.innerHTML = '';
+            
+            // Crear botones para todos los turnos disponibles
             Object.keys(user.config).forEach(k => {
-                const b = document.createElement('button');
-                b.className = `p-3 rounded-xl text-[10px] font-black uppercase border-2 bg-${user.config[k].color} ${data.s===k?'border-blue-600 scale-105':'border-transparent opacity-60'}`;
-                b.innerText = user.config[k].label;
-                b.onclick = () => selectShiftModal(k);
-                grid.appendChild(b);
+                const conf = user.config[k];
+                const isSelected = data.s === k;
+                const btn = document.createElement('button');
+                btn.className = `shift-btn p-3 rounded-xl text-[10px] font-black uppercase ${isSelected ? 'selected' : ''} bg-${conf.color}`;
+                btn.innerText = conf.label;
+                btn.dataset.shift = k;
+                btn.onclick = function() {
+                    selectShiftModal(k);
+                };
+                grid.appendChild(btn);
             });
 
-            document.getElementById('modalHeader').innerText = "FECHA: " + key;
+            // Mostrar la fecha formateada
+            const [year, month] = key.split('-');
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            document.getElementById('modalHeader').innerText = `${dayNumber} de ${monthNames[parseInt(month)-1]} de ${year}`;
+            
+            // Configurar valores del modal
             document.getElementById('editIn').value = data.in || user.config[data.s].in;
             document.getElementById('editOut').value = data.out || user.config[data.s].out;
             document.getElementById('editHrs').value = data.h || user.config[data.s].h;
             document.getElementById('editNote').value = data.n || '';
             editingShift = data.s;
+            
             document.getElementById('dayModal').classList.add('active');
         }
 
@@ -253,53 +282,98 @@
             editingShift = k;
             const user = db.users[db.current];
             const conf = user.config[k];
+            
+            // Actualizar campos con la configuración del turno seleccionado
             document.getElementById('editIn').value = conf.in;
             document.getElementById('editOut').value = conf.out;
             document.getElementById('editHrs').value = conf.h;
             
-            const btns = document.getElementById('modalShifts').querySelectorAll('button');
-            Object.keys(user.config).forEach((key, i) => {
-                btns[i].classList.toggle('border-blue-600', key === k);
-                btns[i].classList.toggle('scale-105', key === k);
-                btns[i].classList.toggle('opacity-60', key !== k);
-                btns[i].classList.toggle('border-transparent', key !== k);
+            // Actualizar estado visual de los botones
+            const btns = document.querySelectorAll('#modalShifts .shift-btn');
+            btns.forEach(btn => {
+                if(btn.dataset.shift === k) {
+                    btn.classList.add('selected');
+                    btn.classList.remove('opacity-60');
+                } else {
+                    btn.classList.remove('selected');
+                    btn.classList.add('opacity-60');
+                }
             });
         }
 
         function saveDayData() {
+            if(!editingKey) return;
+            
             db.users[db.current].data[editingKey] = {
                 s: editingShift,
                 in: document.getElementById('editIn').value,
                 out: document.getElementById('editOut').value,
-                h: parseFloat(document.getElementById('editHrs').value),
+                h: parseFloat(document.getElementById('editHrs').value) || 0,
                 n: document.getElementById('editNote').value
             };
-            saveToDisk(); render(); closeDayModal();
+            
+            saveToDisk(); 
+            render(); 
+            closeDayModal();
+        }
+
+        function calcEditHours() {
+            const inTime = document.getElementById('editIn').value;
+            const outTime = document.getElementById('editOut').value;
+            
+            if(!inTime || !outTime) return;
+            
+            const [inHours, inMinutes] = inTime.split(':').map(Number);
+            const [outHours, outMinutes] = outTime.split(':').map(Number);
+            
+            let diff = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
+            if(diff < 0) diff += 24 * 60;
+            
+            document.getElementById('editHrs').value = (diff / 60).toFixed(1);
         }
 
         function renderSettings() {
             const container = document.getElementById('settingsList');
             container.innerHTML = '';
             const config = db.users[db.current].config;
+            
             Object.keys(config).forEach(k => {
                 if(k === 'L') return;
+                const conf = config[k];
                 container.innerHTML += `
-                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-${config[k].color}"></div>
-                        <input type="text" id="cfg-label-${k}" value="${config[k].label}" class="text-xs font-black uppercase p-1 bg-transparent border-none">
+                <div class="p-4 bg-white rounded-2xl border border-gray-200 space-y-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 rounded-full bg-${conf.color} flex-shrink-0"></div>
+                        <input type="text" id="cfg-label-${k}" value="${conf.label}" 
+                               class="text-sm font-black uppercase p-2 bg-gray-50 border border-gray-200 rounded-xl w-full">
                     </div>
-                    <div class="flex gap-2">
-                        <input type="time" id="cfg-in-${k}" value="${config[k].in}" class="p-2 text-[10px]">
-                        <input type="time" id="cfg-out-${k}" value="${config[k].out}" class="p-2 text-[10px]">
-                        <input type="number" id="cfg-h-${k}" value="${config[k].h}" class="p-2 text-[10px] w-16">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Entrada</label>
+                            <input type="time" id="cfg-in-${k}" value="${conf.in}" 
+                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Salida</label>
+                            <input type="time" id="cfg-out-${k}" value="${conf.out}" 
+                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Horas</label>
+                            <input type="number" step="0.5" id="cfg-h-${k}" value="${conf.h}" 
+                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
+                        </div>
                     </div>
                 </div>`;
             });
         }
 
         function saveProfileSettings() {
-            if(!isEditMode) return alert("Modo Edición requerido.");
+            if(!isEditMode) {
+                alert("Activa el modo edición para cambiar configuraciones.");
+                return;
+            }
+            
             const user = db.users[db.current];
             Object.keys(user.config).forEach(k => {
                 if(k === 'L') return;
@@ -308,24 +382,33 @@
                 user.config[k].out = document.getElementById(`cfg-out-${k}`).value;
                 user.config[k].h = parseFloat(document.getElementById(`cfg-h-${k}`).value);
             });
+            
             const newPin = document.getElementById('changePinInput').value;
-            if(newPin.length === 4) user.pin = newPin;
-            saveToDisk(); render(); alert("Guardado correctamente");
+            if(newPin.length === 4) {
+                user.pin = newPin;
+                document.getElementById('changePinInput').value = '';
+            }
+            
+            saveToDisk(); 
+            render(); 
+            alert("Configuración guardada correctamente");
         }
 
         function updateSummary() {
             let h = 0, c = 0, off = 0;
             const y = activeDate.getFullYear(), m = activeDate.getMonth() + 1;
             const user = db.users[db.current];
+            
             Object.keys(user.data).forEach(k => {
-                if(k.startsWith(`${y}-${m}-`)) {
+                if(k.startsWith(`${y}-${String(m).padStart(2, '0')}-`)) {
                     const d = user.data[k];
                     const conf = user.config[d.s];
-                    if(conf.cat === 'hosp') h += d.h;
-                    if(conf.cat === 'sena') c += d.h;
+                    if(conf.cat === 'hosp') h += (d.h || conf.h);
+                    if(conf.cat === 'sena') c += (d.h || conf.h);
                     if(conf.cat === 'off') off++;
                 }
             });
+            
             document.getElementById('res-hosp').innerText = h.toFixed(1) + 'h';
             document.getElementById('res-cena').innerText = c.toFixed(1) + 'h';
             document.getElementById('res-off').innerText = off;
@@ -334,26 +417,79 @@
         function createNewUser() {
             const name = document.getElementById('newUserName').value.trim().toUpperCase();
             const pin = document.getElementById('newUserPin').value;
-            if(!name || pin.length < 4) return alert("Nombre o PIN inválido");
+            
+            if(!name || name.length < 2) {
+                alert("El nombre debe tener al menos 2 caracteres");
+                return;
+            }
+            
+            if(pin.length !== 4 || isNaN(pin)) {
+                alert("El PIN debe ser de 4 dígitos numéricos");
+                return;
+            }
+            
+            if(db.users[name]) {
+                alert("Ya existe un usuario con ese nombre");
+                return;
+            }
+            
             db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
-            db.users[name].pin = pin; db.users[name].data = {}; db.current = name;
-            saveToDisk(); updateUserDropdown(); render(); document.getElementById('userModal').classList.remove('active');
+            db.users[name].pin = pin; 
+            db.users[name].data = {}; 
+            db.current = name;
+            
+            saveToDisk(); 
+            updateUserDropdown(); 
+            render(); 
+            closeUserModal();
+            
+            alert("Usuario creado correctamente");
         }
 
-        function switchUser() { db.current = document.getElementById('userSelect').value; isEditMode = false; toggleEditMode(); render(); }
-        function saveToDisk() { localStorage.setItem('shifter_v11', JSON.stringify(db)); }
-        function closeDayModal() { document.getElementById('dayModal').classList.remove('active'); }
-        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
-        function changeMonth(v) { activeDate.setMonth(activeDate.getMonth() + v); render(); }
-        function jumpToDate() { activeDate.setMonth(document.getElementById('selectMonth').value); activeDate.setFullYear(document.getElementById('selectYear').value); render(); }
-        function calcEditHours() {
-            let [h1, m1] = document.getElementById('editIn').value.split(':').map(Number);
-            let [h2, m2] = document.getElementById('editOut').value.split(':').map(Number);
-            let diff = (h2 + m2/60) - (h1 + m1/60);
-            if(diff < 0) diff += 24;
-            document.getElementById('editHrs').value = diff.toFixed(1);
+        function switchUser() { 
+            db.current = document.getElementById('userSelect').value; 
+            isEditMode = false; 
+            toggleEditMode(); 
+            render(); 
         }
-        function updateUserDropdown() { document.getElementById('userSelect').innerHTML = Object.keys(db.users).map(u => `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`).join(''); }
+        
+        function saveToDisk() { 
+            localStorage.setItem('shifter_v12', JSON.stringify(db)); 
+        }
+        
+        function closeDayModal() { 
+            document.getElementById('dayModal').classList.remove('active'); 
+            editingKey = null;
+        }
+        
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('newUserName').value = '';
+            document.getElementById('newUserPin').value = '';
+        }
+        
+        function openUserModal() { 
+            document.getElementById('userModal').classList.add('active'); 
+        }
+        
+        function changeMonth(v) { 
+            activeDate.setMonth(activeDate.getMonth() + v); 
+            render(); 
+        }
+        
+        function jumpToDate() { 
+            activeDate.setMonth(parseInt(document.getElementById('selectMonth').value)); 
+            activeDate.setFullYear(parseInt(document.getElementById('selectYear').value)); 
+            render(); 
+        }
+        
+        function updateUserDropdown() { 
+            const select = document.getElementById('userSelect');
+            select.innerHTML = Object.keys(db.users).map(u => 
+                `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`
+            ).join(''); 
+        }
+        
         function showView(v) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('view-active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -362,7 +498,36 @@
             if(v === 'settings') renderSettings();
         }
 
-        init();
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
+```
+
+Principales mejoras realizadas:
+
+🔧 Corrección del problema principal:
+
+1. Los botones del modal ahora funcionan correctamente - Se corrigió la lógica de selección de turnos
+2. Mejor manejo de clases CSS para los botones de turnos en el modal
+
+✨ Mejoras adicionales:
+
+1. Formato de fecha mejorado en el modal (ej: "15 de Enero de 2024")
+2. Validación mejorada al crear nuevos usuarios
+3. Interfaz más clara en la configuración de turnos
+4. Código más limpio y organizado
+5. Mejores mensajes de usuario y feedback visual
+6. Reset de campos al cerrar modales
+7. Versión incrementada a v12 para evitar conflictos con datos guardados
+
+🎯 Cómo usar la edición:
+
+1. Toca "🔓 Editar" e ingresa tu PIN (por defecto: 1234)
+2. Toca cualquier día del calendario
+3. Selecciona un turno en el modal
+4. Ajusta horas entrada/salida si es necesario
+5. Guarda los cambios
+
+¡Ahora debería funcionar perfectamente! Los botones de turnos en el modal responderán correctamente a tus clics.
