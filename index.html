@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v10</title>
+    <title>Shifter Pro v11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
-        .day-cell { background-color: #ffffff; min-height: 110px; position: relative; cursor: pointer; display: flex; flex-direction: column; }
-        .day-off-month { background-color: #f3f4f6 !important; opacity: 0.4; pointer-events: none; }
-        .day-number { font-size: 11px; font-weight: 800; padding: 4px 6px; color: #6b7280; }
+        .day-cell { background-color: #ffffff; min-height: 110px; position: relative; cursor: pointer; display: flex; flex-direction: column; transition: 0.1s; }
+        .day-cell:active { background-color: #f3f4f6; }
+        .day-off-month { background-color: #f9fafb !important; opacity: 0.3; pointer-events: none; }
+        .day-number { font-size: 11px; font-weight: 800; padding: 4px 6px; color: #374151; z-index: 10; }
         
         /* Colores de Turnos */
         .bg-Mañana { background-color: #ffff00 !important; }
@@ -20,127 +21,120 @@
         .bg-L { background-color: #ffffff !important; }
         .bg-Vacaciones { background-color: #fed7aa !important; }
 
-        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; }
-        .note-indicator { font-size: 9px; background: rgba(0,0,0,0.05); margin: 2px; border-radius: 4px; padding: 1px 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; pointer-events: none; }
+        .note-indicator { font-size: 9px; background: rgba(255,255,255,0.8); margin: 2px; border-radius: 4px; padding: 2px; text-align: center; font-weight: 800; border: 1px solid rgba(0,0,0,0.05); }
 
         .view-section { display: none; }
         .view-active { display: block; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
         
-        input, select, textarea { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; font-size: 14px; }
-        .tab-btn { flex: 1; padding: 16px 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #9ca3af; border-bottom: 2px solid transparent; transition: 0.2s; }
-        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
+        .tab-btn { flex: 1; padding: 15px; font-size: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 3px solid transparent; color: #9ca3af; }
+        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #f8fafc; }
+        
+        input, select, textarea { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-weight: 700; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div class="bg-[#1e293b] text-white p-4 sticky top-0 z-50">
+    <div class="bg-[#1e293b] text-white p-4 sticky top-0 z-50 shadow-lg">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <div class="flex items-center gap-1">
-                    <select id="userSelect" onchange="switchUser()" class="bg-transparent border-none text-xl font-black p-0 focus:ring-0 w-auto text-white"></select>
-                </div>
-                <p id="editStatus" class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Modo Vista</p>
+                <select id="userSelect" onchange="switchUser()" class="bg-transparent border-none text-xl font-black p-0 focus:ring-0 w-auto text-white"></select>
+                <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400">Modo Vista</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="openUserModal()" class="bg-blue-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-blue-900/50">+ Perfil</button>
-                <button id="unlockBtn" onclick="toggleEditMode()" class="bg-slate-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase">🔓 Editar</button>
+                <button onclick="openUserModal()" class="bg-blue-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase">+ Perfil</button>
+                <button id="unlockBtn" onclick="toggleEditMode()" class="bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase">🔓 Editar</button>
             </div>
         </div>
 
         <div class="flex items-center justify-between bg-slate-800 rounded-2xl p-1">
-            <button onclick="changeMonth(-1)" class="p-3 text-xl">❮</button>
-            <div class="flex gap-1 font-bold text-sm">
-                <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto text-xs uppercase"></select>
-                <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto text-xs"></select>
+            <button onclick="changeMonth(-1)" class="p-3">❮</button>
+            <div class="flex gap-2 font-bold text-xs uppercase">
+                <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto"></select>
+                <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto"></select>
             </div>
-            <button onclick="changeMonth(1)" class="p-3 text-xl">❯</button>
+            <button onclick="changeMonth(1)" class="p-3">❯</button>
         </div>
     </div>
 
-    <div class="flex bg-white shadow-sm sticky top-[132px] z-40">
+    <div class="flex bg-white shadow-sm sticky top-[135px] z-40">
         <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn active">Calendario</button>
         <button onclick="showView('summary')" id="tab-summary" class="tab-btn">Resumen</button>
         <button onclick="showView('settings')" id="tab-settings" class="tab-btn">Ajustes</button>
     </div>
 
     <div id="view-calendar" class="view-section view-active">
-        <div class="grid grid-cols-7 text-center text-[9px] font-black py-2 bg-gray-100 text-gray-400">
+        <div class="grid grid-cols-7 text-center text-[9px] font-black py-2 bg-gray-50 text-gray-400">
             <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
         </div>
         <div id="calendarContainer" class="calendar-grid"></div>
     </div>
 
-    <div id="view-summary" class="view-section p-4 bg-gray-50 min-h-screen">
-        <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-yellow-400">
+    <div id="view-summary" class="view-section p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-8 border-yellow-400">
                 <p class="text-[10px] font-black text-gray-400 uppercase">Hospital</p>
-                <h3 id="res-hosp" class="text-2xl font-black">0.0h</h3>
+                <h3 id="res-hosp" class="text-3xl font-black">0.0h</h3>
             </div>
-            <div class="bg-white p-5 rounded-3xl shadow-sm border-b-4 border-purple-400">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-8 border-purple-400">
                 <p class="text-[10px] font-black text-gray-400 uppercase">CENA</p>
-                <h3 id="res-cena" class="text-2xl font-black">0.0h</h3>
+                <h3 id="res-cena" class="text-3xl font-black">0.0h</h3>
             </div>
         </div>
         <div class="bg-emerald-500 p-8 rounded-[40px] text-white text-center shadow-xl">
-            <p class="text-xs font-black uppercase opacity-80 mb-2">Total Descanso del Mes</p>
+            <p class="text-xs font-black uppercase opacity-80 mb-2">Días de Descanso Totales</p>
             <h2 id="res-off" class="text-6xl font-black">0</h2>
-            <p class="text-[10px] mt-2 font-bold opacity-70">LIBRES + VACACIONES</p>
+            <p class="text-[10px] font-bold mt-2 opacity-70">LIBRES + VACACIONES</p>
         </div>
     </div>
 
-    <div id="view-settings" class="view-section p-6 bg-white min-h-screen">
-        <div class="mb-8 p-4 bg-blue-50 rounded-3xl border border-blue-100">
-            <h4 class="text-[10px] font-black uppercase text-blue-600 mb-2">Seguridad del Perfil</h4>
-            <label class="text-[10px] font-bold text-gray-400 ml-1">NUEVO PIN (4 dígitos)</label>
-            <input type="password" id="changePinInput" placeholder="Escribe el nuevo PIN" maxlength="4" class="bg-white mt-1">
+    <div id="view-settings" class="view-section p-6">
+        <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100 mb-6">
+            <h4 class="text-[10px] font-black uppercase text-blue-600 mb-3">Seguridad</h4>
+            <label class="text-[10px] font-bold text-gray-400 block mb-1">CAMBIAR PIN (4 dígitos)</label>
+            <input type="password" id="changePinInput" placeholder="Nuevo PIN" maxlength="4" class="bg-white">
         </div>
-        
-        <h4 class="text-[10px] font-black uppercase text-gray-400 mb-4 ml-1">Configuración de Turnos</h4>
         <div id="settingsList" class="space-y-3"></div>
-        
-        <button onclick="saveProfileSettings()" class="w-full mt-8 bg-blue-600 text-white p-4 rounded-2xl font-black uppercase shadow-lg shadow-blue-200">Guardar Cambios</button>
+        <button onclick="saveProfileSettings()" class="w-full mt-8 bg-blue-600 text-white p-5 rounded-3xl font-black uppercase">Guardar Cambios</button>
     </div>
 
     <div id="dayModal" class="modal">
-        <div class="bg-white w-full max-w-sm rounded-[40px] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div id="modalDayLabel" class="bg-blue-600 p-4 text-white text-center font-black text-xs uppercase tracking-widest"></div>
+        <div class="bg-white w-full max-w-md rounded-[45px] overflow-hidden shadow-2xl">
+            <div id="modalHeader" class="bg-blue-600 p-5 text-white text-center font-black text-xs uppercase tracking-widest">Editar Día</div>
             <div class="p-6">
                 <div id="modalShifts" class="grid grid-cols-3 gap-2 mb-6"></div>
-                <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between mb-4">
-                    <input type="time" id="editIn" onchange="calcEditHours()" class="w-24 bg-transparent border-none p-0 text-center">
-                    <span class="font-black text-gray-300">→</span>
-                    <input type="time" id="editOut" onchange="calcEditHours()" class="w-24 bg-transparent border-none p-0 text-center">
+                <div class="bg-gray-100 p-5 rounded-3xl flex justify-between items-center mb-4">
+                    <input type="time" id="editIn" onchange="calcEditHours()" class="w-24 text-center bg-transparent border-none">
+                    <span class="text-gray-300">→</span>
+                    <input type="time" id="editOut" onchange="calcEditHours()" class="w-24 text-center bg-transparent border-none">
                 </div>
-                <div class="flex justify-between items-center mb-4 px-2">
+                <div class="flex justify-between items-center mb-6 px-2">
                     <span class="text-[10px] font-black uppercase text-gray-400">Total Horas</span>
-                    <input type="number" id="editHrs" step="0.5" class="w-20 text-right font-black text-blue-600 border-none bg-transparent text-xl">
+                    <input type="number" id="editHrs" step="0.5" class="w-20 text-right font-black text-blue-600 bg-transparent border-none text-2xl">
                 </div>
-                <textarea id="editNote" placeholder="Añadir nota..." class="h-20 bg-gray-50 border-none mb-6"></textarea>
-                <div class="flex gap-2">
-                    <button onclick="closeDayModal()" class="flex-1 p-4 bg-gray-100 rounded-2xl font-black uppercase text-[10px] text-gray-400">Cerrar</button>
-                    <button onclick="saveDayData()" class="flex-1 p-4 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px]">Guardar</button>
+                <textarea id="editNote" placeholder="Notas del día..." class="h-20 bg-gray-50 mb-6"></textarea>
+                <div class="flex gap-3">
+                    <button onclick="closeDayModal()" class="flex-1 p-5 bg-gray-100 text-gray-400 rounded-3xl font-black uppercase text-xs">Cancelar</button>
+                    <button onclick="saveDayData()" class="flex-1 p-5 bg-emerald-500 text-white rounded-3xl font-black uppercase text-xs shadow-lg shadow-emerald-200">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="userModal" class="modal">
-        <div class="bg-white w-full max-w-xs rounded-[35px] p-8">
+        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 shadow-2xl">
             <h3 class="font-black text-center uppercase mb-6">Nuevo Perfil</h3>
-            <input type="text" id="newUserName" placeholder="Nombre (ej: Alex)" class="mb-3">
-            <input type="password" id="newUserPin" placeholder="PIN de 4 dígitos" maxlength="4" class="mb-6">
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('userModal').classList.remove('active')" class="flex-1 p-3 bg-gray-100 rounded-xl font-bold uppercase text-[10px]">Cancelar</button>
-                <button onclick="createNewUser()" class="flex-1 p-3 bg-blue-600 text-white rounded-xl font-bold uppercase text-[10px]">Crear</button>
-            </div>
+            <input type="text" id="newUserName" placeholder="Nombre" class="mb-3">
+            <input type="password" id="newUserPin" placeholder="PIN" maxlength="4" class="mb-6">
+            <button onclick="createNewUser()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs">Crear</button>
+            <button onclick="document.getElementById('userModal').classList.remove('active')" class="w-full mt-2 p-4 text-gray-400 font-bold uppercase text-[10px]">Cerrar</button>
         </div>
     </div>
 
     <script>
-        // --- ESTADO GLOBAL ---
-        let db = JSON.parse(localStorage.getItem('shifter_v10')) || {
+        let db = JSON.parse(localStorage.getItem('shifter_v11')) || {
             users: {
                 'ADMIN': {
                     pin: '1234',
@@ -163,60 +157,39 @@
         let editingKey = null;
         let editingShift = 'L';
 
-        // --- INICIO ---
         function init() {
             const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             const mSel = document.getElementById('selectMonth');
             const ySel = document.getElementById('selectYear');
             mSel.innerHTML = months.map((m, i) => `<option value="${i}">${m}</option>`).join('');
             for(let y=2024; y<=2035; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
-            
             updateUserDropdown();
             render();
-        }
-
-        function updateUserDropdown() {
-            const sel = document.getElementById('userSelect');
-            sel.innerHTML = Object.keys(db.users).map(u => `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`).join('');
         }
 
         function toggleEditMode() {
             if(isEditMode) {
                 isEditMode = false;
             } else {
-                const p = prompt("PIN de seguridad para " + db.current);
+                const p = prompt("PIN para editar " + db.current);
                 if(p === db.users[db.current].pin) {
                     isEditMode = true;
                 } else {
-                    alert("PIN incorrecto.");
+                    alert("PIN Incorrecto");
                 }
             }
-            updateHeaderUI();
-        }
-
-        function updateHeaderUI() {
             const status = document.getElementById('editStatus');
             const btn = document.getElementById('unlockBtn');
-            if(isEditMode) {
-                status.innerText = "Modo Edición Activado";
-                status.className = "text-[10px] font-black uppercase tracking-widest text-emerald-400";
-                btn.innerText = "🔒 Bloquear";
-                btn.className = "bg-emerald-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase";
-            } else {
-                status.innerText = "Modo Vista";
-                status.className = "text-[10px] font-black uppercase tracking-widest text-gray-400";
-                btn.innerText = "🔓 Editar";
-                btn.className = "bg-slate-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase";
-            }
+            status.innerText = isEditMode ? "MODO EDICIÓN ACTIVADO" : "MODO VISTA";
+            status.className = isEditMode ? "text-[10px] font-black uppercase text-emerald-400" : "text-[10px] font-black uppercase text-gray-400";
+            btn.innerText = isEditMode ? "🔒 Bloquear" : "🔓 Editar";
+            btn.className = isEditMode ? "bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase" : "bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
         }
 
-        // --- CALENDARIO ---
         function render() {
             const container = document.getElementById('calendarContainer');
             container.innerHTML = '';
-            
-            const y = activeDate.getFullYear();
-            const m = activeDate.getMonth();
+            const y = activeDate.getFullYear(), m = activeDate.getMonth();
             document.getElementById('selectMonth').value = m;
             document.getElementById('selectYear').value = y;
 
@@ -224,19 +197,15 @@
             const lastDate = new Date(y, m + 1, 0).getDate();
             const prevLastDate = new Date(y, m, 0).getDate();
 
-            // Sombreados mes anterior
             for(let i = firstDay; i > 0; i--) {
-                const d = prevLastDate - i + 1;
-                container.innerHTML += `<div class="day-cell day-off-month"><span class="day-number">${d}</span></div>`;
+                container.innerHTML += `<div class="day-cell day-off-month"><span class="day-number">${prevLastDate - i + 1}</span></div>`;
             }
 
-            // Días mes actual
             const user = db.users[db.current];
             for(let d = 1; d <= lastDate; d++) {
                 const key = `${y}-${m+1}-${d}`;
                 const data = user.data[key] || { s: 'L' };
                 const conf = user.config[data.s] || user.config['L'];
-                
                 const cell = document.createElement('div');
                 cell.className = `day-cell bg-${conf.color}`;
                 cell.innerHTML = `
@@ -248,7 +217,6 @@
                 container.appendChild(cell);
             }
 
-            // Relleno final
             const total = firstDay + lastDate;
             for(let i = 1; i <= (42 - total); i++) {
                 container.innerHTML += `<div class="day-cell day-off-month"><span class="day-number">${i}</span></div>`;
@@ -256,51 +224,45 @@
             updateSummary();
         }
 
-        // --- EDITOR DE DÍA ---
         function openDayEditor(key) {
-            if(!isEditMode) return alert("Primero toca '🔓 EDITAR' e ingresa tu PIN.");
-            
+            if(!isEditMode) return alert("Toca '🔓 EDITAR' e ingresa tu PIN para poder agregar turnos.");
             editingKey = key;
             const user = db.users[db.current];
-            const dayData = user.data[key] || { s: 'L', n: '', in: '', out: '', h: 0 };
+            const data = user.data[key] || { s: 'L', n: '', in: '', out: '', h: 0 };
             
-            // Dibujar botones de turnos
             const grid = document.getElementById('modalShifts');
             grid.innerHTML = '';
             Object.keys(user.config).forEach(k => {
-                const btn = document.createElement('button');
-                btn.className = `p-3 rounded-xl text-[10px] font-black uppercase border-2 transition-all bg-${user.config[k].color} ${dayData.s === k ? 'border-blue-600 scale-105 shadow-lg' : 'border-transparent opacity-60'}`;
-                btn.innerText = user.config[k].label;
-                btn.onclick = () => selectShiftInModal(k);
-                grid.appendChild(btn);
+                const b = document.createElement('button');
+                b.className = `p-3 rounded-xl text-[10px] font-black uppercase border-2 bg-${user.config[k].color} ${data.s===k?'border-blue-600 scale-105':'border-transparent opacity-60'}`;
+                b.innerText = user.config[k].label;
+                b.onclick = () => selectShiftModal(k);
+                grid.appendChild(b);
             });
 
-            document.getElementById('modalDayLabel').innerText = "Editando: " + key;
-            document.getElementById('editIn').value = dayData.in || user.config[dayData.s].in;
-            document.getElementById('editOut').value = dayData.out || user.config[dayData.s].out;
-            document.getElementById('editHrs').value = dayData.h || user.config[dayData.s].h;
-            document.getElementById('editNote').value = dayData.n || '';
-            editingShift = dayData.s;
-
+            document.getElementById('modalHeader').innerText = "FECHA: " + key;
+            document.getElementById('editIn').value = data.in || user.config[data.s].in;
+            document.getElementById('editOut').value = data.out || user.config[data.s].out;
+            document.getElementById('editHrs').value = data.h || user.config[data.s].h;
+            document.getElementById('editNote').value = data.n || '';
+            editingShift = data.s;
             document.getElementById('dayModal').classList.add('active');
         }
 
-        function selectShiftInModal(k) {
+        function selectShiftModal(k) {
             editingShift = k;
             const user = db.users[db.current];
             const conf = user.config[k];
-            
             document.getElementById('editIn').value = conf.in;
             document.getElementById('editOut').value = conf.out;
             document.getElementById('editHrs').value = conf.h;
             
-            // Actualizar UI botones
             const btns = document.getElementById('modalShifts').querySelectorAll('button');
-            const keys = Object.keys(user.config);
-            keys.forEach((key, i) => {
+            Object.keys(user.config).forEach((key, i) => {
                 btns[i].classList.toggle('border-blue-600', key === k);
                 btns[i].classList.toggle('scale-105', key === k);
                 btns[i].classList.toggle('opacity-60', key !== k);
+                btns[i].classList.toggle('border-transparent', key !== k);
             });
         }
 
@@ -312,40 +274,33 @@
                 h: parseFloat(document.getElementById('editHrs').value),
                 n: document.getElementById('editNote').value
             };
-            saveToDisk();
-            render();
-            closeDayModal();
+            saveToDisk(); render(); closeDayModal();
         }
 
-        // --- AJUSTES Y PERFIL ---
         function renderSettings() {
             const container = document.getElementById('settingsList');
             container.innerHTML = '';
             const config = db.users[db.current].config;
-            
             Object.keys(config).forEach(k => {
                 if(k === 'L') return;
                 container.innerHTML += `
-                <div class="p-4 bg-gray-50 rounded-2xl flex flex-col gap-2 border border-gray-100">
-                    <div class="flex items-center gap-3">
-                        <div class="w-4 h-4 rounded-full bg-${config[k].color}"></div>
-                        <input type="text" id="cfg-label-${k}" value="${config[k].label}" class="font-black text-xs uppercase p-1 bg-transparent border-none">
+                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-${config[k].color}"></div>
+                        <input type="text" id="cfg-label-${k}" value="${config[k].label}" class="text-xs font-black uppercase p-1 bg-transparent border-none">
                     </div>
                     <div class="flex gap-2">
-                        <div class="flex-1"><label class="text-[8px] font-bold text-gray-400 uppercase">Entrada</label><input type="time" id="cfg-in-${k}" value="${config[k].in}" class="p-2 text-xs"></div>
-                        <div class="flex-1"><label class="text-[8px] font-bold text-gray-400 uppercase">Salida</label><input type="time" id="cfg-out-${k}" value="${config[k].out}" class="p-2 text-xs"></div>
-                        <div class="w-16"><label class="text-[8px] font-bold text-gray-400 uppercase">Horas</label><input type="number" id="cfg-h-${k}" value="${config[k].h}" class="p-2 text-xs"></div>
+                        <input type="time" id="cfg-in-${k}" value="${config[k].in}" class="p-2 text-[10px]">
+                        <input type="time" id="cfg-out-${k}" value="${config[k].out}" class="p-2 text-[10px]">
+                        <input type="number" id="cfg-h-${k}" value="${config[k].h}" class="p-2 text-[10px] w-16">
                     </div>
                 </div>`;
             });
-            document.getElementById('changePinInput').value = ''; 
         }
 
         function saveProfileSettings() {
-            if(!isEditMode) return alert("Debes estar en Modo Edición.");
-            
+            if(!isEditMode) return alert("Modo Edición requerido.");
             const user = db.users[db.current];
-            // Guardar Turnos
             Object.keys(user.config).forEach(k => {
                 if(k === 'L') return;
                 user.config[k].label = document.getElementById(`cfg-label-${k}`).value;
@@ -353,70 +308,11 @@
                 user.config[k].out = document.getElementById(`cfg-out-${k}`).value;
                 user.config[k].h = parseFloat(document.getElementById(`cfg-h-${k}`).value);
             });
-
-            // Cambiar PIN si hay algo escrito
             const newPin = document.getElementById('changePinInput').value;
-            if(newPin.length === 4) {
-                user.pin = newPin;
-                alert("Configuración y PIN actualizados.");
-            } else if(newPin.length > 0) {
-                alert("El PIN debe ser de 4 dígitos. Se guardaron los turnos pero no el PIN.");
-            } else {
-                alert("Ajustes guardados.");
-            }
-
-            saveToDisk();
-            render();
+            if(newPin.length === 4) user.pin = newPin;
+            saveToDisk(); render(); alert("Guardado correctamente");
         }
 
-        function createNewUser() {
-            const name = document.getElementById('newUserName').value.trim().toUpperCase();
-            const pin = document.getElementById('newUserPin').value;
-            if(!name || pin.length < 4) return alert("Nombre o PIN inválido.");
-            
-            db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
-            db.users[name].pin = pin;
-            db.users[name].data = {};
-            db.current = name;
-            isEditMode = true;
-            
-            saveToDisk();
-            updateUserDropdown();
-            updateHeaderUI();
-            document.getElementById('userModal').classList.remove('active');
-            render();
-        }
-
-        // --- AUXILIARES ---
-        function switchUser() {
-            db.current = document.getElementById('userSelect').value;
-            isEditMode = false;
-            updateHeaderUI();
-            render();
-        }
-        function saveToDisk() { localStorage.setItem('shifter_v10', JSON.stringify(db)); }
-        function closeDayModal() { document.getElementById('dayModal').classList.remove('active'); }
-        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
-        function changeMonth(v) { activeDate.setMonth(activeDate.getMonth() + v); render(); }
-        function jumpToDate() {
-            activeDate.setMonth(document.getElementById('selectMonth').value);
-            activeDate.setFullYear(document.getElementById('selectYear').value);
-            render();
-        }
-        function calcEditHours() {
-            let [h1, m1] = document.getElementById('editIn').value.split(':').map(Number);
-            let [h2, m2] = document.getElementById('editOut').value.split(':').map(Number);
-            let diff = (h2 + m2/60) - (h1 + m1/60);
-            if(diff < 0) diff += 24;
-            document.getElementById('editHrs').value = diff.toFixed(1);
-        }
-        function showView(v) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('view-active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-'+v).classList.add('view-active');
-            document.getElementById('tab-'+v).classList.add('active');
-            if(v === 'settings') renderSettings();
-        }
         function updateSummary() {
             let h = 0, c = 0, off = 0;
             const y = activeDate.getFullYear(), m = activeDate.getMonth() + 1;
@@ -433,6 +329,37 @@
             document.getElementById('res-hosp').innerText = h.toFixed(1) + 'h';
             document.getElementById('res-cena').innerText = c.toFixed(1) + 'h';
             document.getElementById('res-off').innerText = off;
+        }
+
+        function createNewUser() {
+            const name = document.getElementById('newUserName').value.trim().toUpperCase();
+            const pin = document.getElementById('newUserPin').value;
+            if(!name || pin.length < 4) return alert("Nombre o PIN inválido");
+            db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
+            db.users[name].pin = pin; db.users[name].data = {}; db.current = name;
+            saveToDisk(); updateUserDropdown(); render(); document.getElementById('userModal').classList.remove('active');
+        }
+
+        function switchUser() { db.current = document.getElementById('userSelect').value; isEditMode = false; toggleEditMode(); render(); }
+        function saveToDisk() { localStorage.setItem('shifter_v11', JSON.stringify(db)); }
+        function closeDayModal() { document.getElementById('dayModal').classList.remove('active'); }
+        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
+        function changeMonth(v) { activeDate.setMonth(activeDate.getMonth() + v); render(); }
+        function jumpToDate() { activeDate.setMonth(document.getElementById('selectMonth').value); activeDate.setFullYear(document.getElementById('selectYear').value); render(); }
+        function calcEditHours() {
+            let [h1, m1] = document.getElementById('editIn').value.split(':').map(Number);
+            let [h2, m2] = document.getElementById('editOut').value.split(':').map(Number);
+            let diff = (h2 + m2/60) - (h1 + m1/60);
+            if(diff < 0) diff += 24;
+            document.getElementById('editHrs').value = diff.toFixed(1);
+        }
+        function updateUserDropdown() { document.getElementById('userSelect').innerHTML = Object.keys(db.users).map(u => `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`).join(''); }
+        function showView(v) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('view-active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-'+v).classList.add('view-active');
+            document.getElementById('tab-'+v).classList.add('active');
+            if(v === 'settings') renderSettings();
         }
 
         init();
