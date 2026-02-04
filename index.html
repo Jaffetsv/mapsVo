@@ -122,6 +122,60 @@
             color: #2563eb; 
             background: #f8fafc; 
         }
+        
+        /* Indicador de asueto */
+        .holiday-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 8px;
+            font-weight: 900;
+            color: #dc2626;
+            background: rgba(254, 226, 226, 0.9);
+            padding: 1px 4px;
+            border-bottom-right-radius: 8px;
+            z-index: 20;
+        }
+        
+        /* Indicador de asueto local */
+        .local-holiday-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 8px;
+            font-weight: 900;
+            color: #059669;
+            background: rgba(209, 250, 229, 0.9);
+            padding: 1px 4px;
+            border-bottom-right-radius: 8px;
+            z-index: 20;
+        }
+        
+        /* Panel de información de asueto */
+        .holiday-info-panel {
+            background: linear-gradient(to right, #fef3c7, #fde68a);
+            border: 1px solid #fbbf24;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .holiday-info-panel h4 {
+            font-size: 12px;
+            font-weight: 900;
+            color: #92400e;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .holiday-info-panel p {
+            font-size: 10px;
+            font-weight: 700;
+            color: #78350f;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -267,6 +321,10 @@
                         <span class="text-[11px] font-bold text-gray-500">Asuetos en mes:</span>
                         <span id="total-holidays" class="font-black text-red-600">0</span>
                     </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-gray-500">Asuetos locales:</span>
+                        <span id="local-holidays" class="font-black text-green-600">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -278,7 +336,9 @@
         <div class="flex bg-gray-50 border-b">
             <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab active">🎨 Turnos</button>
             <button onclick="showConfigTab('nuevo')" id="config-nuevo" class="config-tab">➕ Nuevo</button>
+            <button onclick="showConfigTab('categorias')" id="config-categorias" class="config-tab">🏷️ Categorías</button>
             <button onclick="showConfigTab('asuetos')" id="config-asuetos" class="config-tab">🎉 Asuetos</button>
+            <button onclick="showConfigTab('perfil')" id="config-perfil" class="config-tab">👤 Perfil</button>
             <button onclick="showConfigTab('seguridad')" id="config-seguridad" class="config-tab">🔒 Seguridad</button>
         </div>
 
@@ -301,15 +361,9 @@
                                    class="w-full bg-white border-amber-200 focus:border-amber-400">
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Tipo/Categoría</label>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Categoría</label>
                             <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400">
-                                <option value="hosp">🏥 Hospital</option>
-                                <option value="sena">🌙 CENA</option>
-                                <option value="off">😴 Libre/Vacaciones</option>
-                                <option value="admin">📋 Administrativo</option>
-                                <option value="guardia">🛡️ Guardia</option>
-                                <option value="extra">⭐ Extra</option>
-                                <option value="otro">🔧 Otro</option>
+                                <!-- Las categorías se cargarán dinámicamente -->
                             </select>
                         </div>
                     </div>
@@ -355,37 +409,192 @@
                 </div>
             </div>
 
-            <!-- Pestaña 3: Asuetos -->
-            <div id="tab-asuetos" class="config-tab-content hidden">
-                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎉 Gestionar Asuetos</h3>
+            <!-- Pestaña 3: Categorías -->
+            <div id="tab-categorias" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🏷️ Gestionar Categorías</h3>
                 
-                <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 md:p-5 rounded-3xl border border-pink-100 mb-6">
-                    <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nuevo Asueto</h4>
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 md:p-5 rounded-3xl border border-green-100 mb-6">
+                    <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nueva Categoría</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                         <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
-                            <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400">
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre de Categoría</label>
+                            <input type="text" id="newCategoryName" placeholder="Ej: Guardia, Emergencia, etc." 
+                                   class="w-full bg-white border-green-200 focus:border-green-400">
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Asueto</label>
-                            <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" 
-                                   class="w-full bg-white border-pink-200 focus:border-pink-400">
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Icono</label>
+                            <select id="newCategoryIcon" class="w-full bg-white border-green-200 focus:border-green-400">
+                                <option value="🏥">🏥 Hospital</option>
+                                <option value="🌙">🌙 CENA</option>
+                                <option value="😴">😴 Libre/Vacaciones</option>
+                                <option value="📋">📋 Administrativo</option>
+                                <option value="🛡️">🛡️ Guardia</option>
+                                <option value="⭐">⭐ Extra</option>
+                                <option value="🔧">🔧 Otro</option>
+                                <option value="🚑">🚑 Emergencia</option>
+                                <option value="💊">💊 Farmacia</option>
+                                <option value="🩺">🩺 Consulta</option>
+                                <option value="🏨">🏨 Hospitalización</option>
+                                <option value="🏢">🏢 Oficina</option>
+                                <option value="👨‍⚕️">👨‍⚕️ Médico</option>
+                                <option value="👩‍⚕️">👩‍⚕️ Enfermera</option>
+                            </select>
                         </div>
                     </div>
-                    <button onclick="addNewHoliday()" class="w-full p-3 md:p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600 transition-all">
-                        ➕ Agregar Asueto
+                    <button onclick="addNewCategory()" class="w-full p-3 md:p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-green-600 hover:to-emerald-600 transition-all">
+                        ➕ Agregar Categoría
                     </button>
                 </div>
                 
                 <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-                    <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Asuetos Programados</h4>
-                    <div id="holidays-container" class="max-h-[300px] overflow-y-auto">
+                    <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Categorías Existentes</h4>
+                    <div id="categories-container" class="max-h-[300px] overflow-y-auto">
+                        <!-- Las categorías se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pestaña 4: Asuetos -->
+            <div id="tab-asuetos" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎉 Gestionar Asuetos</h3>
+                
+                <div class="mb-6">
+                    <div class="flex gap-3 mb-4">
+                        <button onclick="loadHolidaysYear(2024)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2024
+                        </button>
+                        <button onclick="loadHolidaysYear(2025)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2025
+                        </button>
+                        <button onclick="loadHolidaysYear(2026)" class="flex-1 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2026
+                        </button>
+                        <button onclick="loadHolidaysYear(2027)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2027
+                        </button>
+                        <button onclick="loadHolidaysYear(2028)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2028
+                        </button>
+                        <button onclick="loadHolidaysYear(2029)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2029
+                        </button>
+                        <button onclick="loadHolidaysYear(2030)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
+                            2030
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 md:p-5 rounded-3xl border border-pink-100 mb-6">
+                        <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar/Editar Asueto</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            <div>
+                                <label class="text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
+                                <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Asueto</label>
+                                <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" 
+                                       class="w-full bg-white border-pink-200 focus:border-pink-400">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
+                                <input type="text" id="newHolidayLocation" placeholder="Ej: General, San Salvador, etc." 
+                                       class="w-full bg-white border-pink-200 focus:border-pink-400">
+                                <p class="text-[9px] text-gray-500 mt-1">Dejar "General" para asuetos nacionales</p>
+                            </div>
+                            <div>
+                                <label class="text-[11px] font-bold text-gray-600 block mb-2">Tipo</label>
+                                <select id="newHolidayType" class="w-full bg-white border-pink-200 focus:border-pink-400">
+                                    <option value="nacional">🇸🇻 Nacional</option>
+                                    <option value="local">🏙️ Local</option>
+                                    <option value="regional">🗺️ Regional</option>
+                                    <option value="especial">⭐ Especial</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="addNewHoliday()" class="flex-1 p-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600 transition-all">
+                                ➕ Agregar
+                            </button>
+                            <button onclick="updateHoliday()" class="flex-1 p-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-blue-600 hover:to-indigo-600 transition-all">
+                                ✏️ Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+                    <div class="flex justify-between items-center p-4 border-b">
+                        <h4 class="text-[12px] font-black text-gray-600">Asuetos Programados</h4>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-gray-500">Año:</span>
+                            <select id="holidayYearFilter" onchange="filterHolidaysByYear()" class="text-[10px] bg-gray-100 border-gray-200 rounded-lg px-2 py-1">
+                                <option value="all">Todos</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="holidays-container" class="max-h-[400px] overflow-y-auto">
                         <!-- Los asuetos se cargarán aquí -->
                     </div>
                 </div>
             </div>
 
-            <!-- Pestaña 4: Seguridad -->
+            <!-- Pestaña 5: Perfil -->
+            <div id="tab-perfil" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">👤 Configuración de Perfil</h3>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-violet-50 p-4 md:p-5 rounded-3xl border border-purple-100 mb-6">
+                    <h4 class="text-[12px] font-black text-gray-600 mb-3">Información Personal</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre Completo</label>
+                            <input type="text" id="userFullName" value="ADMIN" 
+                                   class="w-full bg-white border-purple-200 focus:border-purple-400">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad de Trabajo</label>
+                            <input type="text" id="userLocation" placeholder="Ej: San Salvador, Santa Ana, etc." 
+                                   class="w-full bg-white border-purple-200 focus:border-purple-400">
+                            <p class="text-[9px] text-gray-500 mt-1">Esta localidad determina qué asuetos locales se consideran para ti</p>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Considerar asuetos de tipo:</label>
+                            <div class="flex flex-wrap gap-3 mt-2">
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" id="considerNational" checked class="rounded">
+                                    <span class="text-[10px] font-bold">🇸🇻 Nacionales</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" id="considerLocal" checked class="rounded">
+                                    <span class="text-[10px] font-bold">🏙️ Locales</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" id="considerRegional" class="rounded">
+                                    <span class="text-[10px] font-bold">🗺️ Regionales</span>
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" id="considerSpecial" class="rounded">
+                                    <span class="text-[10px] font-bold">⭐ Especiales</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="saveProfileSettings()" class="w-full p-4 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-2xl font-black uppercase text-[11px] hover:from-purple-700 hover:to-violet-700 transition-all">
+                    💾 Guardar Configuración
+                </button>
+            </div>
+
+            <!-- Pestaña 6: Seguridad -->
             <div id="tab-seguridad" class="config-tab-content hidden">
                 <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🔒 Seguridad</h3>
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 md:p-5 rounded-3xl border border-blue-100 mb-6 md:mb-8">
@@ -402,8 +611,8 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="saveProfileSettings()" class="w-full mt-6 md:mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 md:p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200 hover:shadow-2xl transition-all">
-                    💾 Guardar Cambios
+                <button onclick="saveSecuritySettings()" class="w-full mt-6 md:mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 md:p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200 hover:shadow-2xl transition-all">
+                    🔐 Guardar Cambios de Seguridad
                 </button>
             </div>
         </div>
@@ -429,6 +638,14 @@
                 <div id="modalDate" class="text-[10px] font-normal opacity-90 mt-1"></div>
             </div>
             <div class="p-6 overflow-y-auto max-h-[80vh]">
+                
+                <!-- Panel de información de asueto -->
+                <div id="holidayInfoPanel" class="holiday-info-panel hidden">
+                    <h4>🎉 DÍA DE ASUETO</h4>
+                    <p id="holidayName"></p>
+                    <p id="holidayLocation"></p>
+                    <p id="holidayType"></p>
+                </div>
                 
                 <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-6">
                     <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
@@ -528,6 +745,11 @@
             <h3 class="font-black text-center uppercase text-lg mb-6">Nuevo Perfil</h3>
             <input type="text" id="newUserName" placeholder="Nombre completo" class="mb-3 bg-gray-50 border-gray-200 focus:border-blue-400">
             <input type="password" id="newUserPin" placeholder="PIN (4 dígitos)" maxlength="4" class="mb-6 bg-gray-50 border-gray-200 focus:border-blue-400">
+            <div class="mb-4">
+                <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad de Trabajo</label>
+                <input type="text" id="newUserLocation" placeholder="Ej: San Salvador" 
+                       class="w-full bg-gray-50 border-gray-200 focus:border-blue-400">
+            </div>
             <button onclick="createNewUser()" class="w-full p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black uppercase text-xs hover:from-blue-700 hover:to-indigo-700 transition-all">
                 👤 Crear Perfil
             </button>
@@ -564,11 +786,13 @@
                             <option value="11">Diciembre</option>
                         </select>
                         <select id="exportYear" class="flex-1 bg-gray-50 border-gray-200 focus:border-emerald-400">
-                            <option value="2023">2023</option>
                             <option value="2024" selected>2024</option>
                             <option value="2025">2025</option>
                             <option value="2026">2026</option>
                             <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
                         </select>
                     </div>
                 </div>
@@ -605,25 +829,32 @@
                         'CENA': { label: 'CENA', color: 'CENA', cat: 'sena', in: '05:00', out: '17:00' },
                         'L': { label: 'L', color: 'L', cat: 'off', in: '00:00', out: '00:00' },
                         'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'off', in: '00:00', out: '00:00' }
+                    },
+                    editLocked: false,
+                    profile: {
+                        fullName: 'ADMIN',
+                        location: 'San Salvador',
+                        considerNational: true,
+                        considerLocal: true,
+                        considerRegional: false,
+                        considerSpecial: false
                     }
                 }
             },
             current: 'ADMIN',
-            holidays: {
-                // Asuetos de El Salvador para 2024
-                '2024-1-1': 'Año Nuevo',
-                '2024-3-28': 'Jueves Santo',
-                '2024-3-29': 'Viernes Santo',
-                '2024-5-1': 'Día del Trabajo',
-                '2024-5-3': 'Día de la Cruz',
-                '2024-8-6': 'Fiestas Agostinas',
-                '2024-9-15': 'Día de la Independencia',
-                '2024-11-2': 'Día de los Difuntos',
-                '2024-12-25': 'Navidad'
+            holidays: {},
+            categories: {
+                'hosp': { name: 'Hospital', icon: '🏥' },
+                'sena': { name: 'CENA', icon: '🌙' },
+                'off': { name: 'Libre/Vacaciones', icon: '😴' },
+                'admin': { name: 'Administrativo', icon: '📋' },
+                'guardia': { name: 'Guardia', icon: '🛡️' },
+                'extra': { name: 'Extra', icon: '⭐' },
+                'otro': { name: 'Otro', icon: '🔧' }
             }
         };
 
-        let isEditMode = true; // Cambiado a true por defecto
+        // Variables globales
         let current = new Date();
         let activeKey = "";
         let mode = "simple";
@@ -631,6 +862,21 @@
         let selT = "Mañana";
         let selB = "Tarde";
         let selectedColor = "Mañana";
+        let editingHolidayKey = null;
+
+        // Obtener estado de edición del usuario actual
+        function isEditMode() {
+            const user = db.users[db.current];
+            return !user.editLocked;
+        }
+
+        // Establecer estado de edición
+        function setEditMode(locked) {
+            const user = db.users[db.current];
+            user.editLocked = locked;
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            updateUIEditMode();
+        }
 
         function init() {
             initDateSelectors();
@@ -638,47 +884,119 @@
             updateUserInitial();
             updateMonthDisplay();
             loadDefaultHolidays(); // Cargar asuetos por defecto
+            loadDefaultCategories(); // Cargar categorías
             render();
-            updateSettingsLock();
+            updateUIEditMode(); // Actualizar interfaz según estado de edición
+            loadUserProfileSettings(); // Cargar configuración de perfil
+        }
+
+        // Función para calcular Semana Santa (Algoritmo de Gauss)
+        function calculateEaster(year) {
+            const a = year % 19;
+            const b = Math.floor(year / 100);
+            const c = year % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const month = Math.floor((h + l - 7 * m + 114) / 31);
+            const day = ((h + l - 7 * m + 114) % 31) + 1;
             
-            // Establecer modo edición activo por defecto
-            document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
-            document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
-            document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
-            document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+            return new Date(year, month - 1, day);
+        }
+
+        // Función para calcular días de Semana Santa
+        function calculateHolyWeek(year) {
+            const easter = calculateEaster(year);
+            const holyWeek = {
+                miercolesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3),
+                juevesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2),
+                viernesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 1),
+                sabadoGloria: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 0)
+            };
+            return holyWeek;
         }
 
         function loadDefaultHolidays() {
-            // Asuetos de El Salvador (pueden agregarse más años)
-            const defaultHolidays = {
-                '2024-1-1': 'Año Nuevo',
-                '2024-3-28': 'Jueves Santo',
-                '2024-3-29': 'Viernes Santo',
-                '2024-5-1': 'Día del Trabajo',
-                '2024-5-3': 'Día de la Cruz',
-                '2024-8-6': 'Fiestas Agostinas',
-                '2024-9-15': 'Día de la Independencia',
-                '2024-11-2': 'Día de los Difuntos',
-                '2024-12-25': 'Navidad',
-                '2025-1-1': 'Año Nuevo',
-                '2025-4-17': 'Jueves Santo',
-                '2025-4-18': 'Viernes Santo',
-                '2025-5-1': 'Día del Trabajo',
-                '2025-5-3': 'Día de la Cruz',
-                '2025-8-6': 'Fiestas Agostinas',
-                '2025-9-15': 'Día de la Independencia',
-                '2025-11-2': 'Día de los Difuntos',
-                '2025-12-25': 'Navidad'
+            // Cargar asuetos fijos para cada año
+            for (let year = 2024; year <= 2030; year++) {
+                // Asuetos fijos (mismos días cada año)
+                const fixedHolidays = {
+                    [`${year}-1-1`]: { name: 'Año Nuevo', location: 'General', type: 'nacional' },
+                    [`${year}-5-1`]: { name: 'Día del Trabajo', location: 'General', type: 'nacional' },
+                    [`${year}-8-6`]: { name: 'Fiestas Agostinas', location: 'General', type: 'nacional' },
+                    [`${year}-9-15`]: { name: 'Aniversario de Independencia', location: 'General', type: 'nacional' },
+                    [`${year}-11-2`]: { name: 'Día de los Difuntos', location: 'General', type: 'nacional' },
+                    [`${year}-12-25`]: { name: 'Navidad', location: 'General', type: 'nacional' },
+                    
+                    // Asuetos locales (ejemplos)
+                    [`${year}-1-20`]: { name: 'Fiestas de Cojutepeque', location: 'Cojutepeque', type: 'local' },
+                    [`${year}-2-10`]: { name: 'Fiesta de Lourdes Colón', location: 'Lourdes, Colón', type: 'local' },
+                    [`${year}-5-10`]: { name: 'Día de la Madre', location: 'General', type: 'nacional' },
+                    [`${year}-6-17`]: { name: 'Día del Padre', location: 'General', type: 'nacional' },
+                    [`${year}-8-3`]: { name: 'Día del Comercio', location: 'General', type: 'nacional' },
+                    [`${year}-8-4`]: { name: 'Fiestas Patronales', location: 'San Salvador', type: 'local' },
+                    [`${year}-8-5`]: { name: 'Fiestas Patronales', location: 'San Salvador', type: 'local' },
+                    [`${year}-10-2`]: { name: 'Víspera del día del Trabajador de la Industria Eléctrica', location: 'General', type: 'especial' },
+                    [`${year}-10-3`]: { name: 'Día del Trabajador de la Industria Eléctrica', location: 'General', type: 'especial' },
+                    [`${year}-12-8`]: { name: 'Fiestas de La Libertad', location: 'La Libertad', type: 'local' },
+                    [`${year}-12-19`]: { name: 'Fiestas Patronales', location: 'Quezaltepeque y Rosario de la Paz', type: 'local' },
+                    [`${year}-12-24`]: { name: 'Navidad', location: 'General', type: 'nacional' },
+                    [`${year}-12-26`]: { name: 'Fiestas Patronales', location: 'Zacatecoluca, San Vicente y Santa Tecla', type: 'local' },
+                    [`${year}-12-27`]: { name: 'Fiestas de San Juan Opico', location: 'San Juan Opico', type: 'local' },
+                    [`${year}-12-31`]: { name: 'Fin de Año', location: 'General', type: 'nacional' }
+                };
+                
+                // Calcular Semana Santa para cada año
+                const holyWeek = calculateHolyWeek(year);
+                const semanaSanta = {
+                    [`${year}-${holyWeek.miercolesSanto.getMonth() + 1}-${holyWeek.miercolesSanto.getDate()}`]: { name: 'Miércoles Santo', location: 'General', type: 'nacional' },
+                    [`${year}-${holyWeek.juevesSanto.getMonth() + 1}-${holyWeek.juevesSanto.getDate()}`]: { name: 'Jueves Santo', location: 'General', type: 'nacional' },
+                    [`${year}-${holyWeek.viernesSanto.getMonth() + 1}-${holyWeek.viernesSanto.getDate()}`]: { name: 'Viernes Santo', location: 'General', type: 'nacional' },
+                    [`${year}-${holyWeek.sabadoGloria.getMonth() + 1}-${holyWeek.sabadoGloria.getDate()}`]: { name: 'Sábado de Gloria', location: 'General', type: 'nacional' }
+                };
+                
+                // Combinar todos los asuetos
+                const yearHolidays = { ...fixedHolidays, ...semanaSanta };
+                
+                // Agregar al db.holidays si no existen
+                for (const [key, value] of Object.entries(yearHolidays)) {
+                    if (!db.holidays[key]) {
+                        db.holidays[key] = value;
+                    }
+                }
+            }
+            
+            // Guardar cambios
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+        }
+
+        function loadDefaultCategories() {
+            // Asegurar que las categorías por defecto existan
+            const defaultCategories = {
+                'hosp': { name: 'Hospital', icon: '🏥' },
+                'sena': { name: 'CENA', icon: '🌙' },
+                'off': { name: 'Libre/Vacaciones', icon: '😴' },
+                'admin': { name: 'Administrativo', icon: '📋' },
+                'guardia': { name: 'Guardia', icon: '🛡️' },
+                'extra': { name: 'Extra', icon: '⭐' },
+                'otro': { name: 'Otro', icon: '🔧' }
             };
             
-            // Combinar con asuetos existentes
-            db.holidays = { ...defaultHolidays, ...db.holidays };
+            // Combinar con categorías existentes
+            db.categories = { ...defaultCategories, ...db.categories };
         }
 
         function initDateSelectors() {
             const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             const mSel = document.getElementById('selectMonth');
             const ySel = document.getElementById('selectYear');
+            const exportYearSel = document.getElementById('exportYear');
             
             mSel.innerHTML = '';
             months.forEach((m, i) => {
@@ -686,8 +1004,10 @@
             });
             
             ySel.innerHTML = '';
-            for(let y = 2023; y <= 2027; y++) {
+            exportYearSel.innerHTML = '';
+            for(let y = 2024; y <= 2030; y++) {
                 ySel.innerHTML += `<option value="${y}">${y}</option>`;
+                exportYearSel.innerHTML += `<option value="${y}" ${y === 2024 ? 'selected' : ''}>${y}</option>`;
             }
         }
 
@@ -741,57 +1061,118 @@
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             
-            // Si es la pestaña de asuetos, cargarlos
+            // Cargar contenido específico de la pestaña
             if(tab === 'asuetos') {
-                renderHolidays();
+                filterHolidaysByYear();
+            } else if(tab === 'categorias') {
+                renderCategories();
+            } else if(tab === 'nuevo') {
+                loadCategoriesSelect();
+            } else if(tab === 'turnos') {
+                renderSettings();
+            } else if(tab === 'perfil') {
+                loadUserProfileSettings();
             }
         }
 
-        function updateSettingsLock() {
+        function updateUIEditMode() {
             const configContent = document.getElementById('config-content');
             const lockedMessage = document.getElementById('settings-locked');
             
-            if(isEditMode) {
+            if(isEditMode()) {
                 configContent.classList.remove('hidden');
                 lockedMessage.classList.add('hidden');
-                renderSettings(); // Cargar configuración
+                document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
+                document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
+                document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
+                document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
             } else {
                 configContent.classList.add('hidden');
                 lockedMessage.classList.remove('hidden');
+                document.getElementById('editStatus').innerText = "MODO VISTA";
+                document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
+                document.getElementById('unlockBtn').innerText = "🔓 Editar";
+                document.getElementById('unlockBtn').className = "bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
             }
         }
 
         function toggleEditMode() {
-            if(isEditMode) {
+            if(isEditMode()) {
                 // Pedir PIN para bloquear
-                const p = prompt("Ingresa PIN para bloquear la edición (para ADMIN usar 120720):");
-                // Clave universal para ADMIN
-                if(p === '120720' || p === db.users[db.current].pin) {
-                    isEditMode = false;
-                    document.getElementById('editStatus').innerText = "MODO VISTA";
-                    document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
-                    document.getElementById('unlockBtn').innerText = "🔓 Editar";
-                    document.getElementById('unlockBtn').className = "bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+                const p = prompt("Ingresa tu PIN para bloquear la edición:");
+                const user = db.users[db.current];
+                
+                if(p === user.pin) {
+                    setEditMode(true);
+                    alert("Modo edición bloqueado");
                 } else {
-                    alert("PIN Incorrecto");
+                    alert("PIN incorrecto");
                     return;
                 }
             } else {
-                // Para desbloquear - aceptar clave universal 120720 para todos
-                const p = prompt("PIN para editar " + db.current + " (para ADMIN usar 120720):");
-                if(p === '120720' || p === db.users[db.current].pin) {
-                    isEditMode = true;
-                    document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
-                    document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
-                    document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
-                    document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+                // Para desbloquear - pedir PIN
+                const p = prompt("Ingresa tu PIN para editar:");
+                const user = db.users[db.current];
+                
+                // Clave universal ADMIN (solo en código, no se muestra al usuario)
+                const adminUniversalPin = '120720';
+                
+                if(p === user.pin || p === adminUniversalPin) {
+                    setEditMode(false);
+                    alert("Modo edición activado");
                 } else {
-                    alert("PIN Incorrecto");
+                    alert("PIN incorrecto");
                     return;
                 }
             }
             
-            updateSettingsLock();
+            updateUIEditMode();
+        }
+
+        // Verificar si un asueto aplica al usuario actual
+        function isHolidayApplicable(holidayData) {
+            const user = db.users[db.current];
+            const profile = user.profile;
+            
+            // Verificar tipo de asueto
+            if (!profile[`consider${holidayData.type.charAt(0).toUpperCase() + holidayData.type.slice(1)}`]) {
+                return false;
+            }
+            
+            // Verificar localidad
+            if (holidayData.location === 'General') {
+                return true; // Asueto nacional aplica a todos
+            }
+            
+            // Verificar si la localidad del asueto coincide con la del usuario
+            if (holidayData.location && profile.location) {
+                const userLocationLower = profile.location.toLowerCase();
+                const holidayLocationLower = holidayData.location.toLowerCase();
+                
+                // Verificar coincidencia exacta o parcial
+                if (holidayLocationLower.includes(userLocationLower) || 
+                    userLocationLower.includes(holidayLocationLower)) {
+                    return true;
+                }
+                
+                // Verificar ciudades principales
+                const mainCities = ['san salvador', 'santa ana', 'san miguel', 'san vicente', 'la libertad', 'san salvador'];
+                if (mainCities.includes(userLocationLower) && holidayLocationLower.includes(userLocationLower)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Obtener tipo de indicador para asueto
+        function getHolidayIndicator(holidayData) {
+            if (!isHolidayApplicable(holidayData)) {
+                return { class: 'holiday-indicator', text: 'A' }; // Rojo - no aplica
+            }
+            
+            // Verde - aplica localmente
+            return { class: 'local-holiday-indicator', text: 'A' };
         }
 
         async function exportMonthAsImage() {
@@ -802,9 +1183,10 @@
                 const month = parseInt(document.getElementById('exportMonth').value);
                 const year = parseInt(document.getElementById('exportYear').value);
                 const user = db.users[db.current];
+                const profile = user.profile;
                 const SHIFTS = user.config;
                 
-                let h = 0, s = 0, freeDays = 0, vacDays = 0, weekendDays = 0, holidayWorked = 0;
+                let h = 0, s = 0, freeDays = 0, vacDays = 0, weekendDays = 0, holidayWorked = 0, localHolidays = 0;
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 freeDays = daysInMonth;
                 
@@ -812,6 +1194,10 @@
                 let totalHolidays = 0;
                 Object.keys(db.holidays).forEach(dateKey => {
                     if(dateKey.startsWith(`${year}-${month+1}-`)) {
+                        const holidayData = db.holidays[dateKey];
+                        if (isHolidayApplicable(holidayData)) {
+                            localHolidays++;
+                        }
                         totalHolidays++;
                     }
                 });
@@ -821,6 +1207,7 @@
                         const d = user.data[k];
                         const dayOfWeek = new Date(year, month, parseInt(k.split('-')[2])).getDay();
                         const isHoliday = db.holidays[k];
+                        const isApplicableHoliday = isHoliday && isHolidayApplicable(isHoliday);
                         
                         if(dayOfWeek === 0 || dayOfWeek === 6) {
                             weekendDays++;
@@ -829,7 +1216,7 @@
                         freeDays--;
                         
                         if(d.mode === 'mixto') {
-                            if(isHoliday) holidayWorked++;
+                            if(isApplicableHoliday) holidayWorked++;
                             
                             if(SHIFTS[d.t].cat === 'hosp') h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
                             if(SHIFTS[d.t].cat === 'sena') s += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
@@ -840,10 +1227,12 @@
                             else if(SHIFTS[d.s].cat === 'sena') s += (d.h || 0);
                             else if(SHIFTS[d.s].cat === 'off') {
                                 freeDays++;
-                                if(d.s === 'Vacaciones') vacDays++;
+                                if(d.s === 'Vacaciones') {
+                                    vacDays++;
+                                }
                             }
                             
-                            if((SHIFTS[d.s].cat === 'hosp' || SHIFTS[d.s].cat === 'sena') && isHoliday) {
+                            if((SHIFTS[d.s].cat === 'hosp' || SHIFTS[d.s].cat === 'sena') && isApplicableHoliday) {
                                 holidayWorked++;
                             }
                         }
@@ -870,10 +1259,10 @@
                         <!-- Encabezado -->
                         <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
                             <h1 style="font-size: 32px; font-weight: 900; color: #1e293b; margin-bottom: 5px;">
-                                ${db.current} - ${months[month]} ${year}
+                                ${profile.fullName} - ${months[month]} ${year}
                             </h1>
                             <p style="font-size: 14px; color: #64748b; font-weight: 600;">
-                                Generado el ${new Date().toLocaleDateString('es-ES')}
+                                Generado el ${new Date().toLocaleDateString('es-ES')} | Localidad: ${profile.location}
                             </p>
                         </div>
                         
@@ -926,16 +1315,20 @@
                     const prevMonth = month === 0 ? 12 : month;
                     const prevYear = month === 0 ? year - 1 : year;
                     const dateKey = `${prevYear}-${prevMonth}-${prevDay}`;
-                    const isHoliday = db.holidays[dateKey];
+                    const holidayData = db.holidays[dateKey];
+                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
                     
-                    let dayStyle = '';
-                    if(isHoliday) {
-                        dayStyle = 'style="color: #dc2626; background: rgba(254, 226, 226, 0.9); position: relative;"';
+                    if(holidayData) {
+                        const indicatorColor = isApplicable ? '#059669' : '#dc2626';
+                        const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
+                        
                         html += `
                             <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span ${dayStyle}>
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${prevDay}
-                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
+                                    A
                                 </span>
                             </div>
                         `;
@@ -954,7 +1347,8 @@
                 for(let d = 1; d <= lastDate; d++) {
                     const key = `${year}-${month+1}-${d}`;
                     const info = user.data[key] || { mode: 'simple', s: 'L' };
-                    const isHoliday = db.holidays[key];
+                    const holidayData = db.holidays[key];
+                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
                     
                     let backgroundColor = '#ffffff';
                     let label = 'L';
@@ -972,17 +1366,19 @@
                                 </div>
                         `;
                         
-                        if(isHoliday) {
-                            html += `
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
-                                    ${d}
-                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
-                                </span>
-                            `;
-                        } else {
-                            html += `
+                        html += `
                                 <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${d}
+                                </span>
+                        `;
+                        
+                        if(holidayData) {
+                            const indicatorColor = isApplicable ? '#059669' : '#dc2626';
+                            const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
+                            
+                            html += `
+                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
+                                    A
                                 </span>
                             `;
                         }
@@ -1002,17 +1398,19 @@
                                 </div>
                         `;
                         
-                        if(isHoliday) {
-                            html += `
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
-                                    ${d}
-                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
-                                </span>
-                            `;
-                        } else {
-                            html += `
+                        html += `
                                 <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${d}
+                                </span>
+                        `;
+                        
+                        if(holidayData) {
+                            const indicatorColor = isApplicable ? '#059669' : '#dc2626';
+                            const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
+                            
+                            html += `
+                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
+                                    A
                                 </span>
                             `;
                         }
@@ -1027,14 +1425,20 @@
                     const nextMonth = month === 11 ? 1 : month + 2;
                     const nextYear = month === 11 ? year + 1 : year;
                     const dateKey = `${nextYear}-${nextMonth}-${i}`;
-                    const isHoliday = db.holidays[dateKey];
+                    const holidayData = db.holidays[dateKey];
+                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
                     
-                    if(isHoliday) {
+                    if(holidayData) {
+                        const indicatorColor = isApplicable ? '#059669' : '#dc2626';
+                        const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
+                        
                         html += `
                             <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${i}
-                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
+                                    A
                                 </span>
                             </div>
                         `;
@@ -1073,6 +1477,16 @@
                 
                 html += `
                                 </div>
+                                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                        <div style="width: 16px; height: 16px; border-radius: 4px; background-color: #dc2626; border: 1px solid #d1d5db;"></div>
+                                        <span style="font-size: 10px; font-weight: 700;">Asueto Nacional/Local</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 16px; height: 16px; border-radius: 4px; background-color: #059669; border: 1px solid #d1d5db;"></div>
+                                        <span style="font-size: 10px; font-weight: 700;">Asueto que aplica a ${profile.location}</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div style="flex: 1; padding-left: 20px; border-left: 1px solid #e5e7eb;">
@@ -1089,6 +1503,10 @@
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span>Asuetos en mes:</span>
                                         <span style="font-weight: 700; color: #dc2626;">${totalHolidays}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span>Asuetos locales aplicables:</span>
+                                        <span style="font-weight: 700; color: #059669;">${localHolidays}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span>Asuetos trabajados:</span>
@@ -1125,7 +1543,7 @@
                 
                 // Crear enlace para descargar
                 const link = document.createElement('a');
-                link.download = `Turnos_${db.current}_${months[month]}_${year}.png`;
+                link.download = `Turnos_${profile.fullName}_${months[month]}_${year}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 
@@ -1203,15 +1621,15 @@
                     cell.innerHTML = '';
                 }
                 
-                // MARCADOR DE ASUETO para días fuera del mes
+                // MARCADOR DE ASUETO en esquina superior izquierda
                 const holidayKey = `${prevYear}-${prevMonth}-${prevDay}`;
-                const holidayText = db.holidays[holidayKey];
-                let dayNumberHtml = `<span class="day-number">${prevDay}</span>`;
-                if(holidayText) {
-                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${prevDay}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                const holidayData = db.holidays[holidayKey];
+                if(holidayData) {
+                    const indicator = getHolidayIndicator(holidayData);
+                    cell.innerHTML += `<div class="${indicator.class}">${indicator.text}</div>`;
                 }
                 
-                cell.innerHTML += dayNumberHtml;
+                cell.innerHTML += `<span class="day-number">${prevDay}</span>`;
                 if(info && info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
                 cell.onclick = () => open(key, info);
                 grid.appendChild(cell);
@@ -1244,20 +1662,20 @@
                     cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
                 }
                 
-                // MARCADOR DE ASUETO
+                // MARCADOR DE ASUETO en esquina superior izquierda
                 const holidayKey = `${y}-${m+1}-${d}`;
-                const holidayText = db.holidays[holidayKey];
-                let dayNumberHtml = `<span class="day-number">${d}</span>`;
-                if(holidayText) {
-                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${d}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                const holidayData = db.holidays[holidayKey];
+                if(holidayData) {
+                    const indicator = getHolidayIndicator(holidayData);
+                    cell.innerHTML += `<div class="${indicator.class}">${indicator.text}</div>`;
                 }
                 
-                cell.innerHTML += dayNumberHtml;
+                cell.innerHTML += `<span class="day-number">${d}</span>`;
                 if(info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
                 
                 cell.onclick = () => {
-                    if(!isEditMode) {
-                        alert("Para editar, primero presiona '🔓 Editar' e ingresa tu PIN");
+                    if(!isEditMode()) {
+                        alert("Para editar, primero activa el modo edición");
                         return;
                     }
                     open(key, info);
@@ -1276,14 +1694,14 @@
                 const cell = document.createElement('div');
                 cell.className = 'day-cell day-off-month';
                 
-                // MARCADOR DE ASUETO para días fuera del mes
-                const holidayText = db.holidays[key];
-                let dayNumberHtml = `<span class="day-number">${i}</span>`;
-                if(holidayText) {
-                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${i}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                // MARCADOR DE ASUETO en esquina superior izquierda
+                const holidayData = db.holidays[key];
+                if(holidayData) {
+                    const indicator = getHolidayIndicator(holidayData);
+                    cell.innerHTML += `<div class="${indicator.class}">${indicator.text}</div>`;
                 }
                 
-                cell.innerHTML = dayNumberHtml;
+                cell.innerHTML = `<span class="day-number">${i}</span>`;
                 grid.appendChild(cell);
             }
             
@@ -1296,7 +1714,7 @@
         }
 
         function open(key, info) {
-            if(!isEditMode) return;
+            if(!isEditMode()) return;
             
             activeKey = key;
             mode = info.mode || 'simple';
@@ -1305,6 +1723,33 @@
             selB = info.b || 'Tarde';
             
             const SHIFTS = db.users[db.current].config;
+            
+            // Mostrar información de asueto si existe
+            const holidayData = db.holidays[key];
+            const holidayPanel = document.getElementById('holidayInfoPanel');
+            
+            if(holidayData) {
+                holidayPanel.classList.remove('hidden');
+                document.getElementById('holidayName').textContent = holidayData.name;
+                document.getElementById('holidayLocation').textContent = `📍 ${holidayData.location}`;
+                
+                // Traducir tipo
+                const typeMap = {
+                    'nacional': '🇸🇻 Nacional',
+                    'local': '🏙️ Local',
+                    'regional': '🗺️ Regional',
+                    'especial': '⭐ Especial'
+                };
+                document.getElementById('holidayType').textContent = `📋 ${typeMap[holidayData.type] || holidayData.type}`;
+                
+                // Resaltar si aplica al usuario
+                if(isHolidayApplicable(holidayData)) {
+                    holidayPanel.style.background = 'linear-gradient(to right, #d1fae5, #a7f3d0)';
+                    holidayPanel.style.borderColor = '#10b981';
+                }
+            } else {
+                holidayPanel.classList.add('hidden');
+            }
             
             // Configurar campos según el modo
             if(mode === 'simple') {
@@ -1505,10 +1950,11 @@
 
         function calcSummary() {
             let h = 0, s = 0;
-            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, holidayWorked = 0;
+            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, holidayWorked = 0, localHolidays = 0;
             const y = current.getFullYear(), m = current.getMonth() + 1;
             const user = db.users[db.current];
             const SHIFTS = user.config;
+            const profile = user.profile;
             
             // Contar días libres por defecto
             const daysInMonth = new Date(y, m, 0).getDate();
@@ -1518,7 +1964,11 @@
             let totalHolidays = 0;
             Object.keys(db.holidays).forEach(dateKey => {
                 if(dateKey.startsWith(`${y}-${m}-`)) {
+                    const holidayData = db.holidays[dateKey];
                     totalHolidays++;
+                    if (isHolidayApplicable(holidayData)) {
+                        localHolidays++;
+                    }
                 }
             });
             
@@ -1527,8 +1977,9 @@
                     const d = user.data[k];
                     const dayOfWeek = new Date(y, m-1, parseInt(k.split('-')[2])).getDay();
                     
-                    // Verificar si es asueto
-                    const isHoliday = db.holidays[k];
+                    // Verificar si es asueto aplicable
+                    const holidayData = db.holidays[k];
+                    const isApplicableHoliday = holidayData && isHolidayApplicable(holidayData);
                     
                     if(dayOfWeek === 0 || dayOfWeek === 6) {
                         weekendDays++;
@@ -1538,7 +1989,7 @@
                     
                     if(d.mode === 'mixto') {
                         workedDays++;
-                        if(isHoliday) holidayWorked++;
+                        if(isApplicableHoliday) holidayWorked++;
                         
                         if(SHIFTS[d.t].cat === 'hosp') { 
                             h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
@@ -1561,12 +2012,12 @@
                             h += (d.h || 0); 
                             hospDays++;
                             workedDays++;
-                            if(isHoliday) holidayWorked++;
+                            if(isApplicableHoliday) holidayWorked++;
                         } else if(SHIFTS[d.s].cat === 'sena') { 
                             s += (d.h || 0); 
                             senaDays++;
                             workedDays++;
-                            if(isHoliday) holidayWorked++;
+                            if(isApplicableHoliday) holidayWorked++;
                         } else if(SHIFTS[d.s].cat === 'off') {
                             freeDays++;
                             if(d.s === 'Vacaciones') {
@@ -1591,6 +2042,7 @@
             document.getElementById('holiday-worked').textContent = holidayWorked;
             document.getElementById('worked-days').textContent = workedDays;
             document.getElementById('total-holidays').textContent = totalHolidays;
+            document.getElementById('local-holidays').textContent = localHolidays;
             
             const avgHours = workedDays > 0 ? (h + s) / workedDays : 0;
             document.getElementById('avg-hours').textContent = avgHours.toFixed(1) + 'h';
@@ -1607,6 +2059,11 @@
             
             if(!name) {
                 alert("Por favor ingresa un nombre para el turno");
+                return;
+            }
+            
+            if(!cat) {
+                alert("Por favor selecciona una categoría");
                 return;
             }
             
@@ -1637,6 +2094,8 @@
             
             Object.keys(SHIFTS).forEach(id => {
                 const conf = SHIFTS[id];
+                const category = db.categories[conf.cat] || { name: 'Desconocida', icon: '❓' };
+                
                 container.innerHTML += `
                     <div class="flex items-center gap-4 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors">
                         <div class="w-10 h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center">
@@ -1652,13 +2111,10 @@
                                 <div>
                                     <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
                                     <select id="set-cat-${id}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
-                                        <option value="hosp" ${conf.cat === 'hosp' ? 'selected' : ''}>🏥 Hospital</option>
-                                        <option value="sena" ${conf.cat === 'sena' ? 'selected' : ''}>🌙 CENA</option>
-                                        <option value="off" ${conf.cat === 'off' ? 'selected' : ''}>😴 Libre/Vacaciones</option>
-                                        <option value="admin" ${conf.cat === 'admin' ? 'selected' : ''}>📋 Administrativo</option>
-                                        <option value="guardia" ${conf.cat === 'guardia' ? 'selected' : ''}>🛡️ Guardia</option>
-                                        <option value="extra" ${conf.cat === 'extra' ? 'selected' : ''}>⭐ Extra</option>
-                                        <option value="otro" ${conf.cat === 'otro' ? 'selected' : ''}>🔧 Otro</option>
+                                        ${Object.keys(db.categories).map(catId => {
+                                            const cat = db.categories[catId];
+                                            return `<option value="${catId}" ${conf.cat === catId ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`;
+                                        }).join('')}
                                     </select>
                                 </div>
                             </div>
@@ -1683,6 +2139,14 @@
             });
         }
 
+        function loadCategoriesSelect() {
+            const select = document.getElementById('newShiftCat');
+            select.innerHTML = Object.keys(db.categories).map(catId => {
+                const cat = db.categories[catId];
+                return `<option value="${catId}">${cat.icon} ${cat.name}</option>`;
+            }).join('');
+        }
+
         function deleteShift(shiftKey) {
             if(shiftKey === 'L' || shiftKey === 'Vacaciones') {
                 alert("No se puede eliminar este turno básico");
@@ -1697,52 +2161,153 @@
             }
         }
 
-        function renderHolidays() {
+        function loadHolidaysYear(year) {
+            // Cargar asuetos de un año específico
+            document.getElementById('holidayYearFilter').value = year;
+            filterHolidaysByYear();
+        }
+
+        function filterHolidaysByYear() {
+            const year = document.getElementById('holidayYearFilter').value;
+            renderHolidays(year);
+        }
+
+        function renderHolidays(yearFilter = 'all') {
             const container = document.getElementById('holidays-container');
             container.innerHTML = '';
             
+            // Filtrar asuetos por año
+            let holidaysToShow = Object.keys(db.holidays);
+            
+            if (yearFilter !== 'all') {
+                holidaysToShow = holidaysToShow.filter(dateKey => dateKey.startsWith(`${yearFilter}-`));
+            }
+            
             // Ordenar asuetos por fecha
-            const sortedHolidays = Object.keys(db.holidays).sort((a, b) => {
+            holidaysToShow.sort((a, b) => {
                 return new Date(a) - new Date(b);
             });
             
-            if(sortedHolidays.length === 0) {
+            if(holidaysToShow.length === 0) {
                 container.innerHTML = `
                     <div class="p-8 text-center text-gray-400">
                         <p class="text-[12px] font-bold">No hay asuetos programados</p>
+                        ${yearFilter !== 'all' ? `<p class="text-[10px] mt-2">para el año ${yearFilter}</p>` : ''}
                     </div>
                 `;
                 return;
             }
             
-            sortedHolidays.forEach(dateKey => {
+            holidaysToShow.forEach(dateKey => {
                 const [year, month, day] = dateKey.split('-');
-                const holidayName = db.holidays[dateKey];
+                const holidayData = db.holidays[dateKey];
+                const isApplicable = isHolidayApplicable(holidayData);
+                const typeIcons = {
+                    'nacional': '🇸🇻',
+                    'local': '🏙️',
+                    'regional': '🗺️',
+                    'especial': '⭐'
+                };
                 
                 container.innerHTML += `
-                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
-                        <div>
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 ${isApplicable ? 'bg-green-50' : ''}">
+                        <div class="flex-1">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                    <span class="text-[10px] font-black text-red-600">A</span>
+                                <div class="w-8 h-8 rounded-full ${isApplicable ? 'bg-green-100' : 'bg-red-100'} flex items-center justify-center">
+                                    <span class="text-[10px] font-black ${isApplicable ? 'text-green-600' : 'text-red-600'}">A</span>
                                 </div>
-                                <div>
-                                    <p class="text-[12px] font-black text-gray-800">${holidayName}</p>
-                                    <p class="text-[10px] text-gray-500 font-bold">${day}/${month}/${year}</p>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-[12px] font-black text-gray-800">${holidayData.name}</p>
+                                        <span class="text-[10px] font-bold ${isApplicable ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'} px-2 py-1 rounded-full">
+                                            ${typeIcons[holidayData.type] || '📅'} ${holidayData.type}
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <p class="text-[10px] text-gray-500 font-bold">${day}/${month}/${year}</p>
+                                        ${holidayData.location ? `<p class="text-[9px] ${isApplicable ? 'text-green-700 bg-green-100' : 'text-blue-600 bg-blue-50'} px-2 py-1 rounded-full">${holidayData.location}</p>` : ''}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <button onclick="deleteHoliday('${dateKey}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar asueto">
-                            🗑️
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="editHoliday('${dateKey}')" class="p-2 text-blue-500 hover:text-blue-700" title="Editar asueto">
+                                ✏️
+                            </button>
+                            <button onclick="deleteHoliday('${dateKey}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar asueto">
+                                🗑️
+                            </button>
+                        </div>
                     </div>
                 `;
             });
         }
 
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            const sortedCategories = Object.keys(db.categories).sort((a, b) => {
+                return db.categories[a].name.localeCompare(db.categories[b].name);
+            });
+            
+            if(sortedCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-400">
+                        <p class="text-[12px] font-bold">No hay categorías definidas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedCategories.forEach(catId => {
+                const cat = db.categories[catId];
+                
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span class="text-[14px]">${cat.icon}</span>
+                            </div>
+                            <div>
+                                <p class="text-[12px] font-black text-gray-800">${cat.name}</p>
+                                <p class="text-[10px] text-gray-500 font-bold">ID: ${catId}</p>
+                            </div>
+                        </div>
+                        ${catId !== 'hosp' && catId !== 'sena' && catId !== 'off' ? 
+                            `<button onclick="deleteCategory('${catId}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar categoría">
+                                🗑️
+                            </button>` : 
+                            `<span class="text-[9px] text-gray-400 font-bold">Sistema</span>`
+                        }
+                    </div>
+                `;
+            });
+        }
+
+        function editHoliday(dateKey) {
+            const holidayData = db.holidays[dateKey];
+            if (!holidayData) return;
+            
+            const [year, month, day] = dateKey.split('-');
+            const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            
+            document.getElementById('newHolidayDate').value = formattedDate;
+            document.getElementById('newHolidayName').value = holidayData.name;
+            document.getElementById('newHolidayLocation').value = holidayData.location;
+            document.getElementById('newHolidayType').value = holidayData.type;
+            
+            editingHolidayKey = dateKey;
+            
+            // Desplazar a la sección de agregar/editar
+            document.getElementById('tab-asuetos').scrollTop = 0;
+        }
+
         function addNewHoliday() {
             const dateInput = document.getElementById('newHolidayDate').value;
             const name = document.getElementById('newHolidayName').value.trim();
+            const location = document.getElementById('newHolidayLocation').value.trim() || 'General';
+            const type = document.getElementById('newHolidayType').value;
             
             if(!dateInput || !name) {
                 alert("Por favor completa la fecha y el nombre del asueto");
@@ -1753,30 +2318,151 @@
             const date = new Date(dateInput);
             const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
             
-            db.holidays[dateKey] = name;
+            db.holidays[dateKey] = {
+                name: name,
+                location: location,
+                type: type
+            };
+            
             localStorage.setItem('shifter_v18', JSON.stringify(db));
             
             // Limpiar campos
             document.getElementById('newHolidayDate').value = '';
             document.getElementById('newHolidayName').value = '';
+            document.getElementById('newHolidayLocation').value = '';
+            editingHolidayKey = null;
             
-            renderHolidays();
+            filterHolidaysByYear();
             render(); // Refrescar calendario
             alert("Asueto agregado correctamente");
         }
 
+        function updateHoliday() {
+            if (!editingHolidayKey) {
+                alert("Primero selecciona un asueto para editar");
+                return;
+            }
+            
+            const dateInput = document.getElementById('newHolidayDate').value;
+            const name = document.getElementById('newHolidayName').value.trim();
+            const location = document.getElementById('newHolidayLocation').value.trim() || 'General';
+            const type = document.getElementById('newHolidayType').value;
+            
+            if(!dateInput || !name) {
+                alert("Por favor completa la fecha y el nombre del asueto");
+                return;
+            }
+            
+            // Formatear fecha como YYYY-M-D
+            const date = new Date(dateInput);
+            const newDateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            
+            // Si cambió la fecha, eliminar el antiguo y crear nuevo
+            if (editingHolidayKey !== newDateKey) {
+                delete db.holidays[editingHolidayKey];
+            }
+            
+            db.holidays[newDateKey] = {
+                name: name,
+                location: location,
+                type: type
+            };
+            
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            
+            // Limpiar campos
+            document.getElementById('newHolidayDate').value = '';
+            document.getElementById('newHolidayName').value = '';
+            document.getElementById('newHolidayLocation').value = '';
+            editingHolidayKey = null;
+            
+            filterHolidaysByYear();
+            render(); // Refrescar calendario
+            alert("Asueto actualizado correctamente");
+        }
+
+        function addNewCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const icon = document.getElementById('newCategoryIcon').value;
+            
+            if(!name) {
+                alert("Por favor ingresa un nombre para la categoría");
+                return;
+            }
+            
+            // Generar ID único (sin espacios, en minúsculas)
+            const catId = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            
+            if(db.categories[catId]) {
+                alert("Ya existe una categoría con ese nombre o ID similar");
+                return;
+            }
+            
+            db.categories[catId] = {
+                name: name,
+                icon: icon
+            };
+            
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            
+            // Limpiar campos
+            document.getElementById('newCategoryName').value = '';
+            
+            renderCategories();
+            loadCategoriesSelect(); // Actualizar select en "Nuevo Turno"
+            alert("Categoría agregada correctamente");
+        }
+
         function deleteHoliday(dateKey) {
-            if(confirm(`¿Eliminar el asueto "${db.holidays[dateKey]}"?`)) {
+            const holiday = db.holidays[dateKey];
+            if(confirm(`¿Eliminar el asueto "${holiday.name}" (${dateKey})?`)) {
                 delete db.holidays[dateKey];
                 localStorage.setItem('shifter_v18', JSON.stringify(db));
-                renderHolidays();
+                filterHolidaysByYear();
                 render(); // Refrescar calendario
                 alert("Asueto eliminado");
             }
         }
 
+        function deleteCategory(catId) {
+            // Verificar si la categoría está en uso
+            const user = db.users[db.current];
+            let inUse = false;
+            
+            Object.keys(user.config).forEach(shiftKey => {
+                if(user.config[shiftKey].cat === catId) {
+                    inUse = true;
+                }
+            });
+            
+            if(inUse) {
+                alert("No se puede eliminar esta categoría porque está siendo usada por uno o más turnos");
+                return;
+            }
+            
+            if(confirm(`¿Eliminar la categoría "${db.categories[catId].name}"?`)) {
+                delete db.categories[catId];
+                localStorage.setItem('shifter_v18', JSON.stringify(db));
+                renderCategories();
+                loadCategoriesSelect(); // Actualizar select en "Nuevo Turno"
+                alert("Categoría eliminada");
+            }
+        }
+
+        function loadUserProfileSettings() {
+            const user = db.users[db.current];
+            const profile = user.profile;
+            
+            document.getElementById('userFullName').value = profile.fullName;
+            document.getElementById('userLocation').value = profile.location;
+            document.getElementById('considerNational').checked = profile.considerNational;
+            document.getElementById('considerLocal').checked = profile.considerLocal;
+            document.getElementById('considerRegional').checked = profile.considerRegional;
+            document.getElementById('considerSpecial').checked = profile.considerSpecial;
+        }
+
         function saveProfileSettings() {
-            if(!isEditMode) {
+            if(!isEditMode()) {
                 alert("Activa el modo edición para cambiar configuraciones.");
                 return;
             }
@@ -1784,6 +2470,7 @@
             const user = db.users[db.current];
             const SHIFTS = user.config;
             
+            // Guardar configuración de turnos
             Object.keys(SHIFTS).forEach(id => {
                 const labelInput = document.getElementById(`set-label-${id}`);
                 const catInput = document.getElementById(`set-cat-${id}`);
@@ -1795,6 +2482,27 @@
                 if(inInput) SHIFTS[id].in = inInput.value;
                 if(outInput) SHIFTS[id].out = outInput.value;
             });
+            
+            // Guardar configuración de perfil
+            user.profile.fullName = document.getElementById('userFullName').value;
+            user.profile.location = document.getElementById('userLocation').value;
+            user.profile.considerNational = document.getElementById('considerNational').checked;
+            user.profile.considerLocal = document.getElementById('considerLocal').checked;
+            user.profile.considerRegional = document.getElementById('considerRegional').checked;
+            user.profile.considerSpecial = document.getElementById('considerSpecial').checked;
+            
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            render(); 
+            alert("Configuración de perfil guardada correctamente");
+        }
+
+        function saveSecuritySettings() {
+            if(!isEditMode()) {
+                alert("Activa el modo edición para cambiar configuraciones.");
+                return;
+            }
+            
+            const user = db.users[db.current];
             
             const newPin = document.getElementById('changePinInput').value;
             const confirmPin = document.getElementById('confirmPinInput').value;
@@ -1812,13 +2520,13 @@
             }
             
             localStorage.setItem('shifter_v18', JSON.stringify(db));
-            render(); 
-            alert("Configuración guardada correctamente");
+            alert("Configuración de seguridad guardada correctamente");
         }
 
         function createNewUser() {
             const name = document.getElementById('newUserName').value.trim().toUpperCase();
             const pin = document.getElementById('newUserPin').value;
+            const location = document.getElementById('newUserLocation').value.trim() || 'San Salvador';
             
             if(!name || name.length < 2) {
                 alert("El nombre debe tener al menos 2 caracteres");
@@ -1838,6 +2546,16 @@
             db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
             db.users[name].pin = pin; 
             db.users[name].data = {}; 
+            db.users[name].editLocked = false;
+            db.users[name].profile = {
+                fullName: name,
+                location: location,
+                considerNational: true,
+                considerLocal: true,
+                considerRegional: false,
+                considerSpecial: false
+            };
+            
             db.current = name;
             
             localStorage.setItem('shifter_v18', JSON.stringify(db));
@@ -1851,16 +2569,9 @@
 
         function switchUser() { 
             db.current = document.getElementById('userSelect').value; 
-            isEditMode = true; // Mantener modo edición activo al cambiar usuario
             updateUserInitial();
             render(); 
-            
-            // Actualizar interfaz para mostrar modo edición activo
-            document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
-            document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
-            document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
-            document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
-            updateSettingsLock();
+            updateUIEditMode(); // Actualizar interfaz según estado de edición del nuevo usuario
         }
         
         function updateUserDropdown() { 
@@ -1872,12 +2583,14 @@
 
         function closeModal() { 
             document.getElementById('modal').classList.remove('active'); 
+            document.getElementById('holidayInfoPanel').classList.add('hidden');
         }
         
         function closeUserModal() {
             document.getElementById('userModal').classList.remove('active');
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserPin').value = '';
+            document.getElementById('newUserLocation').value = '';
         }
         
         function openUserModal() { 
@@ -1905,8 +2618,8 @@
             document.getElementById('tab-' + v).classList.add('tab-active');
             
             if(v === 'settings') {
-                updateSettingsLock();
-                if(isEditMode) {
+                updateUIEditMode();
+                if(isEditMode()) {
                     showConfigTab('turnos');
                 }
             }
