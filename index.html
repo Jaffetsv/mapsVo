@@ -1,95 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>DELSUR MAPS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #d4eec9;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      padding-top: 1rem;
-    }
-    header img {
-      max-height: 110px;
-    }
-    h1 {
-      color: #1d522f;
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 1rem 0;
-    }
-    .menu {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.2rem;
-      margin: 2rem auto;
-      max-width: 420px;
-    }
-    .menu a {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.1rem;
-      width: 90%;
-      max-width: 420px;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
-      justify-content: flex-start;
-    }
-    .menu a img {
-      height: 24px;
-    }
-    .contrato {
-      background: #ffffff;
-      border: 2px solid #1a56db;
-      color: #1a56db;
-    }
-    .placa {
-      background: #ffffff;
-      border: 2px solid #19703a;
-      color: #19703a;
-    }
-    .ubicacion {
-      background: #1a56db;
-      border: 2px solid #1a56db;
-      color: white;
-    }
-    .menu a:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shifter Web Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #1a1c23; color: white; font-family: sans-serif; touch-action: manipulation; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #374151; border: 1px solid #374151; }
+        .day-cell { background-color: #d1d5db; height: 80px; position: relative; color: #1f2937; padding: 2px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+        .day-cell.other-month { background-color: #4b5563; color: #9ca3af; }
+        .day-header { background-color: #1f2937; color: #9ca3af; text-align: center; padding: 5px 0; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        
+        /* Colores de los turnos según tus capturas */
+        .shift-Mañana { background-color: #fef9c3 !important; }
+        .shift-Tarde { background-color: #fbcfe8 !important; }
+        .shift-Noche { background-color: #99f6e4 !important; }
+        .shift-Mixto { background-color: #e9d5ff !important; }
+        .shift-Libre { background-color: #dcfce7 !important; }
+        .shift-Vacaciones { background-color: #fed7aa !important; }
+        .shift-Cumple { background-color: #bfdbfe !important; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; }
+        .modal.active { display: flex; }
+        .shift-btn { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 8px; font-weight: bold; color: #374151; text-align: center; }
+    </style>
 </head>
 <body>
-  <header style="background:#d4eec9;">
-    <img src="logo.png" alt="DELSUR MAPS">
-    <h1>Menú Principal</h1>
-  </header>
 
-  <div class="menu">
-    <a class="contrato" href="contrato.html">
-      <img src="https://cdn-icons-png.flaticon.com/512/281/281760.png" alt="Contrato">
-      Búsqueda por Contrato
-    </a>
-    <a class="placa" href="placa.html">
-      🗼 Búsqueda por Placa
-    </a>
-    <a class="ubicacion" href="ubicacion.html">
-      <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Ubicación">
-      Búsqueda por Ubicación
-    </a>
-  </div>
+    <div class="p-4 flex justify-between items-center bg-[#1f2937] border-b border-gray-700">
+        <h1 id="currentMonth" class="text-lg font-bold uppercase tracking-widest">MARZO 2026</h1>
+        <div class="flex gap-4">
+            <button onclick="changeMonth(-1)" class="text-xl">❮</button>
+            <button onclick="changeMonth(1)" class="text-xl">❯</button>
+        </div>
+    </div>
+
+    <div class="calendar-grid">
+        <div class="day-header">Dom</div><div class="day-header">Lun</div><div class="day-header">Mar</div>
+        <div class="day-header">Mié</div><div class="day-header">Jue</div><div class="day-header">Vie</div>
+        <div class="day-header">Sáb</div>
+    </div>
+    <div id="calendarDays" class="calendar-grid"></div>
+
+    <div id="shiftModal" class="modal">
+        <div class="bg-[#2d333b] w-11/12 max-w-sm rounded-xl overflow-hidden shadow-2xl">
+            <div class="bg-red-600 text-white text-center py-2 font-bold uppercase tracking-tighter">Añadir Turno</div>
+            <div class="p-4" id="shiftOptions">
+                <div onclick="setShift('Mañana')" class="shift-btn shift-Mañana">Mañana <br><span class="text-[10px] font-normal">(8:00 a.m. - 2:00 p.m.)</span></div>
+                <div onclick="setShift('Tarde')" class="shift-btn shift-Tarde">Tarde <br><span class="text-[10px] font-normal">(2:00 p.m. - 9:00 p.m.)</span></div>
+                <div onclick="setShift('Noche')" class="shift-btn shift-Noche">Noche <br><span class="text-[10px] font-normal">(9:00 p.m. - 7:00 a.m.)</span></div>
+                <div onclick="setShift('Mixto')" class="shift-btn shift-Mixto">Mañana / Tarde <br><span class="text-[10px] font-normal">(10:00 a.m. - 2:00 p.m. / 4:00 - 8:00)</span></div>
+                <div onclick="setShift('Libre')" class="shift-btn shift-Libre">Día libre</div>
+                <div onclick="setShift('Vacaciones')" class="shift-btn shift-Vacaciones">Vacaciones</div>
+                <button onclick="closeModal()" class="w-full mt-2 p-3 bg-rose-200 text-rose-800 rounded-full font-bold">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let date = new Date(2026, 2, 1); // Marzo 2026 como en tus capturas
+        let selectedDayKey = null;
+        let shifts = JSON.parse(localStorage.getItem('myShifts')) || {};
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarDays');
+            const monthLabel = document.getElementById('currentMonth');
+            grid.innerHTML = '';
+            
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            monthLabel.innerText = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(date);
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Celdas vacías mes anterior
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'day-cell other-month';
+                grid.appendChild(empty);
+            }
+
+            // Días del mes
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayKey = `${year}-${month}-${i}`;
+                const cell = document.createElement('div');
+                cell.className = `day-cell ${shifts[dayKey] ? 'shift-' + shifts[dayKey] : ''}`;
+                cell.innerHTML = `<span>${i}</span><div class="text-[10px] mt-2 text-center">${shifts[dayKey] || ''}</div>`;
+                cell.onclick = () => openModal(dayKey);
+                grid.appendChild(cell);
+            }
+        }
+
+        function openModal(key) {
+            selectedDayKey = key;
+            document.getElementById('shiftModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('shiftModal').classList.remove('active');
+        }
+
+        function setShift(type) {
+            shifts[selectedDayKey] = type;
+            localStorage.setItem('myShifts', JSON.stringify(shifts));
+            renderCalendar();
+            closeModal();
+        }
+
+        function changeMonth(dir) {
+            date.setMonth(date.getMonth() + dir);
+            renderCalendar();
+        }
+
+        renderCalendar();
+    </script>
 </body>
 </html>
