@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Shifter Pro v20</title>
-
+  <title>Shifter Pro v20 - Import/Export/Localidades</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+  
   <style>
     body { background:#f3f4f6; color:#111827; font-family:system-ui,-apple-system,sans-serif; -webkit-tap-highlight-color:transparent; }
     .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e5e7eb; border:1px solid #e5e7eb; }
@@ -18,16 +18,17 @@
     .day-off-month{ background:#f9fafb!important; opacity:.5; }
     .today{ border:2px solid #3b82f6!important; }
     .weekend{ background:#f8fafc!important; }
-
-    /* Colors */
+    
+    /* Turn colors */
     .bg-Mañana{ background:#ffff00!important; }
     .bg-Tarde{ background:#fbcfe8!important; }
     .bg-CENA{ background:#d8b4fe!important; }
     .bg-16hrs{ background:#bef264!important; }
     .bg-L{ background:#ffffff!important; }
     .bg-Vacaciones{ background:#fed7aa!important; }
-    .bg-Cumpleaños{ background:#fde68a!important; }
-
+    .bg-Cumpleaños{ background:#f9a8d4!important; }
+    .bg-Ausencia{ background:#d1d5db!important; }
+    
     .bg-azul{ background:#93c5fd!important; }
     .bg-rojo{ background:#fca5a5!important; }
     .bg-verde{ background:#86efac!important; }
@@ -40,39 +41,43 @@
     .bg-teal{ background:#5eead4!important; }
     .bg-indigo{ background:#a5b4fc!important; }
     .bg-gris{ background:#d1d5db!important; }
-
+    
     .shift-label{ flex:1; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; text-transform:uppercase; text-align:center; line-height:1.1; padding:4px; color:rgba(0,0,0,.8); }
     .note-text{ font-size:10px; position:absolute; bottom:4px; left:50%; transform:translateX(-50%); width:90%; text-align:center; color:#000; font-weight:900; background:rgba(255,255,255,.65); border-radius:6px; padding:1px 4px; border:1px solid rgba(0,0,0,.08); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
+    
     .view-section{ display:none; }
     .view-active{ display:block; }
-
+    
     .tab-btn{ flex:1; text-align:center; padding:14px; font-weight:900; font-size:11px; border-bottom:3px solid transparent; transition:.2s; }
     .tab-active{ border-bottom-color:#2563eb; color:#2563eb; background:#f8fafc; }
-
+    
     .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); align-items:center; justify-content:center; z-index:100; padding:15px; backdrop-filter:blur(4px); }
     .modal.active{ display:flex; }
-
+    
     select, input[type="time"], input[type="number"], input[type="text"], input[type="date"], input[type="file"], textarea{
       background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:10px; font-weight:800; font-size:13px; outline:none; transition:.15s;
     }
     select:focus, input:focus, textarea:focus{
       border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12);
     }
-
+    
     .shift-option{ transition:.15s; border-width:2px; border-color:transparent; padding:12px 8px; border-radius:12px; font-size:10px; font-weight:900; text-transform:uppercase; cursor:pointer; }
     .shift-option.selected{ border-color:#2563eb!important; box-shadow:0 6px 14px rgba(37,99,235,.22); transform:translateY(-1px); }
     .shift-option:not(.selected){ opacity:.75; }
     .shift-option:hover:not(.selected){ opacity:.95; transform:translateY(-1px); }
-
+    
+    .color-option{ width:30px; height:30px; border-radius:8px; cursor:pointer; border:2px solid transparent; transition:.15s; }
+    .color-option.selected{ border-color:#000; transform:scale(1.08); box-shadow:0 6px 10px rgba(0,0,0,.18); }
+    
     .config-tab{ flex:1; text-align:center; padding:12px; font-weight:900; font-size:10px; border-bottom:3px solid transparent; transition:.2s; color:#9ca3af; }
     .config-tab.active{ border-bottom-color:#2563eb; color:#2563eb; background:#f8fafc; }
-
+    
     .holiday-indicator{
       position:absolute; top:0; left:0; font-size:8px; font-weight:900; color:#dc2626;
       background:rgba(254,226,226,.9); padding:1px 4px; border-bottom-right-radius:8px; z-index:20;
     }
-
+    
+    /* Fix dropdown "blank" issue */
     #userSelect{
       background:rgba(255,255,255,.12)!important;
       color:#fff!important;
@@ -82,11 +87,28 @@
       max-width:240px;
     }
     #userSelect option{ color:#111827; background:#fff; font-weight:800; }
+    
+    /* Mixto note in calendar */
+    .mixto-top-note{ font-size:8px; position:absolute; top:40px; left:50%; transform:translateX(-50%); width:90%; text-align:center; color:#000; font-weight:900; background:rgba(255,255,255,.65); border-radius:4px; padding:1px 3px; border:1px solid rgba(0,0,0,.08); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mixto-bottom-note{ font-size:8px; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); width:90%; text-align:center; color:#000; font-weight:900; background:rgba(255,255,255,.65); border-radius:4px; padding:1px 3px; border:1px solid rgba(0,0,0,.08); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+      .day-cell { height: 100px; }
+      .note-text { font-size: 8px; bottom: 2px; }
+      .mixto-top-note, .mixto-bottom-note { font-size: 7px; }
+      .shift-label { font-size: 9px; padding: 2px; }
+    }
+    
+    @media (min-width: 1024px) {
+      .calendar-grid { grid-template-columns: repeat(7, 1fr); }
+    }
   </style>
 </head>
 
 <body>
 
+<!-- Top bar -->
 <div class="bg-[#1e293b] text-white p-4 sticky top-0 z-50 shadow-lg">
   <div class="flex justify-between items-center mb-4">
     <div class="flex items-center gap-3">
@@ -108,6 +130,7 @@
     </div>
   </div>
 
+  <!-- Month/year -->
   <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-2 shadow-inner">
     <button onclick="changeMonth(-1)" class="p-3 hover:bg-white/10 rounded-full transition-colors">
       <span class="text-xl font-bold">‹</span>
@@ -131,12 +154,14 @@
   </div>
 </div>
 
+<!-- Tabs -->
 <div class="flex bg-white shadow-sm sticky top-[160px] z-40 border-b">
   <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn tab-active">📅 Calendario</button>
   <button onclick="showView('summary')" id="tab-summary" class="tab-btn">📊 Resumen</button>
   <button onclick="showView('settings')" id="tab-settings" class="tab-btn">⚙️ Ajustes</button>
 </div>
 
+<!-- Calendar -->
 <div id="view-calendar" class="view-section view-active">
   <div class="grid grid-cols-7 text-center text-[11px] font-black py-3 bg-gradient-to-r from-blue-50 to-gray-50 text-gray-600 border-b">
     <div class="text-blue-600 font-black">LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div>
@@ -145,23 +170,15 @@
   <div id="calendar" class="calendar-grid"></div>
 </div>
 
-<!-- SUMMARY (dinámico por categorías) -->
+<!-- Summary -->
 <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen">
   <div class="space-y-4 md:space-y-6">
-    <div class="bg-white p-4 rounded-3xl shadow-sm border">
-      <div class="flex items-center justify-between">
-        <h3 class="text-[12px] font-black text-gray-600 uppercase">Resumen por categorías</h3>
-        <span id="profile-loc" class="text-[11px] font-black text-gray-800"></span>
-      </div>
-      <p class="text-[11px] text-gray-500 font-bold mt-1">
-        * Calculado según la categoría definida en cada turno del perfil.
-      </p>
+    <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+      <!-- Las categorías se generarán dinámicamente aquí -->
     </div>
 
-    <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-
     <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 rounded-3xl text-white text-center shadow-xl">
-      <p class="text-xs font-black uppercase opacity-90 mb-2">Días de Descanso (según calendario)</p>
+      <p class="text-xs font-black uppercase opacity-90 mb-2">Días de Descanso</p>
       <h2 id="total-off" class="text-5xl font-black mb-3">0</h2>
       <div class="grid grid-cols-4 gap-2 text-[10px] font-black">
         <div class="bg-white/20 p-2 rounded-xl"><div>Libres</div><div id="free-days" class="text-lg font-black">0</div></div>
@@ -170,13 +187,14 @@
         <div class="bg-white/20 p-2 rounded-xl"><div>Asuetos Trab.</div><div id="holiday-worked" class="text-lg font-black">0</div></div>
       </div>
       <p class="text-[10px] mt-3 font-bold opacity-90">
-        * Asueto laborado solo cuenta si el asueto aplica a la localidad del perfil (o si es General).
+        * Asueto laborado solo cuenta si aplica a la localidad del perfil (o si el asueto es General).
       </p>
     </div>
 
     <div class="bg-white p-4 rounded-3xl shadow-sm">
-      <h3 class="text-[12px] font-black text-gray-600 uppercase mb-3">📌 Resumen del Mes</h3>
+      <h3 class="text-[12px] font-black text-gray-600 uppercase mb-3">📈 Resumen del Mes</h3>
       <div class="space-y-2">
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Localidad perfil:</span><span id="profile-loc" class="font-black text-gray-900">San Salvador</span></div>
         <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Días trabajados:</span><span id="worked-days" class="font-black text-gray-900">0</span></div>
         <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Promedio diario:</span><span id="avg-hours" class="font-black text-gray-900">0.0h</span></div>
         <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Total días mes:</span><span id="total-days" class="font-black text-gray-900">30</span></div>
@@ -186,7 +204,7 @@
   </div>
 </div>
 
-<!-- SETTINGS -->
+<!-- Settings -->
 <div id="view-settings" class="view-section bg-white min-h-screen">
   <div class="flex bg-gray-50 border-b">
     <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab active">🎨 Turnos</button>
@@ -202,14 +220,9 @@
     <div id="tab-turnos" class="config-tab-content">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-[14px] font-black text-gray-600 uppercase">🎨 Configurar Turnos</h3>
-        <div class="flex gap-2">
-          <button onclick="toggleShowAllShifts()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-xl text-[10px] font-black uppercase">
-            👁️ <span id="showAllShiftsLabel">Mostrar todos</span>
-          </button>
-          <button onclick="saveShiftSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
-            💾 Guardar cambios
-          </button>
-        </div>
+        <button onclick="saveShiftSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+          💾 Guardar cambios
+        </button>
       </div>
 
       <div class="bg-blue-50 border border-blue-100 rounded-2xl p-3 text-[11px] font-bold text-blue-900 mb-4">
@@ -238,21 +251,31 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <div>
-            <label class="text-[11px] font-bold text-gray-600 block mb-2">Color</label>
-            <select id="newShiftColor" class="w-full bg-white border-amber-200 focus:border-amber-400">
-              <option>Mañana</option><option>Tarde</option><option>CENA</option><option>16hrs</option>
-              <option>Cumpleaños</option><option>L</option><option>Vacaciones</option>
-              <option>azul</option><option>rojo</option><option>verde</option><option>naranja</option><option>rosa</option><option>cian</option>
-              <option>morado</option><option>lima</option><option>ambar</option><option>teal</option><option>indigo</option><option>gris</option>
-            </select>
+        <div class="mb-4">
+          <label class="text-[11px] font-bold text-gray-600 block mb-2">Color</label>
+          <div class="grid grid-cols-6 gap-2 p-3 bg-white rounded-xl">
+            <div class="color-option bg-Mañana" onclick="selectColor('Mañana', event)"></div>
+            <div class="color-option bg-Tarde" onclick="selectColor('Tarde', event)"></div>
+            <div class="color-option bg-CENA" onclick="selectColor('CENA', event)"></div>
+            <div class="color-option bg-16hrs" onclick="selectColor('16hrs', event)"></div>
+            <div class="color-option bg-Vacaciones" onclick="selectColor('Vacaciones', event)"></div>
+            <div class="color-option bg-Cumpleaños" onclick="selectColor('Cumpleaños', event)"></div>
+            <div class="color-option bg-Ausencia" onclick="selectColor('Ausencia', event)"></div>
+            <div class="color-option bg-L" onclick="selectColor('L', event)"></div>
+            <div class="color-option bg-azul" onclick="selectColor('azul', event)"></div>
+            <div class="color-option bg-rojo" onclick="selectColor('rojo', event)"></div>
+            <div class="color-option bg-verde" onclick="selectColor('verde', event)"></div>
+            <div class="color-option bg-naranja" onclick="selectColor('naranja', event)"></div>
+            <div class="color-option bg-rosa" onclick="selectColor('rosa', event)"></div>
+            <div class="color-option bg-cian" onclick="selectColor('cian', event)"></div>
+            <div class="color-option bg-morado" onclick="selectColor('morado', event)"></div>
+            <div class="color-option bg-lima" onclick="selectColor('lima', event)"></div>
+            <div class="color-option bg-ambar" onclick="selectColor('ambar', event)"></div>
+            <div class="color-option bg-teal" onclick="selectColor('teal', event)"></div>
+            <div class="color-option bg-indigo" onclick="selectColor('indigo', event)"></div>
+            <div class="color-option bg-gris" onclick="selectColor('gris', event)"></div>
           </div>
-          <div class="flex items-end gap-2">
-            <label class="flex items-center gap-2 text-[11px] font-black text-gray-700">
-              <input type="checkbox" id="newShiftVisible" checked> Visible en lista
-            </label>
-          </div>
+          <input type="hidden" id="newShiftColor" value="Mañana">
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -290,7 +313,12 @@
           </div>
           <div>
             <label class="text-[11px] font-bold text-gray-600 block mb-2">Icono</label>
-            <input type="text" id="newCategoryIcon" placeholder="Ej: 🛡️" class="w-full bg-white border-green-200 focus:border-green-400">
+            <select id="newCategoryIcon" class="w-full bg-white border-green-200 focus:border-green-400">
+              <option value="🏥">🏥</option><option value="🌙">🌙</option><option value="😴">😴</option><option value="📋">📋</option>
+              <option value="🛡️">🛡️</option><option value="⭐">⭐</option><option value="🔧">🔧</option><option value="🚑">🚑</option>
+              <option value="💊">💊</option><option value="🩺">🩺</option><option value="🏨">🏨</option><option value="📌">📌</option>
+              <option value="🎂">🎂</option><option value="❌">❌</option>
+            </select>
           </div>
         </div>
         <button onclick="addNewCategory()" class="w-full p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-green-600 hover:to-emerald-600">
@@ -299,7 +327,7 @@
       </div>
 
       <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-        <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Categorías Existentes (todas editables)</h4>
+        <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Categorías Existentes (editables)</h4>
         <div id="categories-container" class="max-h-[420px] overflow-y-auto"></div>
       </div>
     </div>
@@ -319,7 +347,7 @@
           <input type="text" id="newLocalityName" placeholder="Ej: Santa Ana" class="flex-1 bg-white border-sky-200 focus:border-sky-400">
           <button onclick="addLocality()" class="px-5 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black uppercase text-[11px]">➕ Agregar</button>
         </div>
-        <p class="text-[10px] mt-2 font-bold text-gray-500">* “General” aplica para todos y se reserva.</p>
+        <p class="text-[10px] mt-2 font-bold text-gray-500">* "General" se reserva para asuetos válidos para todos.</p>
       </div>
 
       <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
@@ -331,8 +359,8 @@
     <!-- Asuetos -->
     <div id="tab-asuetos" class="config-tab-content hidden">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-[14px] font-black text-gray-600 uppercase">🎉 Asuetos (anuales)</h3>
-        <button onclick="saveHolidayRules()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+        <h3 class="text-[14px] font-black text-gray-600 uppercase">🎉 Asuetos</h3>
+        <button onclick="saveHolidays()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
           💾 Guardar cambios
         </button>
       </div>
@@ -341,12 +369,12 @@
         <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nuevo Asueto</h4>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
           <div>
-            <label class="text-[11px] font-bold text-gray-600 block mb-2">Mes/Día</label>
-            <input type="text" id="newHolidayMD" placeholder="Ej: 08-05" class="w-full bg-white border-pink-200 focus:border-pink-400">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
+            <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400">
           </div>
           <div class="md:col-span-2">
             <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre</label>
-            <input type="text" id="newHolidayName" placeholder="Ej: Fiestas Patronales" class="w-full bg-white border-pink-200 focus:border-pink-400">
+            <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" class="w-full bg-white border-pink-200 focus:border-pink-400">
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
@@ -355,11 +383,11 @@
             <select id="newHolidayLocation" class="w-full bg-white border-pink-200 focus:border-pink-400"></select>
           </div>
           <div class="bg-white rounded-2xl border border-pink-200 p-3 text-[10px] font-bold text-gray-600 flex items-center">
-            Para todos: selecciona <span class="mx-1 font-black text-red-600">General</span>.
+            Si quieres asueto para todos: selecciona <span class="mx-1 font-black text-red-600">General</span>.
           </div>
         </div>
 
-        <button onclick="addHolidayRule()" class="w-full p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600">
+        <button onclick="addNewHoliday()" class="w-full p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600">
           ➕ Agregar Asueto
         </button>
       </div>
@@ -390,7 +418,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <div id="settings-locked" class="p-8 text-center hidden">
@@ -403,90 +430,105 @@
   </div>
 </div>
 
-<!-- MODAL DÍA -->
+<!-- Modal día -->
 <div id="modal" class="modal">
-  <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
+  <div class="bg-white w-full max-w-md md:max-w-lg rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-5 font-black text-sm uppercase tracking-widest">
       <div>📅 Configurar Día</div>
       <div id="modalDate" class="text-[10px] font-normal opacity-90 mt-1"></div>
     </div>
-    <div class="p-6 overflow-y-auto max-h-[80vh]">
-
-      <!-- ASUETO INFO -->
-      <div id="holidayBox" class="hidden mb-4 p-4 rounded-2xl border border-red-100 bg-red-50">
-        <div class="flex items-center justify-between">
-          <div class="font-black text-red-700 text-[11px] uppercase">Asueto</div>
-          <div id="holidayApplies" class="text-[10px] font-black px-2 py-1 rounded-full"></div>
+    <div class="p-4 md:p-6 overflow-y-auto max-h-[80vh]">
+      <!-- Holiday info -->
+      <div id="holidayInfo" class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 p-3 rounded-lg mb-4 hidden">
+        <div class="flex items-center gap-2">
+          <span class="text-yellow-600 text-lg">🎉</span>
+          <div class="flex-1">
+            <div id="holidayName" class="text-[12px] font-black text-yellow-800"></div>
+            <div id="holidayLocation" class="text-[10px] font-bold text-yellow-600"></div>
+          </div>
         </div>
-        <div id="holidayName" class="mt-2 font-black text-gray-900"></div>
-        <div id="holidayLoc" class="text-[11px] font-bold text-gray-600"></div>
       </div>
-
+      
       <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-6">
         <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
         <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
       </div>
 
-      <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-6"></div>
+      <div id="sec-simple" class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6"></div>
 
       <div id="sec-mixto" class="hidden space-y-4 mb-6">
         <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-[24px] border border-gray-200">
           <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Superior</p>
-          <div id="mix-t" class="grid grid-cols-3 gap-2"></div>
+          <div id="mix-t" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
         </div>
         <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-[24px] border border-gray-200">
           <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Inferior</p>
-          <div id="mix-b" class="grid grid-cols-3 gap-2"></div>
+          <div id="mix-b" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
         </div>
       </div>
 
-      <div id="time-simple" class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100 mb-6">
-        <div class="flex items-center justify-between">
+      <!-- Horario SIMPLE -->
+      <div id="time-simple" class="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 md:p-5 rounded-[24px] space-y-4 border border-blue-100 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <span class="text-[11px] font-black uppercase text-blue-900">⏰ Horario:</span>
           <div class="flex items-center gap-2">
-            <input type="time" id="tIn" onchange="autoCalc(); maybeAutoNoteSimple();" class="bg-white border-blue-200 focus:border-blue-400">
+            <input type="time" id="tIn" onchange="autoCalc(); maybeAutoNoteSimple();" class="w-full md:w-32 bg-white border-blue-200 focus:border-blue-400">
             <span class="font-black text-blue-300">→</span>
-            <input type="time" id="tOut" onchange="autoCalc(); maybeAutoNoteSimple();" class="bg-white border-blue-200 focus:border-blue-400">
+            <input type="time" id="tOut" onchange="autoCalc(); maybeAutoNoteSimple();" class="w-full md:w-32 bg-white border-blue-200 focus:border-blue-400">
           </div>
         </div>
-        <div class="flex items-center justify-between border-t border-blue-200 pt-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-t border-blue-200 pt-3 gap-2">
           <span class="text-[11px] font-black uppercase text-blue-900">📊 Total Horas:</span>
-          <input type="number" id="tHrs" onchange="manualCalc()" class="w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
+          <input type="number" id="tHrs" onchange="manualCalc()" class="w-full md:w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
         </div>
       </div>
 
+      <!-- Horario MIXTO -->
       <div id="time-mixto" class="hidden space-y-4 mb-6">
-        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 md:p-5 rounded-[24px] space-y-4 border border-blue-100">
           <p class="text-[11px] font-black uppercase text-blue-900 text-center">⏰ Horario Superior</p>
           <div class="flex items-center gap-2 justify-center">
-            <input type="time" id="tInTop" onchange="autoCalcMixtoTop(); maybeAutoNoteMixto();" class="w-32 bg-white border-blue-200 focus:border-blue-400">
+            <input type="time" id="tInTop" onchange="autoCalcMixtoTop(); maybeAutoNoteMixto();" class="w-full md:w-32 bg-white border-blue-200 focus:border-blue-400">
             <span class="font-black text-blue-300">→</span>
-            <input type="time" id="tOutTop" onchange="autoCalcMixtoTop(); maybeAutoNoteMixto();" class="w-32 bg-white border-blue-200 focus:border-blue-400">
+            <input type="time" id="tOutTop" onchange="autoCalcMixtoTop(); maybeAutoNoteMixto();" class="w-full md:w-32 bg-white border-blue-200 focus:border-blue-400">
           </div>
-          <div class="flex items-center justify-between border-t border-blue-200 pt-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between border-t border-blue-200 pt-3 gap-2">
             <span class="text-[11px] font-black uppercase text-blue-900">Horas Superior:</span>
-            <input type="number" id="tHrsTop" onchange="manualCalcMixtoTop()" class="w-20 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
+            <input type="number" id="tHrsTop" onchange="manualCalcMixtoTop()" class="w-full md:w-20 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
           </div>
         </div>
-        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-[24px] space-y-4 border border-purple-100">
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-4 md:p-5 rounded-[24px] space-y-4 border border-purple-100">
           <p class="text-[11px] font-black uppercase text-purple-900 text-center">⏰ Horario Inferior</p>
           <div class="flex items-center gap-2 justify-center">
-            <input type="time" id="tInBottom" onchange="autoCalcMixtoBottom(); maybeAutoNoteMixto();" class="w-32 bg-white border-purple-200 focus:border-purple-400">
+            <input type="time" id="tInBottom" onchange="autoCalcMixtoBottom(); maybeAutoNoteMixto();" class="w-full md:w-32 bg-white border-purple-200 focus:border-purple-400">
             <span class="font-black text-purple-300">→</span>
-            <input type="time" id="tOutBottom" onchange="autoCalcMixtoBottom(); maybeAutoNoteMixto();" class="w-32 bg-white border-purple-200 focus:border-purple-400">
+            <input type="time" id="tOutBottom" onchange="autoCalcMixtoBottom(); maybeAutoNoteMixto();" class="w-full md:w-32 bg-white border-purple-200 focus:border-purple-400">
           </div>
-          <div class="flex items-center justify-between border-t border-purple-200 pt-3">
+          <div class="flex flex-col md:flex-row md:items-center justify-between border-t border-purple-200 pt-3 gap-2">
             <span class="text-[11px] font-black uppercase text-purple-900">Horas Inferior:</span>
-            <input type="number" id="tHrsBottom" onchange="manualCalcMixtoBottom()" class="w-20 text-center text-purple-700 bg-white shadow-inner border-purple-200" step="0.5">
+            <input type="number" id="tHrsBottom" onchange="manualCalcMixtoBottom()" class="w-full md:w-20 text-center text-purple-700 bg-white shadow-inner border-purple-200" step="0.5">
           </div>
         </div>
-        <div class="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100">
+        <div class="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100 gap-2">
           <span class="text-[11px] font-black uppercase text-emerald-900">📊 Total Horas:</span>
-          <input type="number" id="tHrsMixto" class="w-24 text-center text-emerald-700 bg-white shadow-inner border-emerald-200" step="0.5" readonly>
+          <input type="number" id="tHrsMixto" class="w-full md:w-24 text-center text-emerald-700 bg-white shadow-inner border-emerald-200" step="0.5" readonly>
+        </div>
+        
+        <!-- Comentarios separados para mixto -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">📝 Comentario Superior</p>
+            <textarea id="notaTop" placeholder="Ej: 06:00-14:00" class="w-full p-3 bg-gray-100 border-none rounded-[16px] text-sm font-bold h-16 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+          <div>
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">📝 Comentario Inferior</p>
+            <textarea id="notaBottom" placeholder="Ej: 14:00-22:00" class="w-full p-3 bg-gray-100 border-none rounded-[16px] text-sm font-bold h-16 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
         </div>
       </div>
 
-      <div class="mt-6">
+      <!-- Comentario SIMPLE -->
+      <div id="note-simple" class="mt-6">
         <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">📝 Comentario (editable)</p>
         <textarea id="nota" placeholder="Ej: 06:00-14:00 | Doble turno | etc." class="w-full p-4 bg-gray-100 border-none rounded-[24px] text-sm font-bold h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         <p class="text-[10px] text-gray-500 mt-2 font-bold text-center">
@@ -494,23 +536,23 @@
         </p>
       </div>
 
-      <div class="flex gap-4 mt-8">
-        <button onclick="closeModal()" class="flex-1 p-5 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-3xl font-black text-[11px] uppercase">❌ Cancelar</button>
-        <button onclick="saveDay()" class="flex-1 p-5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-3xl font-black text-[11px] uppercase shadow-lg">✅ Guardar</button>
+      <div class="flex flex-col md:flex-row gap-3 md:gap-4 mt-8">
+        <button onclick="closeModal()" class="flex-1 p-4 md:p-5 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-3xl font-black text-[11px] uppercase">❌ Cancelar</button>
+        <button onclick="saveDay()" class="flex-1 p-4 md:p-5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-3xl font-black text-[11px] uppercase shadow-lg">✅ Guardar</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- IMPORT MODAL -->
+<!-- Modal Import -->
 <div id="importModal" class="modal">
-  <div class="bg-white w-full max-w-2xl rounded-[40px] p-8 shadow-2xl">
+  <div class="bg-white w-full max-w-2xl rounded-[40px] p-6 md:p-8 shadow-2xl">
     <div class="w-16 h-16 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 mx-auto mb-4 flex items-center justify-center">
       <span class="text-white text-2xl font-black">📥</span>
     </div>
     <h3 class="font-black text-center uppercase text-lg mb-2">Importar Excel</h3>
     <p class="text-[11px] text-gray-500 font-bold text-center mb-6">
-      Detecta usuarios y días automáticamente (con heurística). Selecciona cuáles importar.
+      Detecta usuarios y permite seleccionar cuáles importar.
     </p>
 
     <div class="space-y-4">
@@ -521,18 +563,18 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes (fallback)</label>
+          <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes (si no detecta)</label>
           <select id="importMonth" class="w-full bg-gray-50 border-gray-200"></select>
         </div>
         <div>
-          <label class="text-[12px] font-bold text-gray-600 block mb-2">Año (fallback)</label>
+          <label class="text-[12px] font-bold text-gray-600 block mb-2">Año (si no detecta)</label>
           <select id="importYear" class="w-full bg-gray-50 border-gray-200"></select>
         </div>
       </div>
 
       <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
         <p class="text-[11px] font-black text-gray-600 uppercase mb-2">Modo</p>
-        <div class="flex gap-3">
+        <div class="flex flex-col md:flex-row gap-3">
           <label class="flex-1 cursor-pointer text-[11px] font-bold text-gray-700">
             <input type="radio" name="importMode" value="replace" checked> Reemplazar mes
           </label>
@@ -543,7 +585,7 @@
       </div>
 
       <div class="bg-white border border-gray-200 rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-2">
           <p class="text-[11px] font-black text-gray-600 uppercase">Usuarios detectados</p>
           <div class="flex gap-2">
             <button onclick="selectAllImportUsers(true)" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase">Todos</button>
@@ -551,15 +593,18 @@
           </div>
         </div>
         <div id="importUsersList" class="max-h-[220px] overflow-y-auto space-y-2 text-[11px] font-bold text-gray-700">
-          <div class="text-gray-400 font-bold">Adjunta un Excel y presiona “Analizar”.</div>
+          <div class="text-gray-400 font-bold">Adjunta un Excel y presiona "Analizar".</div>
         </div>
 
-        <div class="mt-3 flex gap-2">
+        <div class="mt-3 flex flex-col md:flex-row gap-2">
           <button onclick="analyzeImportFile()" class="flex-1 p-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black uppercase text-[11px]">
             🔎 Analizar
           </button>
           <button onclick="runImportSelected()" class="flex-1 p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase text-[11px]">
-            🚀 Importar seleccionados
+            🚀 Importar Seleccionados
+          </button>
+          <button onclick="closeImportModalAndRefresh()" class="flex-1 p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase text-[11px]">
+            ✅ Terminar y Volver
           </button>
         </div>
 
@@ -573,15 +618,15 @@
   </div>
 </div>
 
-<!-- EXPORT MODAL -->
+<!-- Modal Export -->
 <div id="exportModal" class="modal">
-  <div class="bg-white w-full max-w-xl rounded-[40px] p-8 shadow-2xl">
+  <div class="bg-white w-full max-w-xl rounded-[40px] p-6 md:p-8 shadow-2xl">
     <div class="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 mx-auto mb-4 flex items-center justify-content-center">
       <span class="text-white text-2xl font-black">📋</span>
     </div>
     <h3 class="font-black text-center uppercase text-lg mb-2">Exportar</h3>
     <p class="text-[11px] text-gray-500 font-bold text-center mb-6">
-      Uno, varios o todos. Si es “todos”, se genera 1 imagen por perfil.
+      Puedes exportar uno, varios o todos. Si es "todos", se genera 1 imagen por perfil.
     </p>
 
     <div class="space-y-4">
@@ -606,7 +651,7 @@
       </div>
 
       <div id="exportUsersBox" class="bg-white border border-gray-200 rounded-2xl p-4 hidden">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-2">
           <p class="text-[11px] font-black text-gray-600 uppercase">Seleccionar perfiles</p>
           <div class="flex gap-2">
             <button onclick="selectAllExportUsers(true)" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase">Todos</button>
@@ -627,10 +672,10 @@
   </div>
 </div>
 
-<!-- PROFILES MODAL -->
+<!-- Modal Profiles -->
 <div id="profilesModal" class="modal">
-  <div class="bg-white w-full max-w-3xl rounded-[40px] p-8 shadow-2xl">
-    <div class="flex items-center justify-between mb-4">
+  <div class="bg-white w-full max-w-3xl rounded-[40px] p-6 md:p-8 shadow-2xl">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
       <div>
         <h3 class="font-black uppercase text-lg">👤 Gestión de Perfiles</h3>
         <p class="text-[11px] text-gray-500 font-bold">Crear, editar, asignar localidad o eliminar perfiles.</p>
@@ -655,7 +700,7 @@
       </div>
 
       <div class="bg-white border border-gray-200 rounded-3xl p-4">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-2">
           <h4 class="text-[12px] font-black text-gray-700 uppercase">Perfiles existentes</h4>
           <button onclick="renderProfilesList()" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase">Actualizar</button>
         </div>
@@ -666,97 +711,88 @@
 </div>
 
 <script>
-/* ============================ v20 DB ============================ */
-const ADMIN_UNIVERSAL_PIN = "120720"; // no visible en UI
-let showAllShifts = false;
-
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
-function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+/* =========================================================
+   DB v20
+========================================================= */
+const ADMIN_UNIVERSAL_PIN = '120720'; // Clave universal de admin
 
 let db = JSON.parse(localStorage.getItem('shifter_v20')) || {
   version: 20,
   current: 'ADMIN',
-  localities: ['General','San Salvador'],
-  // Holiday rules: annual (MM-DD)
-  holidayRules: [],
+  localities: ['General','San Salvador','Cojutepeque','Lourdes, Colón','La Libertad','Quezaltepeque','Rosario de la Paz','Zacatecoluca','San Vicente','Santa Tecla','San Juan Opico'],
+  holidays: {},
   categories: {
-    hosp: { name:'Hospital', icon:'🏥' },
-    sena: { name:'CENA', icon:'🌙' },
-    off:  { name:'Libre/Vacaciones', icon:'😴' },
-    admin:{ name:'Administrativo', icon:'📋' }
+    hosp: { name:'Hospital', icon:'🏥', color:'#3b82f6' },
+    sena: { name:'CENA', icon:'🌙', color:'#8b5cf6' },
+    off:  { name:'Libre', icon:'😴', color:'#10b981' },
+    admin:{ name:'Administrativo', icon:'📋', color:'#f59e0b' },
+    guardia:{ name:'Guardia', icon:'🛡️', color:'#ef4444' },
+    extra:{ name:'Extra', icon:'⭐', color:'#fbbf24' },
+    otro:{ name:'Otro', icon:'🔧', color:'#6b7280' },
+    ausencia:{ name:'Ausencia Injustificada', icon:'❌', color:'#dc2626' },
+    cumple:{ name:'Cumpleaños', icon:'🎂', color:'#ec4899' }
   },
   users: {
     ADMIN: {
       pin:'1234',
-      editLocked:false,     // default unlocked
+      editLocked:false,
       locality:'San Salvador',
       data:{},
       config:{
-        'Mañana':     { label:'Mañana', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00', visible:true },
-        'Tarde':      { label:'Tarde', color:'Tarde', cat:'hosp', in:'14:00', out:'22:00', visible:true },
-        '16hrs':      { label:'16hrs', color:'16hrs', cat:'hosp', in:'06:00', out:'22:00', visible:true },
-        'CENA':       { label:'CENA', color:'CENA', cat:'sena', in:'05:00', out:'17:00', visible:true },
-        'Cumpleaños': { label:'Cumpleaños', color:'Cumpleaños', cat:'off', in:'00:00', out:'00:00', visible:true },
-        'L':          { label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', visible:true },
-        'Vacaciones': { label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', visible:true }
+        'Mañana': { label:'Mañana', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00' },
+        'Tarde': { label:'Tarde', color:'Tarde', cat:'hosp', in:'14:00', out:'22:00' },
+        '16hrs': { label:'16hrs', color:'16hrs', cat:'hosp', in:'06:00', out:'22:00' },
+        'CENA': { label:'CENA', color:'CENA', cat:'sena', in:'05:00', out:'17:00' },
+        'Cumpleaños': { label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00' },
+        'L': { label:'L', color:'L', cat:'off', in:'00:00', out:'00:00' },
+        'Vacaciones': { label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00' },
+        'Ausencia': { label:'Ausencia', color:'Ausencia', cat:'ausencia', in:'00:00', out:'00:00' }
       }
     }
   }
 };
 
-/* ============================ Holidays full load ============================ */
-function ensureHolidayRulesLoaded(){
-  if(db.holidayRules && db.holidayRules.length>0) return;
+/* =========================================================
+   Import maps
+========================================================= */
+const IMPORT_ABSENCE_MAP = {
+  'C':  { key:'CAPACITACION', label:'Capacitación', color:'azul', cat:'admin', in:'00:00', out:'00:00', note:'CAPACITACIÓN' },
+  'I':  { key:'INCAPACIDAD', label:'Incapacidad', color:'rojo', cat:'off', in:'00:00', out:'00:00', note:'INCAPACIDAD' },
+  'V':  { key:'Vacaciones', label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', note:'VACACIONES' },
+  'L':  { key:'L', label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', note:'LIBRE' },
+  'PS': { key:'PERMISO_SINDICAL', label:'Permiso Sindical', color:'morado', cat:'admin', in:'00:00', out:'00:00', note:'PERMISO SINDICAL' },
+  'F':  { key:'AUSENCIA_INJUST', label:'Aus. Injust.', color:'Ausencia', cat:'ausencia', in:'00:00', out:'00:00', note:'AUSENCIA INJUSTIFICADA' },
+  'CU': { key:'Cumpleaños', label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00', note:'CUMPLEAÑOS' }
+};
 
-  const rules = [
-    {md:'01-01', name:'Año Nuevo', location:'General'},
-    {md:'01-20', name:'Fiestas de Cojutepeque', location:'Cojutepeque'},
-    {md:'02-10', name:'Fiesta de Lourdes Colón', location:'Lourdes, Colón'},
-    {md:'04-01', name:'Miércoles Santo (Semana Santa)', location:'General'},
-    {md:'04-02', name:'Jueves Santo (Semana Santa)', location:'General'},
-    {md:'04-03', name:'Viernes Santo (Semana Santa)', location:'General'},
-    {md:'04-04', name:'Sábado de Gloria (Semana Santa)', location:'General'},
-    {md:'05-01', name:'Día del Trabajo', location:'General'},
-    {md:'05-10', name:'Día de la Madre', location:'General'},
-    {md:'06-17', name:'Día del Padre', location:'General'},
-    {md:'08-03', name:'Día del Comercio', location:'General'},
-    {md:'08-04', name:'Fiestas Patronales (San Salvador)', location:'San Salvador'},
-    {md:'08-05', name:'Fiestas Patronales (San Salvador)', location:'San Salvador'},
-    {md:'08-06', name:'Día de El Salvador', location:'General'},
-    {md:'09-15', name:'Aniversario de Independencia', location:'General'},
-    {md:'10-02', name:'Víspera del día del Trabajador de la Industria Eléctrica', location:'General'},
-    {md:'10-03', name:'Día del Trabajador de la Industria Eléctrica', location:'General'},
-    {md:'11-02', name:'Día de los Difuntos', location:'General'},
-    {md:'12-08', name:'Fiestas de La Libertad', location:'La Libertad'},
-    {md:'12-19', name:'Fiestas Patronales', location:'Quezaltepeque y Rosario de la Paz'},
-    {md:'12-24', name:'Navidad', location:'General'},
-    {md:'12-25', name:'Navidad', location:'General'},
-    {md:'12-26', name:'Fiestas Patronales', location:'Zacatecoluca, San Vicente y Santa Tecla'},
-    {md:'12-27', name:'Fiestas de San Juan Opico', location:'San Juan Opico'},
-    {md:'12-31', name:'Fin de Año', location:'General'},
-  ];
+const IMPORT_SHIFT_CODE_MAP = {
+  '018': { key:'018', label:'018', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00', note:'06:00-14:00' },
+  '18':  { key:'018', label:'018', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00', note:'06:00-14:00' },
+  '020': { key:'020', label:'020', color:'Tarde', cat:'hosp', in:'14:00', out:'22:00', note:'14:00-22:00' },
+  '468': { key:'468', label:'468', color:'Tarde',  cat:'hosp', in:'14:00', out:'22:00', note:'14:00-22:00' },
+  '650': { key:'650', label:'650', color:'16hrs',  cat:'hosp', in:'06:00', out:'22:00', note:'06:00-22:00' }
+};
 
-  db.holidayRules = rules;
+/* =========================================================
+   Globals
+========================================================= */
+let current = new Date();
+let activeKey = "";
+let mode = "simple";
+let selS = "Mañana";
+let selT = "Mañana";
+let selB = "Tarde";
+let selectedColor = "Mañana";
 
-  // Ensure localities include all mentioned
-  rules.forEach(r=>{
-    const locs = String(r.location||'General').split(' y ').map(x=>x.trim()).filter(Boolean);
-    locs.forEach(l=>{
-      if(l.toUpperCase()==='GENERAL') return;
-      if(!db.localities.some(x=>x.trim().toUpperCase()===l.toUpperCase())) db.localities.push(l);
-    });
-  });
+let importContext = null;
 
-  // Ensure required
-  if(!db.localities.some(x=>x.trim().toUpperCase()==='GENERAL')) db.localities.unshift('General');
-  if(!db.localities.some(x=>x.trim().toUpperCase()==='SAN SALVADOR')) db.localities.push('San Salvador');
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-  saveDB();
-}
-
-/* ============================ Helpers ============================ */
+/* =========================================================
+   Helpers
+========================================================= */
 function saveDB(){ localStorage.setItem('shifter_v20', JSON.stringify(db)); }
+
 function isEditMode(){ return !db.users[db.current].editLocked; }
 
 function calculateHours(start, end){
@@ -766,41 +802,6 @@ function calculateHours(start, end){
   let diff = (h2 + m2/60) - (h1 + m1/60);
   if(diff < 0) diff += 24;
   return parseFloat(diff.toFixed(1));
-}
-
-function cssSafe(s){ return String(s).replace(/[^a-zA-Z0-9_-]/g,'_'); }
-function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-function escapeAttr(s){ return escapeHTML(s).replace(/"/g,'&quot;'); }
-
-function dayKey(y,m1,d){ return `${y}-${m1}-${d}`; } // m1 is 1-based
-function mdKey(m1,d){ return `${String(m1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-
-function holidayApplies(holidayLocation, userLocation){
-  const hl = (holidayLocation||'General').trim().toUpperCase();
-  const ul = (userLocation||'San Salvador').trim().toUpperCase();
-  if(hl === 'GENERAL') return true;
-  return hl === ul;
-}
-
-function getHolidayForDate(year, monthIndex0, day){
-  const md = mdKey(monthIndex0+1, day);
-  // if multiple rules same date, return array; we show first + count
-  const matches = (db.holidayRules||[]).filter(r=>String(r.md||'')===md);
-  return matches;
-}
-
-function countApplicableHolidaysInMonth(year, monthIndex0, userLocation){
-  const m1 = monthIndex0+1;
-  const daysInMonth = new Date(year, monthIndex0+1, 0).getDate();
-  let c=0;
-  for(let d=1; d<=daysInMonth; d++){
-    const rules = getHolidayForDate(year, monthIndex0, d);
-    if(rules.length===0) continue;
-    // count any rule that applies (General counts)
-    const appliesAny = rules.some(r => holidayApplies(r.location, userLocation));
-    if(appliesAny) c++;
-  }
-  return c;
 }
 
 function defaultNoteForShift(shiftKey){
@@ -818,33 +819,17 @@ function normalizeCode(v){
   s = s.replace(/\s+/g,' ').toUpperCase();
   if (s === 'LS') s='L';
   if (s === 'P S' || s === 'P/S') s='PS';
+  if (s === 'CU' || s === 'CUM') s='CU';
   return s;
 }
 
-/* ============================ Import maps (base) ============================ */
-const IMPORT_ABSENCE_MAP = {
-  'C':  { key:'CAPACITACION', label:'Capacitación', color:'azul', cat:'admin', in:'00:00', out:'00:00', note:'CAPACITACIÓN' },
-  'I':  { key:'INCAPACIDAD', label:'Incapacidad', color:'rojo', cat:'off', in:'00:00', out:'00:00', note:'INCAPACIDAD' },
-  'V':  { key:'Vacaciones', label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', note:'VACACIONES' },
-  'L':  { key:'L', label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', note:'LIBRE' },
-  'PS': { key:'PERMISO_SINDICAL', label:'Permiso Sindical', color:'morado', cat:'admin', in:'00:00', out:'00:00', note:'PERMISO SINDICAL' },
-  'F':  { key:'AUS_INJUST', label:'Aus. Injust.', color:'gris', cat:'off', in:'00:00', out:'00:00', note:'AUSENCIA INJUSTIFICADA' }
-};
-
-const IMPORT_SHIFT_CODE_MAP = {
-  '018': { key:'018', label:'018', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00', note:'06:00-14:00' },
-  '468': { key:'468', label:'468', color:'Tarde',  cat:'hosp', in:'14:00', out:'22:00', note:'14:00-22:00' },
-  '650': { key:'650', label:'650', color:'16hrs',  cat:'hosp', in:'06:00', out:'22:00', note:'06:00-22:00' }
-};
-
 function codeToShiftDef(codeNorm){
   if(!codeNorm || codeNorm==='X') return null;
-  if(IMPORT_ABSENCE_MAP[codeNorm]) return {...IMPORT_ABSENCE_MAP[codeNorm], visible:false};
-  if(IMPORT_SHIFT_CODE_MAP[codeNorm]) return {...IMPORT_SHIFT_CODE_MAP[codeNorm], visible:false};
-
-  // unknown numeric code -> create hidden shift with 0 hours by default
+  if(IMPORT_ABSENCE_MAP[codeNorm]) return {...IMPORT_ABSENCE_MAP[codeNorm]};
+  if(IMPORT_SHIFT_CODE_MAP[codeNorm]) return {...IMPORT_SHIFT_CODE_MAP[codeNorm]};
+  
   if(/^\d+$/.test(codeNorm)){
-    return { key: codeNorm, label: codeNorm, color:'gris', cat:'hosp', in:'00:00', out:'00:00', note: codeNorm, visible:false };
+    return { key: codeNorm, label: codeNorm, color:'gris', cat:'hosp', in:'00:00', out:'00:00', note: codeNorm };
   }
   return null;
 }
@@ -853,57 +838,75 @@ function ensureShiftExistsForUser(userKey, shiftDef){
   const user = db.users[userKey];
   if(!user) return;
   if(!user.config[shiftDef.key]){
-    user.config[shiftDef.key] = {
-      label: shiftDef.label,
-      color: shiftDef.color||'gris',
-      cat: shiftDef.cat||'hosp',
-      in: shiftDef.in||'00:00',
-      out: shiftDef.out||'00:00',
-      visible: !!shiftDef.visible
-    };
+    user.config[shiftDef.key] = { label: shiftDef.label, color: shiftDef.color||'gris', cat: shiftDef.cat||'hosp', in: shiftDef.in||'00:00', out: shiftDef.out||'00:00' };
   }
+}
+
+function ensureImportBaseShiftsForUser(userKey){
+  Object.keys(IMPORT_ABSENCE_MAP).forEach(k => ensureShiftExistsForUser(userKey, IMPORT_ABSENCE_MAP[k]));
+  Object.keys(IMPORT_SHIFT_CODE_MAP).forEach(k => ensureShiftExistsForUser(userKey, IMPORT_SHIFT_CODE_MAP[k]));
 }
 
 function ensureUserExists(nameUpper){
   const name = String(nameUpper||'').trim().toUpperCase();
   if(!name) return null;
   if(!db.users[name]){
-    db.users[name] = deepClone(db.users['ADMIN']);
+    db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
     db.users[name].pin = '0000';
     db.users[name].editLocked = false;
     db.users[name].data = {};
     db.users[name].locality = 'San Salvador';
+    ensureImportBaseShiftsForUser(name);
   }
   return name;
 }
 
-/* ============================ Globals ============================ */
-let current = new Date();
-let activeKey = "";
-let mode = "simple";
-let selS = "Mañana";
-let selT = "Mañana";
-let selB = "Tarde";
-let importContext = null;
+function dayKey(y,m1,d){ return `${y}-${m1}-${d}`; }
 
-/* ============================ Init ============================ */
+function getColorValue(colorName){
+  const map = {
+    'Mañana':'#ffff00','Tarde':'#fbcfe8','CENA':'#d8b4fe','16hrs':'#bef264','L':'#ffffff','Vacaciones':'#fed7aa','Cumpleaños':'#f9a8d4','Ausencia':'#d1d5db',
+    'azul':'#93c5fd','rojo':'#fca5a5','verde':'#86efac','naranja':'#fdba74','rosa':'#f9a8d4','cian':'#67e8f9',
+    'morado':'#d8b4fe','lima':'#d9f99d','ambar':'#fcd34d','teal':'#5eead4','indigo':'#a5b4fc','gris':'#d1d5db'
+  };
+  return map[colorName] || '#ffffff';
+}
+
+/* =========================================================
+   Holidays applicability by locality
+========================================================= */
+function holidayApplies(holidayLocation, userLocation){
+  const hl = (holidayLocation||'General').trim().toUpperCase();
+  const ul = (userLocation||'San Salvador').trim().toUpperCase();
+  if(hl === 'GENERAL') return true;
+  return hl === ul;
+}
+
+function countApplicableHolidaysInMonth(year, monthIndex0, userLocation){
+  const m1 = monthIndex0+1;
+  let c=0;
+  Object.keys(db.holidays).forEach(k=>{
+    const [y,mm,dd]=k.split('-').map(Number);
+    if(y===year && mm===m1){
+      const h = db.holidays[k];
+      if(holidayApplies(h.location, userLocation)) c++;
+    }
+  });
+  return c;
+}
+
+/* =========================================================
+   UI Init
+========================================================= */
 function init(){
-  ensureHolidayRulesLoaded();
   initSelectors();
-  ensureLocalitiesBase();
+  loadDefaultHolidays();
+  ensureImportBaseShiftsForUser('ADMIN');
   updateUserDropdown();
   updateUserInitial();
   updateMonthDisplay();
   render();
   updateUIEditMode();
-}
-
-function ensureLocalitiesBase(){
-  if(!db.localities || !Array.isArray(db.localities)) db.localities=['General','San Salvador'];
-  if(!db.localities.some(x=>x.trim().toUpperCase()==='GENERAL')) db.localities.unshift('General');
-  if(!db.localities.some(x=>x.trim().toUpperCase()==='SAN SALVADOR')) db.localities.push('San Salvador');
-  db.localities = Array.from(new Set(db.localities.map(x=>String(x).trim()).filter(Boolean)));
-  saveDB();
 }
 
 function initSelectors(){
@@ -913,12 +916,12 @@ function initSelectors(){
   const iYear = document.getElementById('importYear');
   const eMonth = document.getElementById('exportMonth');
   const eYear = document.getElementById('exportYear');
-
+  
   [mSel,iMonth,eMonth].forEach(sel=>{
     sel.innerHTML='';
     MONTHS.forEach((m,i)=> sel.innerHTML += `<option value="${i}">${m}</option>`);
   });
-
+  
   [ySel,iYear,eYear].forEach(sel=>{
     sel.innerHTML='';
     for(let y=2023;y<=2027;y++){
@@ -927,7 +930,69 @@ function initSelectors(){
   });
 }
 
-/* ============================ Navigation ============================ */
+/* default holiday examples */
+function loadDefaultHolidays(){
+  // Asuetos completos según especificación
+  const defaults = {
+    // Enero
+    '2026-1-1': { name:'Año Nuevo', location:'General' },
+    '2026-1-20': { name:'Fiestas de Cojutepeque', location:'Cojutepeque' },
+    
+    // Febrero
+    '2026-2-10': { name:'Fiesta de Lourdes Colón', location:'Lourdes, Colón' },
+    
+    // Abril (Semana Santa)
+    '2026-4-1': { name:'Miércoles Santo', location:'General' },
+    '2026-4-2': { name:'Jueves Santo', location:'General' },
+    '2026-4-3': { name:'Viernes Santo', location:'General' },
+    '2026-4-4': { name:'Sábado de Gloria', location:'General' },
+    
+    // Mayo
+    '2026-5-1': { name:'Día del Trabajo', location:'General' },
+    '2026-5-10': { name:'Día de la Madre', location:'General' },
+    
+    // Junio
+    '2026-6-17': { name:'Día del Padre', location:'General' },
+    
+    // Agosto
+    '2026-8-3': { name:'Día del Comercio', location:'General' },
+    '2026-8-4': { name:'Fiestas Patronales (San Salvador)', location:'San Salvador' },
+    '2026-8-5': { name:'Fiestas Patronales (San Salvador)', location:'San Salvador' },
+    '2026-8-6': { name:'Día de El Salvador', location:'General' },
+    
+    // Septiembre
+    '2026-9-15': { name:'Aniversario de Independencia', location:'General' },
+    
+    // Octubre
+    '2026-10-2': { name:'Víspera del día del Trabajador de la Industria Eléctrica', location:'General' },
+    '2026-10-3': { name:'Día del Trabajador de la Industria Eléctrica', location:'General' },
+    
+    // Noviembre
+    '2026-11-2': { name:'Día de los Difuntos', location:'General' },
+    
+    // Diciembre
+    '2026-12-8': { name:'Fiestas de La Libertad', location:'La Libertad' },
+    '2026-12-19': { name:'Fiestas Patronales', location:'Quezaltepeque y Rosario de la Paz' },
+    '2026-12-24': { name:'Navidad', location:'General' },
+    '2026-12-25': { name:'Navidad', location:'General' },
+    '2026-12-26': { name:'Fiestas Patronales', location:'Zacatecoluca, San Vicente y Santa Tecla' },
+    '2026-12-27': { name:'Fiestas de San Juan Opico', location:'San Juan Opico' },
+    '2026-12-31': { name:'Fin de Año', location:'General' }
+  };
+  
+  Object.keys(defaults).forEach(k=>{
+    if(!db.holidays[k]) db.holidays[k]=defaults[k];
+  });
+  
+  if(!db.localities || !Array.isArray(db.localities)) db.localities=['General','San Salvador'];
+  if(!db.localities.some(x=>x.toUpperCase()==='GENERAL')) db.localities.unshift('General');
+  
+  saveDB();
+}
+
+/* =========================================================
+   Month display + navigation
+========================================================= */
 function updateMonthDisplay(){
   const y=current.getFullYear();
   const m=current.getMonth();
@@ -943,13 +1008,20 @@ function jumpToDate(){
 }
 function goToday(){ current = new Date(); updateMonthDisplay(); render(); }
 
-/* ============================ Views ============================ */
+/* =========================================================
+   View switching
+========================================================= */
 function showView(v){
   document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('view-active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-active'));
   document.getElementById('view-'+v).classList.add('view-active');
   document.getElementById('tab-'+v).classList.add('tab-active');
-
+  
+  if(v==='summary'){
+    renderSummaryCategories();
+    calcSummary();
+  }
+  
   if(v==='settings'){
     updateUIEditMode();
     if(isEditMode()) showConfigTab('turnos');
@@ -959,22 +1031,25 @@ function showView(v){
 function showConfigTab(tab){
   document.querySelectorAll('.config-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(`config-${tab}`).classList.add('active');
-
+  
   document.querySelectorAll('.config-tab-content').forEach(c=>c.classList.add('hidden'));
   document.getElementById(`tab-${tab}`).classList.remove('hidden');
-
+  
   if(tab==='turnos'){ renderSettings(); }
   if(tab==='nuevo'){ loadCategoriesSelect(); }
   if(tab==='categorias'){ renderCategories(); }
   if(tab==='localidades'){ renderLocalities(); }
-  if(tab==='asuetos'){ refreshHolidayLocationSelects(); renderHolidayRules(); }
+  if(tab==='asuetos'){ refreshHolidayLocationSelects(); renderHolidays(); }
+  if(tab==='seguridad'){ /* nothing */ }
 }
 
-/* ============================ Edit mode + universal pin ============================ */
+/* =========================================================
+   Edit mode
+========================================================= */
 function updateUIEditMode(){
   const configContent = document.getElementById('config-content');
   const lockedMessage = document.getElementById('settings-locked');
-
+  
   if(isEditMode()){
     configContent.classList.remove('hidden');
     lockedMessage.classList.add('hidden');
@@ -994,24 +1069,29 @@ function updateUIEditMode(){
 
 function toggleEditMode(){
   const user = db.users[db.current];
-
   if(isEditMode()){
     const p = prompt("Ingresa tu PIN para bloquear la edición:");
-    if(p === user.pin || p === ADMIN_UNIVERSAL_PIN){
-      user.editLocked = true;
+    if(p === user.pin || (db.current !== 'ADMIN' && p === ADMIN_UNIVERSAL_PIN)){
+      user.editLocked=true;
       saveDB();
-    } else return alert("PIN incorrecto");
+      alert("Edición bloqueada");
+    }
+    else return alert("PIN incorrecto");
   } else {
     const p = prompt("Ingresa tu PIN para editar:");
     if(p === user.pin || p === ADMIN_UNIVERSAL_PIN){
-      user.editLocked = false;
+      user.editLocked=false;
       saveDB();
-    } else return alert("PIN incorrecto");
+      alert("Edición activada");
+    }
+    else return alert("PIN incorrecto");
   }
   updateUIEditMode();
 }
 
-/* ============================ Users ============================ */
+/* =========================================================
+   Users dropdown + initial
+========================================================= */
 function updateUserDropdown(){
   const select = document.getElementById('userSelect');
   select.innerHTML = Object.keys(db.users).sort().map(u => `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`).join('');
@@ -1024,169 +1104,193 @@ function switchUser(){
   updateUIEditMode();
 }
 
-/* ============================ Calendar render ============================ */
+/* =========================================================
+   Calendar render
+========================================================= */
 function render(){
   const grid=document.getElementById('calendar');
   grid.innerHTML='';
-
+  
   const y=current.getFullYear();
   const m=current.getMonth();
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
   const today = new Date();
   const todayKey = dayKey(today.getFullYear(), today.getMonth()+1, today.getDate());
-
+  
   const firstDay = new Date(y,m,1).getDay();
   const firstDayMonday = firstDay===0?6:firstDay-1;
   const lastDate = new Date(y,m+1,0).getDate();
   const prevLastDate = new Date(y,m,0).getDate();
-
-  const hasHolidayIndicator = (dayNum)=>{
-    const rules = getHolidayForDate(y,m,dayNum);
-    if(rules.length===0) return false;
-    return rules.some(r=>holidayApplies(r.location, user.locality));
-  };
-
-  // prev
+  
   for(let i=firstDayMonday;i>0;i--){
     const prevDay=prevLastDate-i+1;
     const prevMonth = m===0?12:m;
     const prevYear = m===0?y-1:y;
     const key = dayKey(prevYear, prevMonth, prevDay);
     const info=user.data[key];
-
+    
     const cell=document.createElement('div');
     cell.className='day-cell day-off-month';
-
     if(info){
       if(info.mode==='mixto'){
         cell.innerHTML = `
           <div class="shift-label bg-${SHIFTS[info.t]?.color||'L'}">${SHIFTS[info.t]?.label||'L'}</div>
           <div class="shift-label bg-${SHIFTS[info.b]?.color||'L'}">${SHIFTS[info.b]?.label||'L'}</div>`;
+        if(info.noteTop) cell.innerHTML += `<div class="mixto-top-note">${info.noteTop}</div>`;
+        if(info.noteBottom) cell.innerHTML += `<div class="mixto-bottom-note">${info.noteBottom}</div>`;
       } else {
         const label = info.s==='L'?'L':(SHIFTS[info.s]?.label||info.s||'L');
         cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s]?.color||'L'}">${label}</div>`;
       }
-      if(info.n) cell.innerHTML += `<div class="note-text">${escapeHTML(info.n)}</div>`;
     }
-
+    if(db.holidays[key] && holidayApplies(db.holidays[key].location, user.locality)) cell.innerHTML += `<div class="holiday-indicator">A</div>`;
     cell.innerHTML += `<span class="day-number">${prevDay}</span>`;
+    if(info && info.n && info.mode !== 'mixto') cell.innerHTML += `<div class="note-text">${info.n}</div>`;
     cell.onclick=()=>openDay(key, info || {mode:'simple', s:'L'});
     grid.appendChild(cell);
   }
-
-  // month days
+  
   for(let d=1; d<=lastDate; d++){
     const key=dayKey(y,m+1,d);
     const info=user.data[key] || {mode:'simple', s:'L'};
     const cell=document.createElement('div');
-
+    
     let classes='day-cell';
     const dow=new Date(y,m,d).getDay();
     if(dow===0 || dow===6) classes+=' weekend';
     if(key===todayKey) classes+=' today';
     cell.className=classes;
-
+    
     if(info.mode==='mixto'){
       cell.innerHTML=`
         <div class="shift-label bg-${SHIFTS[info.t]?.color||'L'}">${SHIFTS[info.t]?.label||'L'}</div>
         <div class="shift-label bg-${SHIFTS[info.b]?.color||'L'}">${SHIFTS[info.b]?.label||'L'}</div>`;
+      if(info.noteTop) cell.innerHTML += `<div class="mixto-top-note">${info.noteTop}</div>`;
+      if(info.noteBottom) cell.innerHTML += `<div class="mixto-bottom-note">${info.noteBottom}</div>`;
     } else {
       const label = info.s==='L'?'L':(SHIFTS[info.s]?.label||info.s||'L');
       cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s]?.color||'L'}">${label}</div>`;
     }
-
-    if(hasHolidayIndicator(d)) cell.innerHTML += `<div class="holiday-indicator">A</div>`;
+    
+    if(db.holidays[key] && holidayApplies(db.holidays[key].location, user.locality)) cell.innerHTML += `<div class="holiday-indicator">A</div>`;
     cell.innerHTML += `<span class="day-number">${d}</span>`;
-    if(info.n) cell.innerHTML += `<div class="note-text">${escapeHTML(info.n)}</div>`;
-
+    if(info.n && info.mode !== 'mixto') cell.innerHTML += `<div class="note-text">${info.n}</div>`;
+    
     cell.onclick=()=>{
       if(!isEditMode()) return alert("Activa modo edición para editar.");
       openDay(key, info);
     };
-
+    
     grid.appendChild(cell);
   }
-
-  // next filler
+  
   const total = firstDayMonday + lastDate;
   for(let i=1; i<= (42-total); i++){
+    const nextMonth = m===11?1:m+2;
+    const nextYear = m===11?y+1:y;
+    const key = dayKey(nextYear, nextMonth, i);
+    
     const cell=document.createElement('div');
     cell.className='day-cell day-off-month';
-    cell.innerHTML = `<span class="day-number">${i}</span>`;
+    if(db.holidays[key] && holidayApplies(db.holidays[key].location, user.locality)) cell.innerHTML += `<div class="holiday-indicator">A</div>`;
+    cell.innerHTML += `<span class="day-number">${i}</span>`;
     grid.appendChild(cell);
   }
-
+  
   calcSummary();
 }
 
-/* ============================ Modal day ============================ */
+/* =========================================================
+   Summary by categories
+========================================================= */
+function renderSummaryCategories(){
+  const container = document.getElementById('summary-categories');
+  container.innerHTML = '';
+  
+  const categories = db.categories;
+  Object.keys(categories).forEach(catId => {
+    const cat = categories[catId];
+    const color = cat.color || '#3b82f6';
+    
+    container.innerHTML += `
+      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[11px] font-black text-gray-400 uppercase">${escapeHTML(cat.name)}</p>
+          <span class="text-[10px] font-black px-2 py-1 rounded-full" style="background: ${color}20; color: ${color};">${escapeHTML(cat.icon)}</span>
+        </div>
+        <h2 id="hrs-${cssSafe(catId)}" class="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter">0.0 HRS</h2>
+        <div class="mt-2 text-[10px] text-gray-500 font-bold" id="days-${cssSafe(catId)}">0 días</div>
+      </div>
+    `;
+  });
+}
+
+/* =========================================================
+   Modal day edit
+========================================================= */
 function openDay(key, info){
   activeKey = key;
   mode = info.mode || 'simple';
   selS = info.s || 'Mañana';
   selT = info.t || 'Mañana';
   selB = info.b || 'Tarde';
-
+  
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
-  const [yy,mm,dd]=key.split('-').map(Number);
-  document.getElementById('modalDate').textContent = `${dd} de ${MONTHS[mm-1]} de ${yy}`;
-
-  // Holiday box
-  const rules = getHolidayForDate(yy, mm-1, dd);
-  const holidayBox = document.getElementById('holidayBox');
-  if(rules.length>0){
-    // show first + count
-    const first = rules[0];
-    const applies = rules.some(r=>holidayApplies(r.location, user.locality));
-    holidayBox.classList.remove('hidden');
-    document.getElementById('holidayName').textContent = rules.length===1 ? first.name : `${first.name} (+${rules.length-1})`;
-    document.getElementById('holidayLoc').textContent = `Localidad: ${first.location}`;
-    const pill = document.getElementById('holidayApplies');
-    pill.textContent = applies ? 'APLICA' : 'NO APLICA';
-    pill.className = applies
-      ? 'text-[10px] font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-800'
-      : 'text-[10px] font-black px-2 py-1 rounded-full bg-gray-200 text-gray-700';
+  
+  const [yy,mm,dd]=key.split('-');
+  document.getElementById('modalDate').textContent = `${dd} de ${MONTHS[parseInt(mm)-1]} de ${yy}`;
+  
+  // Mostrar información de asueto si existe
+  const holiday = db.holidays[key];
+  const holidayInfo = document.getElementById('holidayInfo');
+  if(holiday && holidayApplies(holiday.location, user.locality)){
+    holidayInfo.classList.remove('hidden');
+    document.getElementById('holidayName').textContent = holiday.name;
+    document.getElementById('holidayLocation').textContent = `Localidad: ${holiday.location}`;
   } else {
-    holidayBox.classList.add('hidden');
+    holidayInfo.classList.add('hidden');
   }
-
+  
   if(mode==='simple'){
     document.getElementById('tIn').value = info.tIn || (SHIFTS[selS]?.in || '00:00');
     document.getElementById('tOut').value = info.tOut || (SHIFTS[selS]?.out || '00:00');
     document.getElementById('tHrs').value = (info.h ?? calculateHours(document.getElementById('tIn').value, document.getElementById('tOut').value)).toFixed(1);
-
+    
     document.getElementById('time-simple').classList.remove('hidden');
     document.getElementById('time-mixto').classList.add('hidden');
+    document.getElementById('note-simple').classList.remove('hidden');
   } else {
     document.getElementById('tInTop').value = info.tInTop || (SHIFTS[selT]?.in || '00:00');
     document.getElementById('tOutTop').value = info.tOutTop || (SHIFTS[selT]?.out || '00:00');
     document.getElementById('tInBottom').value = info.tInBottom || (SHIFTS[selB]?.in || '00:00');
     document.getElementById('tOutBottom').value = info.tOutBottom || (SHIFTS[selB]?.out || '00:00');
-
+    
     const hrsTop = info.hrsTop ?? calculateHours(document.getElementById('tInTop').value, document.getElementById('tOutTop').value);
     const hrsBottom = info.hrsBottom ?? calculateHours(document.getElementById('tInBottom').value, document.getElementById('tOutBottom').value);
-
+    
     document.getElementById('tHrsTop').value = Number(hrsTop).toFixed(1);
     document.getElementById('tHrsBottom').value = Number(hrsBottom).toFixed(1);
     document.getElementById('tHrsMixto').value = Number(hrsTop+hrsBottom).toFixed(1);
-
+    
     document.getElementById('time-simple').classList.add('hidden');
     document.getElementById('time-mixto').classList.remove('hidden');
+    document.getElementById('note-simple').classList.add('hidden');
+    
+    // Comentarios mixto
+    document.getElementById('notaTop').value = info.noteTop || defaultNoteForShift(selT);
+    document.getElementById('notaBottom').value = info.noteBottom || defaultNoteForShift(selB);
   }
-
+  
+  // Comentario simple
   const note = String(info.n||'').trim();
-  if(!note){
-    document.getElementById('nota').value = (mode==='simple')
-      ? defaultNoteForShift(selS)
-      : `${defaultNoteForShift(selT)} | ${defaultNoteForShift(selB)}`;
-  } else {
+  if(!note && mode === 'simple'){
+    document.getElementById('nota').value = defaultNoteForShift(selS);
+  } else if (mode === 'simple') {
     document.getElementById('nota').value = info.n;
   }
-
+  
   setMode(mode);
   refreshShiftButtons();
   document.getElementById('modal').classList.add('active');
@@ -1200,245 +1304,272 @@ function setMode(m){
   document.getElementById('m-m').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='mixto'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
   document.getElementById('sec-simple').classList.toggle('hidden', m!=='simple');
   document.getElementById('sec-mixto').classList.toggle('hidden', m!=='mixto');
+  document.getElementById('time-simple').classList.toggle('hidden', m!=='simple');
+  document.getElementById('time-mixto').classList.toggle('hidden', m!=='mixto');
+  document.getElementById('note-simple').classList.toggle('hidden', m!=='simple');
 }
 
 function refreshShiftButtons(){
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
-  const shiftKeys = Object.keys(SHIFTS)
-    .filter(k=> showAllShifts ? true : !!SHIFTS[k].visible)
-    .sort((a,b)=> (SHIFTS[a].label||a).localeCompare(SHIFTS[b].label||b));
-
+  
   const mkBtn=(k, selected)=>{
     const b=document.createElement('div');
     b.className = `shift-option ${selected?'selected':''} bg-${SHIFTS[k]?.color||'L'}`;
     b.textContent = SHIFTS[k]?.label || k;
     return b;
   };
-
+  
+  // simple
   const sC=document.getElementById('sec-simple');
   sC.innerHTML='';
-  shiftKeys.forEach(k=>{
+  Object.keys(SHIFTS).forEach(k=>{
     const b=mkBtn(k, selS===k);
     b.onclick=()=>{
       selS=k;
       document.getElementById('tIn').value = SHIFTS[k]?.in || '00:00';
       document.getElementById('tOut').value = SHIFTS[k]?.out || '00:00';
       autoCalc();
-      if(!document.getElementById('nota').value.trim()) document.getElementById('nota').value = defaultNoteForShift(selS);
+      document.getElementById('nota').value = defaultNoteForShift(selS);
       refreshShiftButtons();
     };
     sC.appendChild(b);
   });
-
+  
+  // mixto top
   const tC=document.getElementById('mix-t');
   tC.innerHTML='';
-  shiftKeys.forEach(k=>{
+  Object.keys(SHIFTS).forEach(k=>{
     const b=mkBtn(k, selT===k);
     b.onclick=()=>{
       selT=k;
       document.getElementById('tInTop').value = SHIFTS[k]?.in || '00:00';
       document.getElementById('tOutTop').value = SHIFTS[k]?.out || '00:00';
       autoCalcMixtoTop();
-      if(!document.getElementById('nota').value.trim()) document.getElementById('nota').value = `${defaultNoteForShift(selT)} | ${defaultNoteForShift(selB)}`;
+      document.getElementById('notaTop').value = defaultNoteForShift(selT);
       refreshShiftButtons();
     };
     tC.appendChild(b);
   });
-
+  
+  // mixto bottom
   const bC=document.getElementById('mix-b');
   bC.innerHTML='';
-  shiftKeys.forEach(k=>{
+  Object.keys(SHIFTS).forEach(k=>{
     const b=mkBtn(k, selB===k);
     b.onclick=()=>{
       selB=k;
       document.getElementById('tInBottom').value = SHIFTS[k]?.in || '00:00';
       document.getElementById('tOutBottom').value = SHIFTS[k]?.out || '00:00';
       autoCalcMixtoBottom();
-      if(!document.getElementById('nota').value.trim()) document.getElementById('nota').value = `${defaultNoteForShift(selT)} | ${defaultNoteForShift(selB)}`;
+      document.getElementById('notaBottom').value = defaultNoteForShift(selB);
       refreshShiftButtons();
     };
     bC.appendChild(b);
   });
 }
 
-function autoCalc(){ document.getElementById('tHrs').value = calculateHours(tIn.value, tOut.value).toFixed(1); }
-function manualCalc(){ document.getElementById('tHrs').value = (parseFloat(tHrs.value)||0).toFixed(1); }
-
+function autoCalc(){
+  const hrs=calculateHours(document.getElementById('tIn').value, document.getElementById('tOut').value);
+  document.getElementById('tHrs').value = hrs.toFixed(1);
+}
+function manualCalc(){
+  const v=parseFloat(document.getElementById('tHrs').value)||0;
+  document.getElementById('tHrs').value=v.toFixed(1);
+}
 function autoCalcMixtoTop(){
-  tHrsTop.value = calculateHours(tInTop.value, tOutTop.value).toFixed(1);
+  const hrs=calculateHours(document.getElementById('tInTop').value, document.getElementById('tOutTop').value);
+  document.getElementById('tHrsTop').value = hrs.toFixed(1);
+  updateMixtoTotal();
+}
+function manualCalcMixtoTop(){
+  const v=parseFloat(document.getElementById('tHrsTop').value)||0;
+  document.getElementById('tHrsTop').value=v.toFixed(1);
   updateMixtoTotal();
 }
 function autoCalcMixtoBottom(){
-  tHrsBottom.value = calculateHours(tInBottom.value, tOutBottom.value).toFixed(1);
+  const hrs=calculateHours(document.getElementById('tInBottom').value, document.getElementById('tOutBottom').value);
+  document.getElementById('tHrsBottom').value = hrs.toFixed(1);
   updateMixtoTotal();
 }
-function manualCalcMixtoTop(){ tHrsTop.value=(parseFloat(tHrsTop.value)||0).toFixed(1); updateMixtoTotal(); }
-function manualCalcMixtoBottom(){ tHrsBottom.value=(parseFloat(tHrsBottom.value)||0).toFixed(1); updateMixtoTotal(); }
-function updateMixtoTotal(){ tHrsMixto.value = ((parseFloat(tHrsTop.value)||0)+(parseFloat(tHrsBottom.value)||0)).toFixed(1); }
+function manualCalcMixtoBottom(){
+  const v=parseFloat(document.getElementById('tHrsBottom').value)||0;
+  document.getElementById('tHrsBottom').value=v.toFixed(1);
+  updateMixtoTotal();
+}
+function updateMixtoTotal(){
+  const t=parseFloat(document.getElementById('tHrsTop').value)||0;
+  const b=parseFloat(document.getElementById('tHrsBottom').value)||0;
+  document.getElementById('tHrsMixto').value=(t+b).toFixed(1);
+}
 
-function maybeAutoNoteSimple(){ if(!nota.value.trim()) nota.value = defaultNoteForShift(selS); }
-function maybeAutoNoteMixto(){ if(!nota.value.trim()) nota.value = `${defaultNoteForShift(selT)} | ${defaultNoteForShift(selB)}`; }
+function maybeAutoNoteSimple(){
+  const n=document.getElementById('nota');
+  if(!n.value.trim()) n.value=defaultNoteForShift(selS);
+}
+function maybeAutoNoteMixto(){
+  const n1=document.getElementById('notaTop');
+  const n2=document.getElementById('notaBottom');
+  if(!n1.value.trim()) n1.value=defaultNoteForShift(selT);
+  if(!n2.value.trim()) n2.value=defaultNoteForShift(selB);
+}
 
 function saveDay(){
   const user=db.users[db.current];
-  const data = { mode, s:selS, t:selT, b:selB, n: nota.value };
-
+  let data;
+  
   if(mode==='simple'){
-    data.tIn = tIn.value;
-    data.tOut = tOut.value;
-    data.h = parseFloat(tHrs.value)||0;
-    if(!String(data.n||'').trim()) data.n = defaultNoteForShift(selS);
+    data = { 
+      mode, 
+      s: selS, 
+      t: selS, 
+      b: selS,
+      tIn: document.getElementById('tIn').value,
+      tOut: document.getElementById('tOut').value,
+      h: parseFloat(document.getElementById('tHrs').value)||0,
+      n: document.getElementById('nota').value.trim() || defaultNoteForShift(selS)
+    };
   } else {
-    data.tInTop = tInTop.value; data.tOutTop = tOutTop.value;
-    data.tInBottom = tInBottom.value; data.tOutBottom = tOutBottom.value;
-    data.hrsTop = parseFloat(tHrsTop.value)||0;
-    data.hrsBottom = parseFloat(tHrsBottom.value)||0;
-    data.h = parseFloat(tHrsMixto.value)||0;
-    if(!String(data.n||'').trim()) data.n = `${defaultNoteForShift(selT)} | ${defaultNoteForShift(selB)}`;
+    data = {
+      mode,
+      t: selT,
+      b: selB,
+      tInTop: document.getElementById('tInTop').value,
+      tOutTop: document.getElementById('tOutTop').value,
+      tInBottom: document.getElementById('tInBottom').value,
+      tOutBottom: document.getElementById('tOutBottom').value,
+      hrsTop: parseFloat(document.getElementById('tHrsTop').value)||0,
+      hrsBottom: parseFloat(document.getElementById('tHrsBottom').value)||0,
+      h: parseFloat(document.getElementById('tHrsMixto').value)||0,
+      noteTop: document.getElementById('notaTop').value.trim() || defaultNoteForShift(selT),
+      noteBottom: document.getElementById('notaBottom').value.trim() || defaultNoteForShift(selB),
+      n: `${document.getElementById('notaTop').value.trim() || defaultNoteForShift(selT)} | ${document.getElementById('notaBottom').value.trim() || defaultNoteForShift(selB)}`
+    };
   }
-
+  
   user.data[activeKey]=data;
   saveDB();
   render();
   closeModal();
 }
 
-/* ============================ Summary (dynamic categories) ============================ */
+/* =========================================================
+   Summary calculation
+========================================================= */
 function calcSummary(){
   const y=current.getFullYear();
   const m0=current.getMonth();
   const m1=m0+1;
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
-  // totals per category id
-  const catTotals = {};
+  const categories = db.categories;
+  
+  // Inicializar contadores por categoría
+  const catHours = {};
   const catDays = {};
-  let totalWorkHours = 0;
-  let workedDays=0, freeDays=0, vacDays=0, weekendDays=0, holidayWorked=0;
-
+  Object.keys(categories).forEach(catId => {
+    catHours[catId] = 0;
+    catDays[catId] = 0;
+  });
+  
+  let freeDays=0, vacDays=0, workedDays=0, weekendDays=0, holidayWorked=0;
   const daysInMonth = new Date(y,m0+1,0).getDate();
   freeDays = daysInMonth;
-
-  for(let d=1; d<=daysInMonth; d++){
-    const dow = new Date(y,m0,d).getDay();
-    if(dow===0 || dow===6) weekendDays++;
-  }
-
+  
   const applicableHolidays = countApplicableHolidaysInMonth(y,m0,user.locality);
-
-  const getCat = (shiftId)=> (SHIFTS[shiftId]?.cat || 'off');
-  const addCat = (catId, hrs)=>{
-    catTotals[catId] = (catTotals[catId]||0) + (hrs||0);
-    catDays[catId] = (catDays[catId]||0) + 1;
-  };
-
+  
   for(const k of Object.keys(user.data)){
     if(!k.startsWith(`${y}-${m1}-`)) continue;
-    const dObj = user.data[k];
+    const d = user.data[k];
     const dayNum = parseInt(k.split('-')[2]);
-    const rules = getHolidayForDate(y,m0,dayNum);
-    const isHolidayApplicable = rules.some(r=>holidayApplies(r.location, user.locality));
-
+    const dow = new Date(y,m0,dayNum).getDay();
+    const isHoliday = db.holidays[k] && holidayApplies(db.holidays[k].location, user.locality);
+    
+    if(dow===0 || dow===6) weekendDays++;
     freeDays--;
-
-    if(dObj.mode==='mixto'){
-      const topCat = getCat(dObj.t);
-      const botCat = getCat(dObj.b);
-
-      const topHrs = dObj.hrsTop ?? calculateHours(dObj.tInTop || SHIFTS[dObj.t]?.in, dObj.tOutTop || SHIFTS[dObj.t]?.out);
-      const botHrs = dObj.hrsBottom ?? calculateHours(dObj.tInBottom || SHIFTS[dObj.b]?.in, dObj.tOutBottom || SHIFTS[dObj.b]?.out);
-
-      addCat(topCat, topHrs);
-      addCat(botCat, botHrs);
-
-      const anyWork = (topCat!=='off' && topHrs>0) || (botCat!=='off' && botHrs>0);
-      if(anyWork){ workedDays++; totalWorkHours += (topHrs+botHrs); }
-      if(isHolidayApplicable && anyWork) holidayWorked++;
-
-      // off category adjustments
-      if(topCat==='off') freeDays++;
-      if(botCat==='off') freeDays++;
+    
+    if(d.mode==='mixto'){
+      const topCat = SHIFTS[d.t]?.cat;
+      const botCat = SHIFTS[d.b]?.cat;
+      const topWork = (topCat && categories[topCat]);
+      const botWork = (botCat && categories[botCat]);
+      
+      if(isHoliday && (topWork || botWork)) holidayWorked++;
+      
+      // Superior
+      if(topCat && categories[topCat]){
+        catHours[topCat] += (d.hrsTop||calculateHours(d.tInTop||SHIFTS[d.t].in, d.tOutTop||SHIFTS[d.t].out));
+        catDays[topCat]++;
+        if(topCat !== 'off') workedDays++;
+      }
+      
+      // Inferior
+      if(botCat && categories[botCat]){
+        catHours[botCat] += (d.hrsBottom||calculateHours(d.tInBottom||SHIFTS[d.b].in, d.tOutBottom||SHIFTS[d.b].out));
+        catDays[botCat]++;
+        if(botCat !== 'off') workedDays++;
+      }
     } else {
-      const cat = getCat(dObj.s);
-      const hrs = dObj.h ?? 0;
-      addCat(cat, hrs);
-
-      if(cat==='off'){
-        freeDays++;
-        if(dObj.s==='Vacaciones') vacDays++;
-      } else {
-        workedDays++;
-        totalWorkHours += hrs;
-        if(isHolidayApplicable) holidayWorked++;
+      const cat = SHIFTS[d.s]?.cat;
+      if(cat && categories[cat]){
+        catHours[cat] += (d.h||0);
+        catDays[cat]++;
+        if(cat !== 'off') workedDays++;
+        if(isHoliday && cat !== 'off') holidayWorked++;
+        
+        if(cat === 'off'){
+          freeDays++;
+          if(d.s==='Vacaciones') vacDays++;
+        }
       }
     }
   }
-
+  
   freeDays = Math.max(0, freeDays);
-
-  // build dynamic cards
-  document.getElementById('profile-loc').textContent = `Localidad: ${user.locality || 'San Salvador'}`;
-  const cards = document.getElementById('summaryCards');
-  cards.innerHTML = '';
-
-  // show only categories that appear or always show main ones
-  const catIds = Object.keys(db.categories);
-  const sorted = catIds.sort((a,b)=> (db.categories[a].name||a).localeCompare(db.categories[b].name||b));
-
-  sorted.forEach(cid=>{
-    const hrs = (catTotals[cid]||0);
-    const days = (catDays[cid]||0);
-    if(hrs===0 && days===0) return;
-    const c = db.categories[cid] || {name:cid, icon:'📌'};
-    cards.innerHTML += `
-      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] border-gray-200">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-[11px] font-black text-gray-400 uppercase">${escapeHTML(c.icon||'')} ${escapeHTML(c.name||cid)}</p>
-          <span class="text-[10px] font-black bg-gray-100 text-gray-800 px-2 py-1 rounded-full">${days} marca(s)</span>
-        </div>
-        <div class="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter">${hrs.toFixed(1)} HRS</div>
-      </div>
-    `;
+  
+  // Actualizar UI por categoría
+  Object.keys(categories).forEach(catId => {
+    const hrsEl = document.getElementById(`hrs-${cssSafe(catId)}`);
+    const daysEl = document.getElementById(`days-${cssSafe(catId)}`);
+    if(hrsEl) hrsEl.textContent = `${catHours[catId].toFixed(1)} HRS`;
+    if(daysEl) daysEl.textContent = `${catDays[catId]} día${catDays[catId]!==1?'s':''}`;
   });
-
+  
   document.getElementById('total-off').textContent = (freeDays + vacDays + weekendDays);
   document.getElementById('free-days').textContent = freeDays;
   document.getElementById('vac-days').textContent = vacDays;
   document.getElementById('weekend-days').textContent = weekendDays;
   document.getElementById('holiday-worked').textContent = holidayWorked;
-
   document.getElementById('worked-days').textContent = workedDays;
-  const avg = workedDays>0 ? (totalWorkHours/workedDays) : 0;
+  document.getElementById('total-holidays').textContent = applicableHolidays;
+  document.getElementById('profile-loc').textContent = user.locality || 'San Salvador';
+  
+  const totalHours = Object.values(catHours).reduce((a,b)=>a+b,0);
+  const avg = workedDays>0 ? totalHours/workedDays : 0;
   document.getElementById('avg-hours').textContent = `${avg.toFixed(1)}h`;
   document.getElementById('total-days').textContent = daysInMonth;
-  document.getElementById('total-holidays').textContent = applicableHolidays;
 }
 
-/* ============================ Turnos settings ============================ */
-function toggleShowAllShifts(){
-  showAllShifts = !showAllShifts;
-  document.getElementById('showAllShiftsLabel').textContent = showAllShifts ? 'Ocultar extra' : 'Mostrar todos';
-  renderSettings();
-}
+/* =========================================================
+   Turnos settings + propagation
+========================================================= */
 function renderSettings(){
   const container=document.getElementById('settings-container');
   container.innerHTML='';
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
-  const keys = Object.keys(SHIFTS)
-    .filter(k=> showAllShifts ? true : !!SHIFTS[k].visible)
-    .sort((a,b)=> (SHIFTS[a].label||a).localeCompare(SHIFTS[b].label||b));
-
-  keys.forEach(id=>{
+  
+  // Ordenar: primero los turnos por defecto, luego los demás
+  const defaultShifts = ['Mañana','Tarde','16hrs','CENA','Cumpleaños','L','Vacaciones','Ausencia'];
+  const otherShifts = Object.keys(SHIFTS).filter(s => !defaultShifts.includes(s)).sort();
+  const sortedShifts = [...defaultShifts.filter(s => SHIFTS[s]), ...otherShifts];
+  
+  sortedShifts.forEach(id=>{
     const conf=SHIFTS[id];
     container.innerHTML += `
       <div class="flex items-start gap-3 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200">
-        <div class="w-10 h-10 rounded-full bg-${escapeAttr(conf.color||'L')} border-2 border-white shadow-sm flex items-center justify-center">
-          <span class="text-[10px] font-black text-gray-800">${escapeHTML((conf.label||id).charAt(0))}</span>
+        <div class="w-10 h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center">
+          <span class="text-[10px] font-black text-gray-800">${(conf.label||id).charAt(0)}</span>
         </div>
         <div class="flex-1">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -1451,17 +1582,17 @@ function renderSettings(){
               <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
                 ${Object.keys(db.categories).map(cid=>{
                   const c=db.categories[cid];
-                  return `<option value="${cid}" ${conf.cat===cid?'selected':''}>${escapeHTML(c.icon||'')} ${escapeHTML(c.name||cid)}</option>`;
+                  return `<option value="${cid}" ${conf.cat===cid?'selected':''}>${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
                 }).join('')}
               </select>
             </div>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
               <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
-                ${['Mañana','Tarde','CENA','16hrs','Cumpleaños','L','Vacaciones','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x=>`<option value="${x}" ${conf.color===x?'selected':''}>${x}</option>`).join('')}
+                ${['Mañana','Tarde','CENA','16hrs','L','Vacaciones','Cumpleaños','Ausencia','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x=>`<option value="${x}" ${conf.color===x?'selected':''}>${x}</option>`).join('')}
               </select>
             </div>
             <div>
@@ -1472,23 +1603,18 @@ function renderSettings(){
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Salida</p>
               <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out||'00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
             </div>
-            <div class="flex items-end">
-              <label class="flex items-center gap-2 text-[11px] font-black text-gray-700">
-                <input type="checkbox" id="set-vis-${cssSafe(id)}" ${conf.visible?'checked':''}> Visible
-              </label>
-            </div>
           </div>
-
+          
           <div class="mt-2 text-[10px] font-bold text-gray-600">
-            Nota sugerida: <span class="text-gray-900 font-black">${defaultNoteForShift(id)}</span>
+            Nota sugerida: <span class="text-gray-900 font-black">${(conf.in && conf.out && !(conf.in==='00:00'&&conf.out==='00:00')) ? `${conf.in}-${conf.out}` : (conf.label||id).toUpperCase()}</span>
           </div>
         </div>
-
+        
         <button onclick="deleteShift('${escapeAttr(id)}')" class="p-2 text-red-600 hover:text-red-800 font-black" title="Eliminar turno">🗑️</button>
       </div>
     `;
   });
-
+  
   loadCategoriesSelect();
 }
 
@@ -1496,10 +1622,10 @@ function saveShiftSettings(){
   if(!isEditMode()) return alert("Activa modo edición.");
   const user=db.users[db.current];
   const SHIFTS=user.config;
-
+  
   const propagate = document.getElementById('propagateShiftEdits').checked;
-  const old = deepClone(SHIFTS);
-
+  const old = JSON.parse(JSON.stringify(SHIFTS));
+  
   Object.keys(SHIFTS).forEach(id=>{
     const key = cssSafe(id);
     const label = document.getElementById(`set-label-${key}`)?.value?.trim() || id;
@@ -1507,69 +1633,74 @@ function saveShiftSettings(){
     const color = document.getElementById(`set-color-${key}`)?.value || SHIFTS[id].color;
     const inT = document.getElementById(`set-in-${key}`)?.value || SHIFTS[id].in || '00:00';
     const outT = document.getElementById(`set-out-${key}`)?.value || SHIFTS[id].out || '00:00';
-    const vis = !!document.getElementById(`set-vis-${key}`)?.checked;
-
+    
     SHIFTS[id].label = label;
     SHIFTS[id].cat = cat;
     SHIFTS[id].color = color;
     SHIFTS[id].in = inT;
     SHIFTS[id].out = outT;
-    SHIFTS[id].visible = vis;
   });
-
+  
   if(propagate){
     const y=current.getFullYear();
     const m1=current.getMonth()+1;
+    
     Object.keys(user.data).forEach(k=>{
       if(!k.startsWith(`${y}-${m1}-`)) return;
       const d = user.data[k];
-
-      const updateSimple = (sid)=>{
+      if(d.mode==='simple'){
+        const sid = d.s;
+        if(!sid || !SHIFTS[sid]) return;
         const was = old[sid];
         const now = SHIFTS[sid];
-        if(!was || !now) return;
-        if(was.in!==now.in || was.out!==now.out){
+        if(was && (was.in!==now.in || was.out!==now.out)){
           d.tIn = now.in; d.tOut = now.out; d.h = calculateHours(now.in, now.out);
           const wasNote = String(d.n||'').trim();
           const oldStd = (was.in && was.out && !(was.in==='00:00'&&was.out==='00:00')) ? `${was.in}-${was.out}` : (was.label||sid).toUpperCase();
           const newStd = (now.in && now.out && !(now.in==='00:00'&&now.out==='00:00')) ? `${now.in}-${now.out}` : (now.label||sid).toUpperCase();
           if(!wasNote || wasNote===oldStd) d.n = newStd;
         }
-      };
-
-      if(d.mode==='simple'){
-        if(d.s && SHIFTS[d.s]) updateSimple(d.s);
-      } else {
-        const updPart = (sid, inField, outField, hrsField)=>{
+      } else if(d.mode==='mixto'){
+        const applyPart = (partKey, inField, outField, hrsField, noteField)=>{
+          const sid = d[partKey];
+          if(!sid || !SHIFTS[sid]) return;
           const was=old[sid], now=SHIFTS[sid];
-          if(!was || !now) return;
-          if(was.in!==now.in || was.out!==now.out){
+          if(was && (was.in!==now.in || was.out!==now.out)){
             d[inField]=now.in; d[outField]=now.out;
             d[hrsField]=calculateHours(now.in, now.out);
+            
+            const oldStd = (was.in && was.out && !(was.in==='00:00'&&was.out==='00:00')) ? `${was.in}-${was.out}` : (was.label||sid).toUpperCase();
+            const newStd = (now.in && now.out && !(now.in==='00:00'&&now.out==='00:00')) ? `${now.in}-${now.out}` : (now.label||sid).toUpperCase();
+            if(!d[noteField] || d[noteField]===oldStd) d[noteField] = newStd;
           }
         };
-        if(d.t && SHIFTS[d.t]) updPart(d.t,'tInTop','tOutTop','hrsTop');
-        if(d.b && SHIFTS[d.b]) updPart(d.b,'tInBottom','tOutBottom','hrsBottom');
+        applyPart('t','tInTop','tOutTop','hrsTop','noteTop');
+        applyPart('b','tInBottom','tOutBottom','hrsBottom','noteBottom');
         d.h = (parseFloat(d.hrsTop)||0)+(parseFloat(d.hrsBottom)||0);
+        d.n = `${d.noteTop || ''} | ${d.noteBottom || ''}`.trim();
       }
     });
   }
-
+  
   saveDB();
   render();
+  renderSummaryCategories();
   alert("Turnos actualizados.");
 }
 
 function deleteShift(id){
-  if(!isEditMode()) return alert("Activa modo edición.");
+  // No permitir eliminar turnos base importantes
+  const protectedShifts = ['L','Vacaciones','Ausencia','Cumpleaños'];
+  if(protectedShifts.includes(id)) return alert("No se puede eliminar este turno base.");
+  
   const user=db.users[db.current];
-
+  
   const used = Object.values(user.data).some(d=>{
     if(d.mode==='mixto') return d.t===id || d.b===id;
     return d.s===id;
   });
   if(used) return alert("No se puede eliminar: el turno está usado en el calendario del perfil.");
-
+  
   if(!confirm(`¿Eliminar turno "${id}"?`)) return;
   delete user.config[id];
   saveDB();
@@ -1577,16 +1708,23 @@ function deleteShift(id){
   render();
 }
 
-/* ============================ New shift ============================ */
+/* =========================================================
+   New shift
+========================================================= */
+function selectColor(color, ev){
+  selectedColor=color;
+  document.getElementById('newShiftColor').value=color;
+  document.querySelectorAll('.color-option').forEach(o=>o.classList.remove('selected'));
+  if(ev?.target) ev.target.classList.add('selected');
+}
 function loadCategoriesSelect(){
   const select=document.getElementById('newShiftCat');
   if(!select) return;
   select.innerHTML = Object.keys(db.categories).map(cid=>{
     const c=db.categories[cid];
-    return `<option value="${cid}">${escapeHTML(c.icon||'')} ${escapeHTML(c.name||cid)}</option>`;
+    return `<option value="${cid}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
   }).join('');
 }
-
 function addNewShift(){
   if(!isEditMode()) return alert("Activa modo edición.");
   const name=document.getElementById('newShiftName').value.trim();
@@ -1594,14 +1732,13 @@ function addNewShift(){
   const cat=document.getElementById('newShiftCat').value;
   const inT=document.getElementById('newShiftIn').value||'00:00';
   const outT=document.getElementById('newShiftOut').value||'00:00';
-  const visible=document.getElementById('newShiftVisible').checked;
-
+  
   if(!name) return alert("Nombre requerido.");
-  const key = name.replace(/\s+/g,'_');
+  const key = name.replace(/\s+/g,'_').toUpperCase();
   const user=db.users[db.current];
-  if(user.config[key]) return alert("Ya existe un turno con ese ID.");
-
-  user.config[key]={ label:name, color, cat, in:inT, out:outT, visible };
+  if(user.config[key]) return alert("Ya existe un turno con ese nombre (ID).");
+  
+  user.config[key]={ label:name, color, cat, in:inT, out:outT };
   saveDB();
   renderSettings();
   render();
@@ -1611,25 +1748,31 @@ function addNewShift(){
   alert("Turno agregado.");
 }
 
-/* ============================ Categories (all editable) ============================ */
+/* =========================================================
+   Categories: editable + deletable
+========================================================= */
 function renderCategories(){
   const container=document.getElementById('categories-container');
   container.innerHTML='';
-
-  const ids=Object.keys(db.categories).sort((a,b)=> (db.categories[a].name||a).localeCompare(db.categories[b].name||b));
+  
+  const ids=Object.keys(db.categories).sort((a,b)=>db.categories[a].name.localeCompare(db.categories[b].name));
   ids.forEach(cid=>{
     const c=db.categories[cid];
     container.innerHTML += `
       <div class="flex items-center gap-3 p-4 border-b border-gray-100">
-        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-lg">${escapeHTML(c.icon||'📌')}</div>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg" style="background: ${c.color || '#3b82f6'}20; color: ${c.color || '#3b82f6'};">${escapeHTML(c.icon)}</div>
         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="cat-name-${cid}" value="${escapeHTML(c.name||cid)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Icono</div>
-            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon||'')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+          </div>
+          <div class="md:col-span-2">
+            <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</div>
+            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-10 bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-2 text-[10px] font-bold text-gray-500">
             ID: <span class="font-black text-gray-800">${cid}</span>
@@ -1644,33 +1787,32 @@ function renderCategories(){
 function addNewCategory(){
   if(!isEditMode()) return alert("Activa modo edición.");
   const name=document.getElementById('newCategoryName').value.trim();
-  const icon=document.getElementById('newCategoryIcon').value.trim() || '📌';
+  const icon=document.getElementById('newCategoryIcon').value;
   if(!name) return alert("Nombre requerido.");
-
+  
   const cid = name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
   if(db.categories[cid]) return alert("Ya existe una categoría con ese ID.");
-
-  db.categories[cid]={ name, icon };
+  
+  db.categories[cid]={ name, icon, color:'#6b7280' };
   saveDB();
   document.getElementById('newCategoryName').value='';
-  document.getElementById('newCategoryIcon').value='';
   renderCategories();
+  renderSummaryCategories();
   loadCategoriesSelect();
-  renderSettings();
   alert("Categoría agregada.");
 }
 
 function deleteCategory(cid){
   if(!isEditMode()) return alert("Activa modo edición.");
+  // check used in any user's config
   const used = Object.values(db.users).some(u=> Object.values(u.config).some(s=>s.cat===cid));
   if(used) return alert("No se puede eliminar: hay turnos usando esta categoría.");
-  if(!confirm(`¿Eliminar categoría "${db.categories[cid]?.name||cid}"?`)) return;
+  if(!confirm(`¿Eliminar categoría "${db.categories[cid].name}"?`)) return;
   delete db.categories[cid];
   saveDB();
   renderCategories();
+  renderSummaryCategories();
   loadCategoriesSelect();
-  renderSettings();
-  render();
 }
 
 function saveCategories(){
@@ -1678,39 +1820,30 @@ function saveCategories(){
   Object.keys(db.categories).forEach(cid=>{
     const name = document.getElementById(`cat-name-${cid}`)?.value?.trim();
     const icon = document.getElementById(`cat-icon-${cid}`)?.value?.trim();
+    const color = document.getElementById(`cat-color-${cid}`)?.value;
     if(name) db.categories[cid].name=name;
     if(icon) db.categories[cid].icon=icon;
+    if(color) db.categories[cid].color=color;
   });
   saveDB();
   renderCategories();
+  renderSummaryCategories();
   loadCategoriesSelect();
   renderSettings();
   render();
   alert("Categorías actualizadas.");
 }
 
-/* ============================ Localities ============================ */
-function refreshHolidayLocationSelects(){
-  const sel=document.getElementById('newHolidayLocation');
-  if(sel){
-    sel.innerHTML = db.localities.map(l=>`<option value="${escapeAttr(l)}">${escapeHTML(l)}</option>`).join('');
-    sel.value = db.localities.find(x=>x.trim().toUpperCase()==='SAN SALVADOR') || 'San Salvador';
-  }
-  const createLoc=document.getElementById('createLoc');
-  if(createLoc){
-    createLoc.innerHTML = db.localities.filter(l=>l.trim().toUpperCase()!=='GENERAL').map(l=>`<option value="${escapeAttr(l)}">${escapeHTML(l)}</option>`).join('');
-    createLoc.value='San Salvador';
-  }
-}
-
+/* =========================================================
+   Localities: editable + deletable (with propagation)
+========================================================= */
 function renderLocalities(){
   const container=document.getElementById('localities-container');
   container.innerHTML='';
-
+  
   db.localities = Array.from(new Set(db.localities.map(x=>String(x).trim()).filter(Boolean)));
   if(!db.localities.some(x=>x.toUpperCase()==='GENERAL')) db.localities.unshift('General');
-  if(!db.localities.some(x=>x.toUpperCase()==='SAN SALVADOR')) db.localities.push('San Salvador');
-
+  
   db.localities.forEach((loc, idx)=>{
     const isGeneral = loc.trim().toUpperCase()==='GENERAL';
     container.innerHTML += `
@@ -1725,22 +1858,22 @@ function renderLocalities(){
       </div>
     `;
   });
-
+  
   refreshHolidayLocationSelects();
+  refreshProfileLocationSelects();
 }
 
 function addLocality(){
   if(!isEditMode()) return alert("Activa modo edición.");
   const name=document.getElementById('newLocalityName').value.trim();
   if(!name) return alert("Nombre requerido.");
-  if(name.toUpperCase()==='GENERAL') return alert("“General” es reservado.");
+  if(name.toUpperCase()==='GENERAL') return alert('"General" es reservado.');
   if(db.localities.some(x=>x.trim().toUpperCase()===name.trim().toUpperCase())) return alert("Ya existe esa localidad.");
-
+  
   db.localities.push(name);
   document.getElementById('newLocalityName').value='';
   saveDB();
   renderLocalities();
-  renderHolidayRules();
   alert("Localidad agregada.");
 }
 
@@ -1748,25 +1881,22 @@ function deleteLocality(idx){
   if(!isEditMode()) return alert("Activa modo edición.");
   const loc=db.localities[idx];
   if(!loc || loc.toUpperCase()==='GENERAL') return;
-
   const usedUser = Object.values(db.users).some(u => (u.locality||'').trim().toUpperCase() === loc.trim().toUpperCase());
-  const usedHoliday = (db.holidayRules||[]).some(h => (h.location||'').trim().toUpperCase() === loc.trim().toUpperCase());
+  const usedHoliday = Object.values(db.holidays).some(h => (h.location||'').trim().toUpperCase() === loc.trim().toUpperCase());
   if(usedUser || usedHoliday) return alert("No se puede eliminar: está en uso por perfiles o asuetos. Cambia primero esas referencias.");
   if(!confirm(`¿Eliminar localidad "${loc}"?`)) return;
-
+  
   db.localities.splice(idx,1);
   saveDB();
   renderLocalities();
-  renderHolidayRules();
 }
 
 function saveLocalities(){
   if(!isEditMode()) return alert("Activa modo edición.");
-
+  
   const oldList = [...db.localities];
   const newList = [];
-
-  const renamePairs = [];
+  
   for(let i=0;i<oldList.length;i++){
     const oldLoc = oldList[i];
     const isGeneral = oldLoc.trim().toUpperCase()==='GENERAL';
@@ -1775,75 +1905,88 @@ function saveLocalities(){
     if(!v) continue;
     if(v.toUpperCase()==='GENERAL') continue;
     newList.push(v);
-
-    const from=oldLoc.trim(), to=v.trim();
-    if(from.toUpperCase()!==to.toUpperCase()) renamePairs.push([from,to]);
   }
-
+  
   if(!newList.some(x=>x.toUpperCase()==='GENERAL')) newList.unshift('General');
-  if(!newList.some(x=>x.toUpperCase()==='SAN SALVADOR')) newList.push('San Salvador');
-
+  
+  const renamePairs = [];
+  for(let i=0;i<oldList.length;i++){
+    const a=String(oldList[i]||'').trim();
+    const b=(document.getElementById(`loc-${i}`)?.value||a).trim();
+    if(a && b && a.toUpperCase()!=='GENERAL' && a.toUpperCase()!==b.toUpperCase()){
+      renamePairs.push([a,b]);
+    }
+  }
+  
   db.localities = Array.from(new Set(newList.map(x=>String(x).trim()).filter(Boolean)));
-
-  // propagate renames
+  
   renamePairs.forEach(([from,to])=>{
     Object.values(db.users).forEach(u=>{
       if((u.locality||'').trim().toUpperCase()===from.trim().toUpperCase()) u.locality=to;
     });
-    (db.holidayRules||[]).forEach(r=>{
-      if((r.location||'').trim().toUpperCase()===from.trim().toUpperCase()) r.location=to;
+    Object.keys(db.holidays).forEach(k=>{
+      const h=db.holidays[k];
+      if((h.location||'').trim().toUpperCase()===from.trim().toUpperCase()) h.location=to;
     });
   });
-
+  
   saveDB();
   renderLocalities();
-  renderHolidayRules();
+  renderHolidays();
   renderProfilesList();
   render();
   alert("Localidades actualizadas.");
 }
 
-/* ============================ Holiday rules UI ============================ */
-function normalizeMD(md){
-  const m = String(md||'').trim();
-  const match = m.match(/^(\d{1,2})-(\d{1,2})$/);
-  if(!match) return null;
-  const mm = Math.max(1, Math.min(12, parseInt(match[1],10)));
-  const dd = Math.max(1, Math.min(31, parseInt(match[2],10)));
-  return `${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+function refreshHolidayLocationSelects(){
+  const sel=document.getElementById('newHolidayLocation');
+  if(sel){
+    sel.innerHTML = db.localities.map(l=>`<option value="${escapeAttr(l)}" ${l.toUpperCase()==='GENERAL'?'':' '}>${escapeHTML(l)}</option>`).join('');
+  }
+}
+function refreshProfileLocationSelects(){
+  const createLoc=document.getElementById('createLoc');
+  if(createLoc){
+    createLoc.innerHTML = db.localities.filter(l=>l.toUpperCase()!=='GENERAL').map(l=>`<option value="${escapeAttr(l)}">${escapeHTML(l)}</option>`).join('');
+    createLoc.value='San Salvador';
+  }
 }
 
-function renderHolidayRules(){
+/* =========================================================
+   Holidays: editable + deletable
+========================================================= */
+function renderHolidays(){
   const container=document.getElementById('holidays-container');
   container.innerHTML='';
-
-  const rules = (db.holidayRules||[]).slice().sort((a,b)=> String(a.md).localeCompare(String(b.md)));
-  if(rules.length===0){
+  
+  const keys = Object.keys(db.holidays).sort((a,b)=> new Date(a) - new Date(b));
+  if(keys.length===0){
     container.innerHTML = `<div class="p-8 text-center text-gray-400 font-bold">No hay asuetos.</div>`;
     return;
   }
-
-  rules.forEach((r, idx)=>{
+  
+  keys.forEach(k=>{
+    const h=db.holidays[k];
+    const [y,m,d]=k.split('-');
     container.innerHTML += `
       <div class="p-4 border-b border-gray-100">
         <div class="flex items-center justify-between gap-2">
-          <div class="font-black text-gray-900 text-[12px]">${escapeHTML(r.name||'Asueto')}</div>
-          <button onclick="deleteHolidayRule(${idx})" class="p-2 text-red-600 hover:text-red-800 font-black">🗑️</button>
+          <div class="font-black text-gray-900 text-[12px]">${escapeHTML(h.name||'Asueto')}</div>
+          <button onclick="deleteHoliday('${escapeAttr(k)}')" class="p-2 text-red-600 hover:text-red-800 font-black">🗑️</button>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
           <div>
-            <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Mes/Día</div>
-            <input id="hr-md-${idx}" value="${escapeHTML(r.md||'')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Fecha</div>
+            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y,m,d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="hr-name-${idx}" value="${escapeHTML(r.name||'')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name||'')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="hr-loc-${idx}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
-              ${db.localities.map(l=>`<option value="${escapeAttr(l)}" ${(r.location||'General')===l?'selected':''}>${escapeHTML(l)}</option>`).join('')}
+            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+              ${db.localities.map(l=>`<option value="${escapeAttr(l)}" ${(h.location||'General')===l?'selected':''}>${escapeHTML(l)}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -1852,54 +1995,63 @@ function renderHolidayRules(){
   });
 }
 
-function addHolidayRule(){
+function addNewHoliday(){
   if(!isEditMode()) return alert("Activa modo edición.");
-  const mdRaw=document.getElementById('newHolidayMD').value;
+  const dateInput=document.getElementById('newHolidayDate').value;
   const name=document.getElementById('newHolidayName').value.trim();
   const loc=document.getElementById('newHolidayLocation').value || 'General';
-
-  const md = normalizeMD(mdRaw);
-  if(!md || !name) return alert("Mes/Día inválido (formato MM-DD) y nombre requerido.");
-
-  db.holidayRules.push({md, name, location:loc});
-  document.getElementById('newHolidayMD').value='';
+  
+  if(!dateInput || !name) return alert("Fecha y nombre requeridos.");
+  
+  const dt=new Date(dateInput+'T00:00:00');
+  const key=dayKey(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+  db.holidays[key]={ name, location: loc };
+  
+  document.getElementById('newHolidayDate').value='';
   document.getElementById('newHolidayName').value='';
   saveDB();
-  renderHolidayRules();
+  renderHolidays();
   render();
   alert("Asueto agregado.");
 }
 
-function deleteHolidayRule(idx){
+function deleteHoliday(k){
   if(!isEditMode()) return alert("Activa modo edición.");
-  if(!confirm("¿Eliminar este asueto?")) return;
-  db.holidayRules.splice(idx,1);
+  if(!confirm(`¿Eliminar asueto ${k}?`)) return;
+  delete db.holidays[k];
   saveDB();
-  renderHolidayRules();
+  renderHolidays();
   render();
 }
 
-function saveHolidayRules(){
+function saveHolidays(){
   if(!isEditMode()) return alert("Activa modo edición.");
-  const rules = (db.holidayRules||[]);
-  const newRules = [];
-
-  for(let i=0;i<rules.length;i++){
-    const md = normalizeMD(document.getElementById(`hr-md-${i}`)?.value);
-    const name = document.getElementById(`hr-name-${i}`)?.value?.trim();
-    const loc = document.getElementById(`hr-loc-${i}`)?.value || 'General';
-    if(!md || !name) continue;
-    newRules.push({md, name, location:loc});
-  }
-
-  db.holidayRules = newRules;
+  
+  const newHolidays = {};
+  const keys = Object.keys(db.holidays);
+  
+  keys.forEach(oldKey=>{
+    const safe = cssSafe(oldKey);
+    const dateVal = document.getElementById(`h-date-${safe}`)?.value;
+    const nameVal = document.getElementById(`h-name-${safe}`)?.value?.trim();
+    const locVal = document.getElementById(`h-loc-${safe}`)?.value || 'General';
+    if(!dateVal || !nameVal) return;
+    
+    const dt = new Date(dateVal+'T00:00:00');
+    const newKey = dayKey(dt.getFullYear(), dt.getMonth()+1, dt.getDate());
+    newHolidays[newKey] = { name:nameVal, location: locVal };
+  });
+  
+  db.holidays = newHolidays;
   saveDB();
-  renderHolidayRules();
+  renderHolidays();
   render();
   alert("Asuetos actualizados.");
 }
 
-/* ============================ PIN only ============================ */
+/* =========================================================
+   PIN only
+========================================================= */
 function savePinOnly(){
   if(!isEditMode()) return alert("Activa modo edición.");
   const user=db.users[db.current];
@@ -1914,9 +2066,11 @@ function savePinOnly(){
   alert("PIN actualizado.");
 }
 
-/* ============================ Profiles ============================ */
+/* =========================================================
+   Profiles modal: create/edit/delete + locality
+========================================================= */
 function openProfilesModal(){
-  refreshHolidayLocationSelects();
+  refreshProfileLocationSelects();
   renderProfilesList();
   document.getElementById('profilesModal').classList.add('active');
 }
@@ -1927,17 +2081,18 @@ function createProfile(){
   const name=document.getElementById('createName').value.trim().toUpperCase();
   const pin=document.getElementById('createPin').value.trim();
   const loc=document.getElementById('createLoc').value || 'San Salvador';
-
+  
   if(!name || name.length<2) return alert("Nombre inválido.");
   if(!pin || pin.length!==4 || isNaN(pin)) return alert("PIN inválido.");
   if(db.users[name]) return alert("Ya existe ese perfil.");
-
-  db.users[name] = deepClone(db.users['ADMIN']);
+  
+  db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
   db.users[name].pin = pin;
   db.users[name].locality = loc;
   db.users[name].data = {};
   db.users[name].editLocked = false;
-
+  ensureImportBaseShiftsForUser(name);
+  
   db.current = name;
   saveDB();
   updateUserDropdown();
@@ -1951,7 +2106,7 @@ function renderProfilesList(){
   const box=document.getElementById('profilesList');
   box.innerHTML='';
   const keys=Object.keys(db.users).sort();
-
+  
   keys.forEach(u=>{
     const user=db.users[u];
     const isCurrent = (u===db.current);
@@ -1967,7 +2122,7 @@ function renderProfilesList(){
             ${u==='ADMIN' ? '' : `<button onclick="deleteProfile('${escapeAttr(u)}')" class="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-black uppercase">Eliminar</button>`}
           </div>
         </div>
-
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Renombrar perfil</div>
@@ -1980,7 +2135,7 @@ function renderProfilesList(){
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
             <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
-              ${db.localities.filter(l=>l.trim().toUpperCase()!=='GENERAL').map(l=>`<option value="${escapeAttr(l)}" ${(user.locality||'San Salvador')===l?'selected':''}>${escapeHTML(l)}</option>`).join('')}
+              ${db.localities.filter(l=>l.toUpperCase()!=='GENERAL').map(l=>`<option value="${escapeAttr(l)}" ${(user.locality||'San Salvador')===l?'selected':''}>${escapeHTML(l)}</option>`).join('')}
             </select>
           </div>
           <div class="md:col-span-3">
@@ -2007,7 +2162,7 @@ function deleteProfile(u){
   if(!isEditMode()) return alert("Activa modo edición.");
   if(u==='ADMIN') return;
   if(!confirm(`¿Eliminar perfil "${u}"? Se perderá su calendario.`)) return;
-
+  
   delete db.users[u];
   if(db.current===u) db.current='ADMIN';
   saveDB();
@@ -2021,14 +2176,14 @@ function saveProfileEdits(u){
   if(!isEditMode()) return alert("Activa modo edición.");
   const user=db.users[u];
   if(!user) return;
-
+  
   const pin = document.getElementById(`p-pin-${cssSafe(u)}`)?.value?.trim();
   const loc = document.getElementById(`p-loc-${cssSafe(u)}`)?.value || 'San Salvador';
-
+  
   if(!pin || pin.length!==4 || isNaN(pin)) return alert("PIN inválido (4 dígitos).");
   user.pin = pin;
   user.locality = loc;
-
+  
   if(u!=='ADMIN'){
     const newName = document.getElementById(`p-name-${cssSafe(u)}`)?.value?.trim()?.toUpperCase();
     if(newName && newName!==u){
@@ -2038,7 +2193,7 @@ function saveProfileEdits(u){
       if(db.current===u) db.current=newName;
     }
   }
-
+  
   saveDB();
   updateUserDropdown();
   updateUserInitial();
@@ -2047,94 +2202,70 @@ function saveProfileEdits(u){
   alert("Perfil actualizado.");
 }
 
-/* ============================ Import modal ============================ */
+/* =========================================================
+   Import: analyze + select users + import selected
+========================================================= */
 function openImportModal(){
+  document.getElementById('importFile').value='';
+  document.getElementById('importInfo').innerText='';
+  document.getElementById('importUsersList').innerHTML = `<div class="text-gray-400 font-bold">Adjunta un Excel y presiona "Analizar".</div>`;
   importContext=null;
-  importInfo.innerText='';
-  importFile.value='';
-  importUsersList.innerHTML = `<div class="text-gray-400 font-bold">Adjunta un Excel y presiona “Analizar”.</div>`;
-  importMonth.value = current.getMonth();
-  importYear.value = current.getFullYear();
+  
+  document.getElementById('importMonth').value = current.getMonth();
+  document.getElementById('importYear').value = current.getFullYear();
   document.getElementById('importModal').classList.add('active');
 }
 function closeImportModal(){ document.getElementById('importModal').classList.remove('active'); }
-function selectAllImportUsers(flag){ document.querySelectorAll('.impUserChk').forEach(ch=> ch.checked = !!flag); }
 
-/* ---- Excel detection heuristics ---- */
+function closeImportModalAndRefresh(){
+  closeImportModal();
+  render();
+}
+
 function detectMonthYearFromRows(rows){
   const monthsMap = {'ENERO':0,'FEBRERO':1,'MARZO':2,'ABRIL':3,'MAYO':4,'JUNIO':5,'JULIO':6,'AGOSTO':7,'SEPTIEMBRE':8,'OCTUBRE':9,'NOVIEMBRE':10,'DICIEMBRE':11};
   let foundMonth=null, foundYear=null;
-  for(let r=0;r<Math.min(rows.length,80);r++){
+  for(let r=0;r<Math.min(rows.length,50);r++){
     const row=rows[r]||[];
     for(let c=0;c<row.length;c++){
       const v=row[c]; if(!v) continue;
       const s=String(v).toUpperCase();
       Object.keys(monthsMap).forEach(mn=>{ if(s.includes(mn) && foundMonth===null) foundMonth=monthsMap[mn]; });
-      const yMatch=s.match(/(AÑO|ANIO)\s*([0-9]{4})/);
-      if(yMatch) foundYear=parseInt(yMatch[2]);
+      const yMatch=s.match(/AÑO\s*([0-9]{4})/);
+      if(yMatch) foundYear=parseInt(yMatch[1]);
     }
   }
   return {month:foundMonth, year:foundYear};
 }
 
-function scoreHeaderCandidate(row){
-  // score by how many day numbers 1..31 exist
-  let count=0;
-  for(const v of row){
-    const s=String(v||'').trim();
-    if(/^\d+$/.test(s)){
-      const d=parseInt(s,10);
-      if(d>=1 && d<=31) count++;
-    }
-  }
-  return count;
-}
-
 function findHeaderRow(rows){
-  // pick row with max day-count, prefer >= 15
-  let bestIdx=-1, bestScore=0;
   for(let r=0;r<rows.length;r++){
     const row=rows[r]||[];
-    const sc=scoreHeaderCandidate(row);
-    if(sc>bestScore){
-      bestScore=sc; bestIdx=r;
+    const joined=row.map(x=>String(x||'').trim()).join(' | ').toUpperCase();
+    if(joined.includes('PERSONAL') && (joined.includes('NO. EMP') || joined.includes('NO EMP') || joined.includes('NO.EMP'))){
+      if(row.some(v=>String(v).trim()==='1') && row.some(v=>String(v).trim()==='2')) return r;
     }
   }
-  if(bestScore>=12) return bestIdx;
   return -1;
 }
-
 function buildDayColumnMap(headerRow){
   const map={};
   for(let c=0;c<headerRow.length;c++){
     const s=String(headerRow[c]||'').trim();
     if(/^\d+$/.test(s)){
-      const d=parseInt(s,10);
+      const d=parseInt(s);
       if(d>=1&&d<=31) map[d]=c;
     }
   }
   return map;
 }
+function safeNameCell(v){ return String(v||'').replace(/\s+/g,' ').trim(); }
 
-function detectNameCol(headerRow){
-  const candidates = ['PERSONAL','NOMBRE','EMPLEADO','COLABORADOR','TRABAJADOR'];
-  for(let c=0;c<headerRow.length;c++){
-    const s=String(headerRow[c]||'').toUpperCase().trim();
-    if(candidates.some(k=>s.includes(k))) return c;
-  }
-  // fallback: first text-like col
-  for(let c=0;c<headerRow.length;c++){
-    const s=String(headerRow[c]||'').trim();
-    if(s && !/^\d+$/.test(s)) return c;
-  }
-  return -1;
-}
-
-function isLikelyDataRow(row, nameCol, dayCols){
-  const name=String(row[nameCol]||'').trim().toUpperCase();
-  if(!name) return false;
-  if(name.includes('TOTAL') || name.includes('PERSONAL')) return false;
-  // any code present
+function isLikelyDataRow(row, nameCol, empCol, dayCols){
+  const name=safeNameCell(row[nameCol]).toUpperCase();
+  const emp=safeNameCell(row[empCol]);
+  if(!name || !emp) return false;
+  if(name.includes('TOTAL POR TURNO') || name.includes('PERSONAL')) return false;
   for(const d of Object.keys(dayCols)){
     const code=normalizeCode(row[dayCols[d]]);
     if(code && code!=='X') return true;
@@ -2143,53 +2274,61 @@ function isLikelyDataRow(row, nameCol, dayCols){
 }
 
 async function analyzeImportFile(){
-  if(!importFile.files || !importFile.files[0]) return alert("Selecciona un archivo.");
-
-  const data = await importFile.files[0].arrayBuffer();
+  const fileInput=document.getElementById('importFile');
+  if(!fileInput.files || !fileInput.files[0]) return alert("Selecciona un archivo.");
+  
+  const data = await fileInput.files[0].arrayBuffer();
   const wb = XLSX.read(data, {type:'array'});
   const sheetName = wb.SheetNames[0];
   const ws = wb.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:''});
-
+  
   const detected = detectMonthYearFromRows(rows);
-  const fallbackMonth = parseInt(importMonth.value);
-  const fallbackYear = parseInt(importYear.value);
+  const fallbackMonth = parseInt(document.getElementById('importMonth').value);
+  const fallbackYear = parseInt(document.getElementById('importYear').value);
   const monthIndex0 = (detected.month ?? fallbackMonth);
   const year = (detected.year ?? fallbackYear);
-
+  
   const headerIdx=findHeaderRow(rows);
-  if(headerIdx<0) return alert("No pude detectar encabezados (días 1..31).");
-
+  if(headerIdx<0) return alert("No pude detectar encabezados (PERSONAL / No. EMP. / días).");
+  
   const headerRow = rows[headerIdx]||[];
   const dayCols = buildDayColumnMap(headerRow);
-  if(Object.keys(dayCols).length<10) return alert("Encabezado detectado pero con pocos días. Revisa el Excel.");
-
-  const nameCol = detectNameCol(headerRow);
-  if(nameCol<0) return alert("No pude detectar columna de nombres.");
-
-  // collect users
+  
+  let nameCol=-1, empCol=-1;
+  for(let c=0;c<headerRow.length;c++){
+    const s=String(headerRow[c]||'').toUpperCase().trim();
+    if(s==='PERSONAL') nameCol=c;
+    if(s.includes('EMP')) empCol=c;
+  }
+  if(nameCol<0 || empCol<0 || Object.keys(dayCols).length<10) return alert("Encabezado incompleto.");
+  
   const usersSet=new Set();
   for(let r=headerIdx+1;r<rows.length;r++){
     const row=rows[r]||[];
-    if(!isLikelyDataRow(row,nameCol,dayCols)) continue;
-    const nm = String(row[nameCol]||'').replace(/\s+/g,' ').trim().toUpperCase();
-    if(nm) usersSet.add(nm);
+    if(!isLikelyDataRow(row,nameCol,empCol,dayCols)) continue;
+    usersSet.add(safeNameCell(row[nameCol]).toUpperCase());
   }
-
-  importContext = { rows, headerIdx, nameCol, dayCols, monthIndex0, year, users: Array.from(usersSet).sort() };
-
+  
+  importContext = { wb, sheetName, rows, headerIdx, nameCol, empCol, dayCols, monthIndex0, year, users: Array.from(usersSet).sort() };
+  
+  const list=document.getElementById('importUsersList');
   if(importContext.users.length===0){
-    importUsersList.innerHTML = `<div class="text-gray-400 font-bold">No se detectaron usuarios.</div>`;
+    list.innerHTML = `<div class="text-gray-400 font-bold">No se detectaron usuarios en ese Excel.</div>`;
   } else {
-    importUsersList.innerHTML = importContext.users.map(u=>`
+    list.innerHTML = importContext.users.map(u=>`
       <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
         <input class="impUserChk" type="checkbox" value="${escapeAttr(u)}" checked>
         <span class="font-black text-gray-800">${escapeHTML(u)}</span>
       </label>
     `).join('');
   }
+  
+  document.getElementById('importInfo').innerText = `Detectado: ${MONTHS[monthIndex0]} ${year}. Usuarios: ${importContext.users.length}.`;
+}
 
-  importInfo.innerText = `Detectado: ${MONTHS[monthIndex0]} ${year}. Usuarios: ${importContext.users.length}.`;
+function selectAllImportUsers(flag){
+  document.querySelectorAll('.impUserChk').forEach(ch=> ch.checked = !!flag);
 }
 
 function clearMonthForUser(userKey, year, monthIndex0){
@@ -2201,104 +2340,113 @@ function clearMonthForUser(userKey, year, monthIndex0){
 function setDayForUser(userKey, year, monthIndex0, day, shiftDef, importMode){
   const user=db.users[userKey];
   const key = dayKey(year, monthIndex0+1, day);
-
+  
   if(importMode==='merge' && user.data[key]) return;
-
+  
   ensureShiftExistsForUser(userKey, shiftDef);
-
+  
   const tIn = shiftDef.in || '00:00';
   const tOut = shiftDef.out || '00:00';
   const hrs = calculateHours(tIn, tOut);
-
+  
   user.data[key] = {
     mode:'simple',
     s:shiftDef.key, t:shiftDef.key, b:shiftDef.key,
     tIn, tOut, h:hrs,
-    n: (shiftDef.note && String(shiftDef.note).trim())
-      ? shiftDef.note
-      : ((tIn!=='00:00'||tOut!=='00:00') ? `${tIn}-${tOut}` : (shiftDef.label||shiftDef.key).toUpperCase())
+    n: (shiftDef.note && String(shiftDef.note).trim()) ? shiftDef.note : ((tIn!=='00:00'||tOut!=='00:00') ? `${tIn}-${tOut}` : (shiftDef.label||shiftDef.key).toUpperCase())
   };
 }
 
 function runImportSelected(){
   if(!importContext) return alert("Primero analiza el archivo.");
   const importMode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
-
+  
   const selected = Array.from(document.querySelectorAll('.impUserChk')).filter(x=>x.checked).map(x=>x.value);
   if(selected.length===0) return alert("Selecciona al menos un usuario.");
-
-  const { rows, headerIdx, nameCol, dayCols, monthIndex0, year } = importContext;
-
+  
+  const { rows, headerIdx, nameCol, empCol, dayCols, monthIndex0, year } = importContext;
+  
   selected.forEach(u=> ensureUserExists(u));
-  if(importMode==='replace') selected.forEach(u=> clearMonthForUser(u, year, monthIndex0));
-
+  
+  if(importMode==='replace'){
+    selected.forEach(u=> clearMonthForUser(u, year, monthIndex0));
+  }
+  
   let written=0;
   for(let r=headerIdx+1;r<rows.length;r++){
     const row=rows[r]||[];
-    if(!isLikelyDataRow(row,nameCol,dayCols)) continue;
-    const name = String(row[nameCol]||'').replace(/\s+/g,' ').trim().toUpperCase();
+    if(!isLikelyDataRow(row,nameCol,empCol,dayCols)) continue;
+    const name = safeNameCell(row[nameCol]).toUpperCase();
     if(!selected.includes(name)) continue;
-
+    
     const userKey = ensureUserExists(name);
-
+    ensureImportBaseShiftsForUser(userKey);
+    
     for(const dStr of Object.keys(dayCols)){
-      const day=parseInt(dStr,10);
+      const day=parseInt(dStr);
       const code=normalizeCode(row[dayCols[dStr]]);
       if(!code || code==='X') continue;
-
       const def = codeToShiftDef(code);
       if(!def) continue;
-
-      // standard comment
+      
       if(def.in && def.out && !(def.in==='00:00'&&def.out==='00:00')) def.note = `${def.in}-${def.out}`;
       else def.note = (def.note || def.label || def.key || code).toUpperCase();
-
-      // Imported shifts are hidden by default
-      def.visible = false;
-
+      
       setDayForUser(userKey, year, monthIndex0, day, def, importMode);
       written++;
     }
   }
-
+  
   saveDB();
-
-  // jump to imported month and show first selected as current
+  
   db.current = selected[0];
   current = new Date(year, monthIndex0, 1);
   saveDB();
-
+  
   updateUserDropdown();
   updateUserInitial();
   updateMonthDisplay();
   render();
-
-  // close modal automatically
-  closeImportModal();
-  alert(`Importación completada.\nPerfiles: ${selected.length}\nCeldas: ${written}\nMes: ${MONTHS[monthIndex0]} ${year}`);
+  renderSummaryCategories();
+  
+  document.getElementById('importInfo').innerHTML = `
+    <div class="text-green-600 font-bold">
+      Importación completada!<br>
+      Perfiles: ${selected.length} | Celdas: ${written}<br>
+      Mes: ${MONTHS[monthIndex0]} ${year}<br>
+      <button onclick="closeImportModalAndRefresh()" class="mt-2 px-4 py-2 bg-emerald-600 text-white rounded-xl font-black text-[10px]">
+        ✅ Cerrar y ver calendario
+      </button>
+    </div>
+  `;
+  
+  alert(`Importación completada.\nPerfiles importados: ${selected.length}\nCeldas: ${written}\nMes: ${MONTHS[monthIndex0]} ${year}`);
 }
 
-/* ============================ Export ============================ */
+/* =========================================================
+   Export: one/many/all => 1 image per profile
+========================================================= */
 function showExportModal(){
-  exportMonth.value = current.getMonth();
-  exportYear.value = current.getFullYear();
+  document.getElementById('exportMonth').value = current.getMonth();
+  document.getElementById('exportYear').value = current.getFullYear();
   buildExportUserList();
-  exportUsersBox.classList.add('hidden');
-
+  document.getElementById('exportUsersBox').classList.add('hidden');
+  
   document.querySelectorAll('input[name="exportScope"]').forEach(r=>{
     r.onchange=()=>{
       const v=document.querySelector('input[name="exportScope"]:checked').value;
-      exportUsersBox.classList.toggle('hidden', v!=='select');
+      document.getElementById('exportUsersBox').classList.toggle('hidden', v!=='select');
     };
   });
-
-  exportModal.classList.add('active');
+  
+  document.getElementById('exportModal').classList.add('active');
 }
-function closeExportModal(){ exportModal.classList.remove('active'); }
+function closeExportModal(){ document.getElementById('exportModal').classList.remove('active'); }
 
 function buildExportUserList(){
+  const list=document.getElementById('exportUsersList');
   const users=Object.keys(db.users).sort();
-  exportUsersList.innerHTML = users.map(u=>`
+  list.innerHTML = users.map(u=>`
     <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
       <input class="expUserChk" type="checkbox" value="${escapeAttr(u)}">
       <span class="font-black text-gray-800">${escapeHTML(u)}</span>
@@ -2306,7 +2454,40 @@ function buildExportUserList(){
   `).join('');
 }
 
-function selectAllExportUsers(flag){ document.querySelectorAll('.expUserChk').forEach(ch=> ch.checked = !!flag); }
+function selectAllExportUsers(flag){
+  document.querySelectorAll('.expUserChk').forEach(ch=> ch.checked = !!flag);
+}
+
+async function exportImages(){
+  const monthIndex0 = parseInt(document.getElementById('exportMonth').value);
+  const year = parseInt(document.getElementById('exportYear').value);
+  const scope = document.querySelector('input[name="exportScope"]:checked').value;
+  
+  let targets=[];
+  if(scope==='current') targets=[db.current];
+  if(scope==='all') targets=Object.keys(db.users).sort();
+  if(scope==='select'){
+    targets = Array.from(document.querySelectorAll('.expUserChk')).filter(x=>x.checked).map(x=>x.value);
+    if(targets.length===0) return alert("Selecciona al menos un perfil.");
+  }
+  
+  closeExportModal();
+  
+  const originalCurrent = db.current;
+  for(const u of targets){
+    db.current=u;
+    updateUserInitial();
+    
+    const img = await buildExportImageForUser(u, year, monthIndex0);
+    downloadDataUrl(img, `Turnos_${u}_${MONTHS[monthIndex0]}_${year}.png`);
+  }
+  
+  db.current = originalCurrent;
+  updateUserDropdown();
+  updateUserInitial();
+  render();
+  alert(`Exportación completada: ${targets.length} imagen(es).`);
+}
 
 function downloadDataUrl(dataUrl, filename){
   const a=document.createElement('a');
@@ -2315,96 +2496,69 @@ function downloadDataUrl(dataUrl, filename){
   a.click();
 }
 
-function getColorValue(colorName){
-  const map = {
-    'Mañana':'#ffff00','Tarde':'#fbcfe8','CENA':'#d8b4fe','16hrs':'#bef264','L':'#ffffff','Vacaciones':'#fed7aa','Cumpleaños':'#fde68a',
-    'azul':'#93c5fd','rojo':'#fca5a5','verde':'#86efac','naranja':'#fdba74','rosa':'#f9a8d4','cian':'#67e8f9',
-    'morado':'#d8b4fe','lima':'#d9f99d','ambar':'#fcd34d','teal':'#5eead4','indigo':'#a5b4fc','gris':'#d1d5db'
-  };
-  return map[colorName] || '#ffffff';
-}
-
-async function exportImages(){
-  const monthIndex0 = parseInt(exportMonth.value);
-  const year = parseInt(exportYear.value);
-  const scope = document.querySelector('input[name="exportScope"]:checked').value;
-
-  let targets=[];
-  if(scope==='current') targets=[db.current];
-  if(scope==='all') targets=Object.keys(db.users).sort();
-  if(scope==='select'){
-    targets = Array.from(document.querySelectorAll('.expUserChk')).filter(x=>x.checked).map(x=>x.value);
-    if(targets.length===0) return alert("Selecciona al menos un perfil.");
-  }
-
-  closeExportModal();
-
-  const originalCurrent = db.current;
-  for(const u of targets){
-    db.current=u;
-    updateUserInitial();
-    const img = await buildExportImageForUser(u, year, monthIndex0);
-    downloadDataUrl(img, `Turnos_${u}_${MONTHS[monthIndex0]}_${year}.png`);
-  }
-  db.current = originalCurrent;
-  updateUserDropdown();
-  updateUserInitial();
-  render();
-  alert(`Exportación completada: ${targets.length} imagen(es).`);
-}
-
 async function buildExportImageForUser(userKey, year, monthIndex0){
   const user=db.users[userKey];
   const SHIFTS=user.config;
-
-  let totalWorkHours=0, workedDays=0, freeDays=0, vacDays=0, weekendDays=0, holidayWorked=0;
+  const categories = db.categories;
+  
+  const catHours = {};
+  const catDays = {};
+  Object.keys(categories).forEach(catId => {
+    catHours[catId] = 0;
+    catDays[catId] = 0;
+  });
+  
+  let freeDays=0, vacDays=0, weekendDays=0, holidayWorked=0;
   const daysInMonth = new Date(year, monthIndex0+1, 0).getDate();
   freeDays = daysInMonth;
-
+  
   const m1=monthIndex0+1;
   const todayStr = new Date().toLocaleDateString('es-ES');
-
-  for(let d=1; d<=daysInMonth; d++){
-    const dow = new Date(year, monthIndex0, d).getDay();
-    if(dow===0 || dow===6) weekendDays++;
-  }
-
-  const getCat = (shiftId)=> (SHIFTS[shiftId]?.cat || 'off');
-
+  
   Object.keys(user.data).forEach(k=>{
     if(!k.startsWith(`${year}-${m1}-`)) return;
-    const dObj = user.data[k];
-    const dayNum=parseInt(k.split('-')[2],10);
-
-    const rules = getHolidayForDate(year, monthIndex0, dayNum);
-    const isHolidayApplicable = rules.some(r=>holidayApplies(r.location, user.locality));
-
+    const d = user.data[k];
+    const dayNum=parseInt(k.split('-')[2]);
+    const dow = new Date(year, monthIndex0, dayNum).getDay();
+    const isHoliday = db.holidays[k] && holidayApplies(db.holidays[k].location, user.locality);
+    
+    if(dow===0 || dow===6) weekendDays++;
     freeDays--;
-
-    if(dObj.mode==='mixto'){
-      const topCat=getCat(dObj.t), botCat=getCat(dObj.b);
-      const topHrs = dObj.hrsTop ?? calculateHours(dObj.tInTop || SHIFTS[dObj.t]?.in, dObj.tOutTop || SHIFTS[dObj.t]?.out);
-      const botHrs = dObj.hrsBottom ?? calculateHours(dObj.tInBottom || SHIFTS[dObj.b]?.in, dObj.tOutBottom || SHIFTS[dObj.b]?.out);
-      const anyWork = (topCat!=='off' && topHrs>0) || (botCat!=='off' && botHrs>0);
-      if(anyWork){ workedDays++; totalWorkHours += (topHrs+botHrs); }
-      if(isHolidayApplicable && anyWork) holidayWorked++;
-      if(topCat==='off') freeDays++;
-      if(botCat==='off') freeDays++;
+    
+    if(d.mode==='mixto'){
+      const topCat=SHIFTS[d.t]?.cat, botCat=SHIFTS[d.b]?.cat;
+      const topWork=(topCat && categories[topCat]);
+      const botWork=(botCat && categories[botCat]);
+      
+      if(isHoliday && (topWork||botWork)) holidayWorked++;
+      
+      if(topCat && categories[topCat]){
+        catHours[topCat] += (d.hrsTop||calculateHours(d.tInTop||SHIFTS[d.t].in, d.tOutTop||SHIFTS[d.t].out));
+        catDays[topCat]++;
+      }
+      
+      if(botCat && categories[botCat]){
+        catHours[botCat] += (d.hrsBottom||calculateHours(d.tInBottom||SHIFTS[d.b].in, d.tOutBottom||SHIFTS[d.b].out));
+        catDays[botCat]++;
+      }
     } else {
-      const cat=getCat(dObj.s);
-      if(cat==='off'){
-        freeDays++;
-        if(dObj.s==='Vacaciones') vacDays++;
-      } else {
-        workedDays++; totalWorkHours += (dObj.h||0);
-        if(isHolidayApplicable) holidayWorked++;
+      const cat=SHIFTS[d.s]?.cat;
+      if(cat && categories[cat]){
+        catHours[cat] += (d.h||0);
+        catDays[cat]++;
+        if(isHoliday && cat !== 'off') holidayWorked++;
+        
+        if(cat === 'off'){
+          freeDays++;
+          if(d.s==='Vacaciones') vacDays++;
+        }
       }
     }
   });
-
+  
   freeDays=Math.max(0,freeDays);
   const applicableHolidays = countApplicableHolidaysInMonth(year, monthIndex0, user.locality);
-
+  
   const temp=document.createElement('div');
   temp.style.position='fixed';
   temp.style.left='-9999px';
@@ -2414,51 +2568,150 @@ async function buildExportImageForUser(userKey, year, monthIndex0){
   temp.style.padding='24px';
   temp.style.borderRadius='18px';
   temp.style.boxShadow='0 10px 30px rgba(0,0,0,.18)';
-
-  temp.innerHTML = `
-    <div style="font-family:system-ui,-apple-system,sans-serif;">
-      <div style="text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #e5e7eb;">
-        <div style="font-size:30px;font-weight:900;color:#0f172a;">${escapeHTML(userKey)} - ${MONTHS[monthIndex0]} ${year}</div>
-        <div style="font-size:12px;color:#64748b;font-weight:800;">Localidad: ${escapeHTML(user.locality||'San Salvador')} • Generado: ${todayStr}</div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;background:linear-gradient(to right,#f0f9ff,#fefce8);padding:14px;border-radius:14px;">
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">Horas trabajadas</div>
-          <div style="font-size:20px;font-weight:900;color:#0f172a;">${totalWorkHours.toFixed(1)} HRS</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">Días trabajados</div>
-          <div style="font-size:20px;font-weight:900;color:#0f172a;">${workedDays}</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">Libres</div>
-          <div style="font-size:20px;font-weight:900;color:#0f172a;">${freeDays}</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">Vacaciones</div>
-          <div style="font-size:20px;font-weight:900;color:#0f172a;">${vacDays}</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">Asuetos (aplican)</div>
-          <div style="font-size:20px;font-weight:900;color:#dc2626;">${applicableHolidays} / Trab. ${holidayWorked}</div>
-        </div>
-      </div>
-
-      <div style="font-size:12px;font-weight:900;color:#334155;">(Exportación visual igual a v19; omitida aquí por brevedad de código)</div>
-    </div>
-  `;
-
+  
+  temp.innerHTML = buildExportHTML(userKey, user.locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, applicableHolidays, SHIFTS, user, categories);
   document.body.appendChild(temp);
+  
   const canvas = await html2canvas(temp, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false});
   const url = canvas.toDataURL('image/png');
   document.body.removeChild(temp);
   return url;
 }
 
-/* ============================ Boot ============================ */
+function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, applicableHolidays, SHIFTS, user, categories){
+  const monthName=MONTHS[monthIndex0];
+  const daysOfWeek=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+  const firstDay = new Date(year, monthIndex0, 1).getDay();
+  const firstDayMonday = firstDay===0?6:firstDay-1;
+  const lastDate = new Date(year, monthIndex0+1, 0).getDate();
+  const prevLastDate = new Date(year, monthIndex0, 0).getDate();
+  
+  let categoriesHTML = '';
+  Object.keys(categories).forEach(catId => {
+    const cat = categories[catId];
+    if(catDays[catId] > 0 || catHours[catId] > 0){
+      categoriesHTML += `
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">${escapeHTML(cat.icon)} ${escapeHTML(cat.name)}</div>
+          <div style="font-size:16px;font-weight:900;color:#0f172a;">${catHours[catId].toFixed(1)} HRS</div>
+          <div style="font-size:10px;color:#64748b;font-weight:800;">${catDays[catId]} días</div>
+        </div>
+      `;
+    }
+  });
+  
+  let html = `
+    <div style="font-family:system-ui,-apple-system,sans-serif;">
+      <div style="text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #e5e7eb;">
+        <div style="font-size:30px;font-weight:900;color:#0f172a;">${escapeHTML(userKey)} - ${monthName} ${year}</div>
+        <div style="font-size:12px;color:#64748b;font-weight:800;">Localidad: ${escapeHTML(locality||'San Salvador')} • Generado: ${todayStr}</div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;background:linear-gradient(to right,#f0f9ff,#fefce8);padding:14px;border-radius:14px;">
+        ${categoriesHTML}
+      </div>
+      
+      <div style="margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:900;color:#334155;margin-bottom:10px;text-align:center;">CALENDARIO</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:#e5e7eb;border:1px solid #e5e7eb;">
+          ${daysOfWeek.map((d,i)=>{
+            const c = (d==='DOM') ? '#ef4444' : (d==='SÁB' ? '#3b82f6' : '#64748b');
+            return `<div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:11px;color:${c};">${d}</div>`;
+          }).join('')}  `;
+  
+  for(let i=firstDayMonday;i>0;i--){
+    const prevDay=prevLastDate-i+1;
+    html += `<div style="background:#f9fafb;height:82px;position:relative;opacity:.3;"><span style="position:absolute;top:0;right:0;font-size:11px;font-weight:900;padding:2px 6px;background:rgba(255,255,255,.9);border-bottom-left-radius:8px;color:#374151;">${prevDay}</span></div>`;
+  }
+  
+  for(let d=1; d<=lastDate; d++){
+    const key = dayKey(year, monthIndex0+1, d);
+    const info = user.data[key] || {mode:'simple', s:'L'};
+    const isHoliday = db.holidays[key] && holidayApplies(db.holidays[key].location, user.locality);
+    
+    if(info.mode==='mixto'){
+      const topC = SHIFTS[info.t]?.color || 'L';
+      const botC = SHIFTS[info.b]?.color || 'L';
+      const topL = SHIFTS[info.t]?.label || 'L';
+      const botL = SHIFTS[info.b]?.label || 'L';
+      
+      html += `
+        <div style="height:82px;position:relative;">
+          <div style="height:50%;background:${getColorValue(topC)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;text-transform:uppercase;border-bottom:1px solid rgba(0,0,0,.1);">${escapeHTML(topL)}</div>
+          <div style="height:50%;background:${getColorValue(botC)};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;text-transform:uppercase;">${escapeHTML(botL)}</div>
+          <span style="position:absolute;top:0;right:0;font-size:11px;font-weight:900;padding:2px 6px;background:rgba(255,255,255,.9);border-bottom-left-radius:8px;color:#374151;">${d}</span>
+          ${isHoliday?`<span style="position:absolute;top:0;left:0;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,.9);padding:1px 4px;border-bottom-right-radius:8px;">A</span>`:''}
+        </div>
+      `;
+    } else {
+      const c = SHIFTS[info.s]?.color || 'L';
+      const l = SHIFTS[info.s]?.label || 'L';
+      html += `
+        <div style="height:82px;position:relative;background:${getColorValue(c)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;text-transform:uppercase;">
+          ${escapeHTML(l)}
+          <span style="position:absolute;top:0;right:0;font-size:11px;font-weight:900;padding:2px 6px;background:rgba(255,255,255,.9);border-bottom-left-radius:8px;color:#374151;">${d}</span>
+          ${isHoliday?`<span style="position:absolute;top:0;left:0;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,.9);padding:1px 4px;border-bottom-right-radius:8px;">A</span>`:''}
+        </div>
+      `;
+    }
+  }
+  
+  const total = firstDayMonday + lastDate;
+  for(let i=1;i<=(42-total);i++){
+    html += `<div style="background:#f9fafb;height:82px;position:relative;opacity:.3;"><span style="position:absolute;top:0;right:0;font-size:11px;font-weight:900;padding:2px 6px;background:rgba(255,255,255,.9);border-bottom-left-radius:8px;color:#374151;">${i}</span></div>`;
+  }
+  
+  html += `        </div>
+      </div>
+      
+      <div style="margin-top:16px;border-top:2px solid #e5e7eb;padding-top:12px;">
+        <div style="font-size:12px;font-weight:900;color:#334155;margin-bottom:8px;">LEYENDA</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          ${Object.keys(SHIFTS).slice(0,18).map(k=>{
+            const sh=SHIFTS[k];
+            return `
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:14px;height:14px;border-radius:4px;background:${getColorValue(sh.color)};border:1px solid #d1d5db;"></div>
+                <div style="font-size:10px;font-weight:800;color:#334155;">${escapeHTML(sh.label||k)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  return html;
+}
+
+/* =========================================================
+   Export scope user list box toggle
+========================================================= */
+function showExportUsersIfNeeded(){
+  const v=document.querySelector('input[name="exportScope"]:checked').value;
+  document.getElementById('exportUsersBox').classList.toggle('hidden', v!=='select');
+}
+
+/* =========================================================
+   Utility escape
+========================================================= */
+function cssSafe(s){ return String(s).replace(/[^a-zA-Z0-9_-]/g,'_'); }
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function escapeAttr(s){ return escapeHTML(s).replace(/"/g,'&quot;'); }
+function toISODate(y,m,d){
+  y=String(y).padStart(4,'0');
+  m=String(m).padStart(2,'0');
+  d=String(d).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+/* =========================================================
+   Start
+========================================================= */
 document.addEventListener('DOMContentLoaded', ()=>{
   init();
+  document.addEventListener('change', (e)=>{
+    if(e.target && e.target.name==='exportScope') showExportUsersIfNeeded();
+  });
 });
 </script>
 
