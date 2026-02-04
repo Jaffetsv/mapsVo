@@ -3,34 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro - Hospital & Cena</title>
+    <title>Shifter Pro - Advanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f3f4f6; color: #1f2937; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #d1d5db; border: 1px solid #d1d5db; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; border: 1px solid #e5e7eb; }
         .day-cell { background-color: #ffffff; height: 125px; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
         .day-number { font-size: 10px; font-weight: bold; padding: 2px 5px; position: absolute; top: 0; right: 0; z-index: 20; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 6px; }
 
-        /* Colores dinámicos */
+        /* Colores de Turnos */
         .bg-Mañana { background-color: #ffff00 !important; }
         .bg-Tarde { background-color: #fbcfe8 !important; }
-        .bg-Cena { background-color: #d8b4fe !important; }
-        .bg-16HRS { background-color: #bef264 !important; }
-        .bg-Libre { background-color: #ffffff !important; }
+        .bg-CENA { background-color: #d8b4fe !important; }
+        .bg-16hrs { background-color: #bef264 !important; }
+        .bg-L { background-color: #ffffff !important; }
         .bg-Vacaciones { background-color: #fed7aa !important; }
 
-        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1; border-bottom: 0.5px solid rgba(0,0,0,0.05); }
-        .note-text { font-size: 8px; position: absolute; bottom: 2px; width: 100%; text-align: center; color: #444; font-weight: bold; background: rgba(255,255,255,0.5); }
+        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; }
+        .note-text { font-size: 8px; position: absolute; bottom: 2px; width: 100%; text-align: center; color: #444; font-weight: bold; }
 
         .view-section { display: none; }
         .view-active { display: block; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: 800; font-size: 11px; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab-btn { flex: 1; text-align: center; padding: 14px; font-weight: 800; font-size: 11px; border-bottom: 3px solid transparent; transition: 0.3s; }
         .tab-active { border-bottom-color: #2563eb; color: #2563eb; background: #f8fafc; }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(2px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
-        .btn-opt { padding: 10px; border-radius: 12px; font-weight: bold; text-align: center; cursor: pointer; border: 2px solid transparent; font-size: 10px; }
-        .selected { border-color: #2563eb !important; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        select, input[type="time"], input[type="number"] { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px; font-weight: bold; font-size: 12px; outline: none; }
     </style>
 </head>
 <body>
@@ -38,18 +38,21 @@
     <div class="bg-white shadow-md sticky top-0 z-50">
         <div class="flex border-b">
             <button onclick="showView('calendar')" id="btn-cal" class="tab-btn tab-active uppercase">Calendario</button>
-            <button onclick="showView('summary')" id="btn-sum" class="tab-btn uppercase">Resumen de Horas</button>
-            <button onclick="showView('settings')" id="btn-set" class="p-3 text-gray-400">⚙️</button>
+            <button onclick="showView('summary')" id="btn-sum" class="tab-btn uppercase">Resumen</button>
         </div>
-        <div id="nav-cal" class="flex items-center justify-between p-3">
+        
+        <div id="nav-cal" class="flex items-center justify-between p-3 gap-2">
             <button onclick="changeMonth(-1)" class="p-2 text-blue-600 font-bold">❮</button>
-            <h1 id="monthTitle" class="font-black uppercase tracking-tighter text-sm">MARZO 2026</h1>
+            <div class="flex gap-1">
+                <select id="selectMonth" onchange="jumpToDate()" class="border-none bg-transparent text-sm font-black uppercase"></select>
+                <select id="selectYear" onchange="jumpToDate()" class="border-none bg-transparent text-sm font-black"></select>
+            </div>
             <button onclick="changeMonth(1)" class="p-2 text-blue-600 font-bold">❯</button>
         </div>
     </div>
 
     <div id="calendar-view" class="view-section view-active">
-        <div class="grid grid-cols-7 text-center text-[9px] font-black py-2 bg-gray-50 text-gray-500 border-b">
+        <div class="grid grid-cols-7 text-center text-[9px] font-black py-3 bg-blue-50/50 text-blue-900/60 border-b">
             <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
         </div>
         <div id="calendar" class="calendar-grid"></div>
@@ -59,53 +62,53 @@
         <div class="space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-yellow-400">
                 <p class="text-[10px] font-black text-gray-400 uppercase">Hospital</p>
-                <h2 id="hrs-hospital" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
-                <p class="text-[9px] text-gray-500 mt-1">Horas fijas (Mañana, Tarde, 16H)</p>
+                <h2 id="hrs-hosp" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-purple-400">
-                <p class="text-[10px] font-black text-gray-400 uppercase">Independiente (Sena)</p>
+                <p class="text-[10px] font-black text-gray-400 uppercase">Sena (Independiente)</p>
                 <h2 id="hrs-sena" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
-                <p class="text-[9px] text-gray-500 mt-1">Horas variables del Sena</p>
-            </div>
-            <div class="bg-blue-600 p-6 rounded-3xl shadow-xl text-white text-center">
-                <p class="text-[10px] font-bold opacity-70 uppercase">Total del Mes</p>
-                <h2 id="hrs-total" class="text-4xl font-black tracking-tighter">0.0 HRS</h2>
             </div>
         </div>
     </div>
 
-    <div id="settings-view" class="view-section p-5">
-        <h2 class="font-black text-lg mb-4 uppercase">Configurar Turnos</h2>
-        <div id="settings-list" class="space-y-3"></div>
-        <button onclick="saveSettings()" class="w-full mt-6 bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-sm">Guardar Cambios</button>
-    </div>
-
     <div id="modal" class="modal">
-        <div class="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl">
+        <div class="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl">
             <div class="bg-blue-600 text-white text-center py-4 font-black text-xs uppercase tracking-widest">Configurar Día</div>
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto max-h-[85vh]">
+                
                 <div class="flex bg-gray-100 p-1 rounded-2xl mb-5">
-                    <button id="m-s" onclick="setMode('simple')" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase bg-white shadow-sm">Simple</button>
-                    <button id="m-m" onclick="setMode('mixto')" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase">Mixto (Doble)</button>
+                    <button onclick="setMode('simple')" id="m-s" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase bg-white">Simple</button>
+                    <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase">Mixto</button>
                 </div>
 
-                <div id="sec-simple" class="grid grid-cols-2 gap-2"></div>
-                <div id="sec-mixto" class="hidden space-y-4">
-                    <div>
-                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2 text-center tracking-widest">Parte Superior</p>
+                <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-4"></div>
+                <div id="sec-mixto" class="hidden space-y-4 mb-4">
+                    <div class="p-3 bg-gray-50 rounded-2xl">
+                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2">Parte Superior</p>
                         <div id="mix-t" class="grid grid-cols-3 gap-1"></div>
                     </div>
-                    <div>
-                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2 text-center tracking-widest">Parte Inferior</p>
+                    <div class="p-3 bg-gray-50 rounded-2xl">
+                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2">Parte Inferior</p>
                         <div id="mix-b" class="grid grid-cols-3 gap-1"></div>
-                    </div>
-                    <div id="cena-hours-input" class="bg-purple-50 p-3 rounded-2xl border border-purple-100 hidden">
-                        <label class="block text-[9px] font-black text-purple-700 uppercase mb-1">Horas de Sena para hoy:</label>
-                        <input type="number" id="inputCenaHrs" class="w-full bg-white border-2 border-purple-200 rounded-xl p-2 text-center font-black text-purple-600" value="12">
                     </div>
                 </div>
 
-                <textarea id="nota" placeholder="Añadir nota..." class="w-full mt-5 p-4 bg-gray-50 border-none rounded-2xl text-sm h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <div class="bg-blue-50 p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase text-blue-800">Horario:</span>
+                        <div class="flex items-center gap-1">
+                            <input type="time" id="tIn" onchange="autoCalc()">
+                            <span class="font-bold">-</span>
+                            <input type="time" id="tOut" onchange="autoCalc()">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-blue-100 pt-2">
+                        <span class="text-[10px] font-black uppercase text-blue-800">Total Horas (Editable):</span>
+                        <input type="number" id="tHrs" class="w-20 text-center text-blue-600" step="0.5">
+                    </div>
+                </div>
+
+                <textarea id="nota" placeholder="Comentario..." class="w-full mt-4 p-4 bg-gray-50 border-none rounded-2xl text-sm h-16 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                 
                 <div class="flex gap-3 mt-6">
                     <button onclick="closeModal()" class="flex-1 p-4 bg-gray-100 text-gray-400 rounded-2xl font-black text-[10px] uppercase">Cancelar</button>
@@ -116,148 +119,167 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE TURNOS
-        let CONFIG = JSON.parse(localStorage.getItem('sh_conf')) || {
-            'Mañana': { n: 'Mañana', h: 8, cat: 'hosp', c: 'Mañana' },
-            'Tarde': { n: 'Tarde', h: 8, cat: 'hosp', c: 'Tarde' },
-            '16HRS': { n: '16 HRS', h: 16, cat: 'hosp', c: '16HRS' },
-            'Cena': { n: 'Cena', h: 12, cat: 'sena', c: 'Cena' },
-            'Libre': { n: 'Libre', h: 0, cat: 'none', c: 'Libre' },
-            'Vacas': { n: 'Vacaciones', h: 0, cat: 'none', c: 'Vacaciones' }
+        const SHIFTS = {
+            'Mañana': { label: 'Mañana', color: 'Mañana', cat: 'hosp', in: '06:00', out: '14:00' },
+            'Tarde': { label: 'Tarde', color: 'Tarde', cat: 'hosp', in: '14:00', out: '22:00' },
+            '16hrs': { label: '16hrs', color: '16hrs', cat: 'hosp', in: '06:00', out: '22:00' },
+            'CENA': { label: 'CENA', color: 'CENA', cat: 'sena', in: '05:00', out: '17:00' },
+            'L': { label: 'L', color: 'L', cat: 'none', in: '00:00', out: '00:00' },
+            'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'none', in: '00:00', out: '00:00' }
         };
 
-        let db = JSON.parse(localStorage.getItem('sh_data')) || {};
+        let db = JSON.parse(localStorage.getItem('sh_v6')) || {};
         let current = new Date();
-        let activeKey = "", activeMode = "simple", selS = "Mañana", selT = "Mañana", selB = "Tarde";
+        let activeKey = "", mode = "simple", selS = "Mañana", selT = "Mañana", selB = "Tarde";
+
+        function initDateSelectors() {
+            const mSel = document.getElementById('selectMonth');
+            const ySel = document.getElementById('selectYear');
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            months.forEach((m, i) => mSel.innerHTML += `<option value="${i}">${m}</option>`);
+            for(let y=2024; y<=2030; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
+            updateSelectors();
+        }
+
+        function updateSelectors() {
+            document.getElementById('selectMonth').value = current.getMonth();
+            document.getElementById('selectYear').value = current.getFullYear();
+        }
+
+        function jumpToDate() {
+            current.setMonth(document.getElementById('selectMonth').value);
+            current.setFullYear(document.getElementById('selectYear').value);
+            render();
+        }
 
         function render() {
             const grid = document.getElementById('calendar'); grid.innerHTML = '';
             const y = current.getFullYear(), m = current.getMonth();
-            document.getElementById('monthTitle').innerText = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(current);
+            updateSelectors();
 
             const start = new Date(y, m, 1).getDay();
             const days = new Date(y, m + 1, 0).getDate();
 
-            for(let i=0; i<start; i++) grid.innerHTML += `<div class="day-cell bg-gray-50 opacity-40"></div>`;
+            for(let i=0; i<start; i++) grid.innerHTML += `<div class="day-cell bg-gray-50/50"></div>`;
 
             for(let d=1; d<=days; d++) {
                 const key = `${y}-${m+1}-${d}`;
-                const info = db[key] || { mode: 'simple', s: 'Libre' };
+                const info = db[key] || { mode: 'simple', s: 'L' };
                 const cell = document.createElement('div');
                 cell.className = 'day-cell';
                 
                 if(info.mode === 'mixto') {
                     cell.innerHTML = `
-                        <div class="shift-label bg-${CONFIG[info.t].c}">${CONFIG[info.t].n}</div>
-                        <div class="shift-label bg-${CONFIG[info.b].c}">${CONFIG[info.b].n}</div>
-                    `;
+                        <div class="shift-label bg-${SHIFTS[info.t].color}">${SHIFTS[info.t].label}</div>
+                        <div class="shift-label bg-${SHIFTS[info.b].color}">${SHIFTS[info.b].label}</div>`;
                 } else {
-                    cell.innerHTML = `<div class="shift-label bg-${CONFIG[info.s].c}">${CONFIG[info.s].n}</div>`;
+                    cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${SHIFTS[info.s].label}</div>`;
                 }
                 cell.innerHTML += `<span class="day-number">${d}</span>`;
                 if(info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
                 cell.onclick = () => open(key, info);
                 grid.appendChild(cell);
             }
-            updateSummary();
-        }
-
-        function updateSummary() {
-            let h_hrs = 0, s_hrs = 0;
-            const y = current.getFullYear(), m = current.getMonth();
-            Object.keys(db).forEach(k => {
-                if(k.startsWith(`${y}-${m+1}-`)) {
-                    const d = db[k];
-                    if(d.mode === 'mixto') {
-                        // Lógica: Hospital nunca se reduce. Sena es lo que el usuario puso.
-                        if(CONFIG[d.t].cat === 'hosp') h_hrs += CONFIG[d.t].h;
-                        if(CONFIG[d.b].cat === 'hosp') h_hrs += CONFIG[d.b].h;
-                        if(CONFIG[d.t].cat === 'sena' || CONFIG[d.b].cat === 'sena') s_hrs += parseFloat(d.cH || 0);
-                    } else {
-                        if(CONFIG[d.s].cat === 'hosp') h_hrs += CONFIG[d.s].h;
-                        if(CONFIG[d.s].cat === 'sena') s_hrs += CONFIG[d.s].h;
-                    }
-                }
-            });
-            document.getElementById('hrs-hospital').innerText = h_hrs.toFixed(1) + " HRS";
-            document.getElementById('hrs-sena').innerText = s_hrs.toFixed(1) + " HRS";
-            document.getElementById('hrs-total').innerText = (h_hrs + s_hrs).toFixed(1) + " HRS";
+            calcSummary();
         }
 
         function open(key, info) {
             activeKey = key;
             setMode(info.mode || 'simple');
-            document.getElementById('nota').value = info.n || '';
-            document.getElementById('inputCenaHrs').value = info.cH || 12;
             selS = info.s || 'Mañana'; selT = info.t || 'Mañana'; selB = info.b || 'Tarde';
-            refreshButtons();
+            document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
+            document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
+            document.getElementById('tHrs').value = info.h || 0;
+            document.getElementById('nota').value = info.n || '';
+            refreshBtns();
             document.getElementById('modal').classList.add('active');
         }
 
+        function autoCalc() {
+            const start = document.getElementById('tIn').value;
+            const end = document.getElementById('tOut').value;
+            if(!start || !end) return;
+            let [h1, m1] = start.split(':').map(Number);
+            let [h2, m2] = end.split(':').map(Number);
+            let diff = (h2 + m2/60) - (h1 + m1/60);
+            if(diff < 0) diff += 24; // Por si pasa de medianoche
+            document.getElementById('tHrs').value = diff.toFixed(1);
+        }
+
         function setMode(m) {
-            activeMode = m;
+            mode = m;
             document.getElementById('m-s').className = `flex-1 py-2 rounded-xl font-bold text-[10px] uppercase ${m==='simple'?'bg-white shadow-sm':'text-gray-400'}`;
             document.getElementById('m-m').className = `flex-1 py-2 rounded-xl font-bold text-[10px] uppercase ${m==='mixto'?'bg-white shadow-sm':'text-gray-400'}`;
             document.getElementById('sec-simple').classList.toggle('hidden', m!=='simple');
             document.getElementById('sec-mixto').classList.toggle('hidden', m!=='mixto');
         }
 
-        function refreshButtons() {
-            const draw = (id, cur, setter) => {
+        function refreshBtns() {
+            const btn = (id, cur, setter) => {
                 const el = document.getElementById(id); el.innerHTML = '';
-                Object.keys(CONFIG).forEach(k => {
+                Object.keys(SHIFTS).forEach(k => {
                     const b = document.createElement('div');
-                    b.className = `btn-opt bg-${CONFIG[k].c} ${cur===k?'selected':''}`;
-                    b.innerText = CONFIG[k].n;
-                    b.onclick = () => { setter(k); refreshButtons(); };
+                    b.className = `p-2 rounded-xl text-[9px] font-black text-center cursor-pointer border-2 bg-${SHIFTS[k].color} ${cur===k?'border-blue-600':'border-transparent'}`;
+                    b.innerText = SHIFTS[k].label;
+                    b.onclick = () => { 
+                        setter(k); 
+                        document.getElementById('tIn').value = SHIFTS[k].in; 
+                        document.getElementById('tOut').value = SHIFTS[k].out;
+                        autoCalc();
+                        refreshBtns(); 
+                    };
                     el.appendChild(b);
                 });
             };
-            draw('sec-simple', selS, (v) => selS = v);
-            draw('mix-t', selT, (v) => selT = v);
-            draw('mix-b', selB, (v) => selB = v);
-            document.getElementById('cena-hours-input').classList.toggle('hidden', selT!=='Cena' && selB!=='Cena');
+            btn('sec-simple', selS, (v) => selS = v);
+            btn('mix-t', selT, (v) => selT = v);
+            btn('mix-b', selB, (v) => selB = v);
         }
 
         function save() {
-            db[activeKey] = { mode: activeMode, s: selS, t: selT, b: selB, n: document.getElementById('nota').value, cH: document.getElementById('inputCenaHrs').value };
-            localStorage.setItem('sh_data', JSON.stringify(db));
+            db[activeKey] = { 
+                mode, s: selS, t: selT, b: selB, 
+                tIn: document.getElementById('tIn').value,
+                tOut: document.getElementById('tOut').value,
+                h: parseFloat(document.getElementById('tHrs').value),
+                n: document.getElementById('nota').value 
+            };
+            localStorage.setItem('sh_v6', JSON.stringify(db));
             render(); closeModal();
         }
 
+        function calcSummary() {
+            let h = 0, s = 0;
+            const y = current.getFullYear(), m = current.getMonth();
+            Object.keys(db).forEach(k => {
+                if(k.startsWith(`${y}-${m+1}-`)) {
+                    const d = db[k];
+                    if(d.mode === 'mixto') {
+                        if(SHIFTS[d.t].cat === 'hosp') h += 8; // Hospital fijo
+                        if(SHIFTS[d.b].cat === 'hosp') h += 8;
+                        if(SHIFTS[d.t].cat === 'sena' || SHIFTS[d.b].cat === 'sena') s += d.h;
+                    } else {
+                        if(SHIFTS[d.s].cat === 'hosp') h += d.h;
+                        if(SHIFTS[d.s].cat === 'sena') s += d.h;
+                    }
+                }
+            });
+            document.getElementById('hrs-hosp').innerText = h.toFixed(1) + " HRS";
+            document.getElementById('hrs-sena').innerText = s.toFixed(1) + " HRS";
+        }
+
         function showView(v) {
-            ['calendar','summary','settings'].forEach(id => document.getElementById(id+'-view').classList.toggle('view-active', id===v));
+            document.getElementById('calendar-view').classList.toggle('view-active', v==='calendar');
+            document.getElementById('summary-view').classList.toggle('view-active', v==='summary');
+            document.getElementById('nav-cal').classList.toggle('hidden', v==='summary');
             document.getElementById('btn-cal').classList.toggle('tab-active', v==='calendar');
             document.getElementById('btn-sum').classList.toggle('tab-active', v==='summary');
-            document.getElementById('nav-cal').classList.toggle('hidden', v!=='calendar');
-            if(v === 'settings') renderSettings();
-        }
-
-        function renderSettings() {
-            const list = document.getElementById('settings-list'); list.innerHTML = '';
-            Object.keys(CONFIG).forEach(id => {
-                list.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-${CONFIG[id].c}"></div>
-                        <div class="flex-1">
-                            <input id="set-n-${id}" type="text" value="${CONFIG[id].n}" class="font-black text-sm w-full outline-none">
-                            <input id="set-h-${id}" type="number" value="${CONFIG[id].h}" class="text-[10px] text-blue-500 font-bold w-full outline-none">
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function saveSettings() {
-            Object.keys(CONFIG).forEach(id => {
-                CONFIG[id].n = document.getElementById('set-n-'+id).value;
-                CONFIG[id].h = parseFloat(document.getElementById('set-h-'+id).value);
-            });
-            localStorage.setItem('sh_conf', JSON.stringify(CONFIG));
-            render(); showView('calendar');
         }
 
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
         function changeMonth(v) { current.setMonth(current.getMonth() + v); render(); }
+        
+        initDateSelectors();
         render();
     </script>
 </body>
