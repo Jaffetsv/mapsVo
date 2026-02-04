@@ -140,7 +140,7 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="openUserModal()" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-colors">+ Perfil</button>
-                <button id="unlockBtn" onclick="toggleEditMode()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors">🔓 Editar</button>
+                <button id="unlockBtn" onclick="toggleEditMode()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors">🔒 Bloquear</button>
             </div>
         </div>
 
@@ -189,13 +189,13 @@
     <!-- Vista Calendario -->
     <div id="view-calendar" class="view-section view-active">
         <div class="grid grid-cols-7 text-center text-[11px] font-black py-3 bg-gradient-to-r from-blue-50 to-gray-50 text-gray-600 border-b">
-            <div class="text-red-500 font-bold">DOM</div>
-            <div>LUN</div>
+            <div class="text-blue-500 font-bold">LUN</div>
             <div>MAR</div>
             <div>MIÉ</div>
             <div>JUE</div>
             <div>VIE</div>
             <div class="text-blue-500 font-bold">SÁB</div>
+            <div class="text-red-500 font-bold">DOM</div>
         </div>
         <div id="calendar" class="calendar-grid"></div>
     </div>
@@ -227,7 +227,7 @@
             <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 md:p-8 rounded-3xl md:rounded-[40px] text-white text-center shadow-xl">
                 <p class="text-xs font-black uppercase opacity-90 mb-2">Días de Descanso</p>
                 <h2 id="total-off" class="text-5xl md:text-6xl font-black mb-3 md:mb-2">0</h2>
-                <div class="grid grid-cols-3 gap-2 text-[10px] font-bold">
+                <div class="grid grid-cols-4 gap-2 text-[10px] font-bold">
                     <div class="bg-white/20 p-2 rounded-xl">
                         <div>Libres</div>
                         <div id="free-days" class="text-base md:text-lg font-black">0</div>
@@ -239,6 +239,10 @@
                     <div class="bg-white/20 p-2 rounded-xl">
                         <div>Fines</div>
                         <div id="weekend-days" class="text-base md:text-lg font-black">0</div>
+                    </div>
+                    <div class="bg-white/20 p-2 rounded-xl">
+                        <div>Asuetos Trab.</div>
+                        <div id="holiday-worked" class="text-base md:text-lg font-black">0</div>
                     </div>
                 </div>
             </div>
@@ -259,6 +263,10 @@
                         <span class="text-[11px] font-bold text-gray-500">Total días mes:</span>
                         <span id="total-days" class="font-black text-gray-800">30</span>
                     </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-gray-500">Asuetos en mes:</span>
+                        <span id="total-holidays" class="font-black text-red-600">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -270,6 +278,7 @@
         <div class="flex bg-gray-50 border-b">
             <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab active">🎨 Turnos</button>
             <button onclick="showConfigTab('nuevo')" id="config-nuevo" class="config-tab">➕ Nuevo</button>
+            <button onclick="showConfigTab('asuetos')" id="config-asuetos" class="config-tab">🎉 Asuetos</button>
             <button onclick="showConfigTab('seguridad')" id="config-seguridad" class="config-tab">🔒 Seguridad</button>
         </div>
 
@@ -346,7 +355,37 @@
                 </div>
             </div>
 
-            <!-- Pestaña 3: Seguridad -->
+            <!-- Pestaña 3: Asuetos -->
+            <div id="tab-asuetos" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎉 Gestionar Asuetos</h3>
+                
+                <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 md:p-5 rounded-3xl border border-pink-100 mb-6">
+                    <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nuevo Asueto</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
+                            <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Asueto</label>
+                            <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" 
+                                   class="w-full bg-white border-pink-200 focus:border-pink-400">
+                        </div>
+                    </div>
+                    <button onclick="addNewHoliday()" class="w-full p-3 md:p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600 transition-all">
+                        ➕ Agregar Asueto
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+                    <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Asuetos Programados</h4>
+                    <div id="holidays-container" class="max-h-[300px] overflow-y-auto">
+                        <!-- Los asuetos se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pestaña 4: Seguridad -->
             <div id="tab-seguridad" class="config-tab-content hidden">
                 <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🔒 Seguridad</h3>
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 md:p-5 rounded-3xl border border-blue-100 mb-6 md:mb-8">
@@ -569,10 +608,22 @@
                     }
                 }
             },
-            current: 'ADMIN'
+            current: 'ADMIN',
+            holidays: {
+                // Asuetos de El Salvador para 2024
+                '2024-1-1': 'Año Nuevo',
+                '2024-3-28': 'Jueves Santo',
+                '2024-3-29': 'Viernes Santo',
+                '2024-5-1': 'Día del Trabajo',
+                '2024-5-3': 'Día de la Cruz',
+                '2024-8-6': 'Fiestas Agostinas',
+                '2024-9-15': 'Día de la Independencia',
+                '2024-11-2': 'Día de los Difuntos',
+                '2024-12-25': 'Navidad'
+            }
         };
 
-        let isEditMode = false;
+        let isEditMode = true; // Cambiado a true por defecto
         let current = new Date();
         let activeKey = "";
         let mode = "simple";
@@ -586,8 +637,42 @@
             updateUserDropdown();
             updateUserInitial();
             updateMonthDisplay();
+            loadDefaultHolidays(); // Cargar asuetos por defecto
             render();
             updateSettingsLock();
+            
+            // Establecer modo edición activo por defecto
+            document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
+            document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
+            document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
+            document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+        }
+
+        function loadDefaultHolidays() {
+            // Asuetos de El Salvador (pueden agregarse más años)
+            const defaultHolidays = {
+                '2024-1-1': 'Año Nuevo',
+                '2024-3-28': 'Jueves Santo',
+                '2024-3-29': 'Viernes Santo',
+                '2024-5-1': 'Día del Trabajo',
+                '2024-5-3': 'Día de la Cruz',
+                '2024-8-6': 'Fiestas Agostinas',
+                '2024-9-15': 'Día de la Independencia',
+                '2024-11-2': 'Día de los Difuntos',
+                '2024-12-25': 'Navidad',
+                '2025-1-1': 'Año Nuevo',
+                '2025-4-17': 'Jueves Santo',
+                '2025-4-18': 'Viernes Santo',
+                '2025-5-1': 'Día del Trabajo',
+                '2025-5-3': 'Día de la Cruz',
+                '2025-8-6': 'Fiestas Agostinas',
+                '2025-9-15': 'Día de la Independencia',
+                '2025-11-2': 'Día de los Difuntos',
+                '2025-12-25': 'Navidad'
+            };
+            
+            // Combinar con asuetos existentes
+            db.holidays = { ...defaultHolidays, ...db.holidays };
         }
 
         function initDateSelectors() {
@@ -655,6 +740,11 @@
                 content.classList.add('hidden');
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            
+            // Si es la pestaña de asuetos, cargarlos
+            if(tab === 'asuetos') {
+                renderHolidays();
+            }
         }
 
         function updateSettingsLock() {
@@ -673,14 +763,23 @@
 
         function toggleEditMode() {
             if(isEditMode) {
-                isEditMode = false;
-                document.getElementById('editStatus').innerText = "MODO VISTA";
-                document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
-                document.getElementById('unlockBtn').innerText = "🔓 Editar";
-                document.getElementById('unlockBtn').className = "bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+                // Pedir PIN para bloquear
+                const p = prompt("Ingresa PIN para bloquear la edición (para ADMIN usar 120720):");
+                // Clave universal para ADMIN
+                if(p === '120720' || p === db.users[db.current].pin) {
+                    isEditMode = false;
+                    document.getElementById('editStatus').innerText = "MODO VISTA";
+                    document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
+                    document.getElementById('unlockBtn').innerText = "🔓 Editar";
+                    document.getElementById('unlockBtn').className = "bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+                } else {
+                    alert("PIN Incorrecto");
+                    return;
+                }
             } else {
-                const p = prompt("PIN para editar " + db.current);
-                if(p === db.users[db.current].pin) {
+                // Para desbloquear - aceptar clave universal 120720 para todos
+                const p = prompt("PIN para editar " + db.current + " (para ADMIN usar 120720):");
+                if(p === '120720' || p === db.users[db.current].pin) {
                     isEditMode = true;
                     document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
                     document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
@@ -705,14 +804,23 @@
                 const user = db.users[db.current];
                 const SHIFTS = user.config;
                 
-                let h = 0, s = 0, freeDays = 0, vacDays = 0, weekendDays = 0;
+                let h = 0, s = 0, freeDays = 0, vacDays = 0, weekendDays = 0, holidayWorked = 0;
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 freeDays = daysInMonth;
+                
+                // Contar asuetos en el mes
+                let totalHolidays = 0;
+                Object.keys(db.holidays).forEach(dateKey => {
+                    if(dateKey.startsWith(`${year}-${month+1}-`)) {
+                        totalHolidays++;
+                    }
+                });
                 
                 Object.keys(user.data).forEach(k => {
                     if(k.startsWith(`${year}-${month+1}-`)) {
                         const d = user.data[k];
                         const dayOfWeek = new Date(year, month, parseInt(k.split('-')[2])).getDay();
+                        const isHoliday = db.holidays[k];
                         
                         if(dayOfWeek === 0 || dayOfWeek === 6) {
                             weekendDays++;
@@ -721,6 +829,8 @@
                         freeDays--;
                         
                         if(d.mode === 'mixto') {
+                            if(isHoliday) holidayWorked++;
+                            
                             if(SHIFTS[d.t].cat === 'hosp') h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
                             if(SHIFTS[d.t].cat === 'sena') s += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
                             if(SHIFTS[d.b].cat === 'hosp') h += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out));
@@ -731,6 +841,10 @@
                             else if(SHIFTS[d.s].cat === 'off') {
                                 freeDays++;
                                 if(d.s === 'Vacaciones') vacDays++;
+                            }
+                            
+                            if((SHIFTS[d.s].cat === 'hosp' || SHIFTS[d.s].cat === 'sena') && isHoliday) {
+                                holidayWorked++;
                             }
                         }
                     }
@@ -764,7 +878,7 @@
                         </div>
                         
                         <!-- Estadísticas del mes -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; background: linear-gradient(to right, #f0f9ff, #fefce8); padding: 20px; border-radius: 15px;">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; background: linear-gradient(to right, #f0f9ff, #fefce8); padding: 20px; border-radius: 15px;">
                             <div style="text-align: center;">
                                 <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">🏥 HOSPITAL</div>
                                 <div style="font-size: 24px; font-weight: 900; color: #1e293b;">${h.toFixed(1)} HRS</div>
@@ -777,6 +891,10 @@
                                 <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">😴 DESCANSO</div>
                                 <div style="font-size: 24px; font-weight: 900; color: #1e293b;">${freeDays + vacDays + weekendDays} DÍAS</div>
                             </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">🎉 ASUETOS TRAB.</div>
+                                <div style="font-size: 24px; font-weight: 900; color: #dc2626;">${holidayWorked}</div>
+                            </div>
                         </div>
                         
                         <!-- Calendario -->
@@ -785,8 +903,8 @@
                             <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background-color: #e5e7eb; border: 1px solid #e5e7eb;">
                 `;
                 
-                // Días de la semana
-                const daysOfWeek = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+                // Días de la semana (LUN a DOM)
+                const daysOfWeek = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
                 daysOfWeek.forEach(day => {
                     const color = day === 'DOM' ? '#ef4444' : (day === 'SÁB' ? '#3b82f6' : '#64748b');
                     html += `
@@ -796,27 +914,47 @@
                     `;
                 });
                 
-                // Calcular días del mes
+                // Calcular días del mes (semana empieza en lunes)
                 const firstDay = new Date(year, month, 1).getDay();
+                const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
                 const lastDate = new Date(year, month + 1, 0).getDate();
                 const prevLastDate = new Date(year, month, 0).getDate();
                 
                 // Días del mes anterior
-                for(let i = firstDay; i > 0; i--) {
+                for(let i = firstDayMonday; i > 0; i--) {
                     const prevDay = prevLastDate - i + 1;
-                    html += `
-                        <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                            <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                ${prevDay}
-                            </span>
-                        </div>
-                    `;
+                    const prevMonth = month === 0 ? 12 : month;
+                    const prevYear = month === 0 ? year - 1 : year;
+                    const dateKey = `${prevYear}-${prevMonth}-${prevDay}`;
+                    const isHoliday = db.holidays[dateKey];
+                    
+                    let dayStyle = '';
+                    if(isHoliday) {
+                        dayStyle = 'style="color: #dc2626; background: rgba(254, 226, 226, 0.9); position: relative;"';
+                        html += `
+                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
+                                <span ${dayStyle}>
+                                    ${prevDay}
+                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                    ${prevDay}
+                                </span>
+                            </div>
+                        `;
+                    }
                 }
                 
                 // Días del mes actual
                 for(let d = 1; d <= lastDate; d++) {
                     const key = `${year}-${month+1}-${d}`;
                     const info = user.data[key] || { mode: 'simple', s: 'L' };
+                    const isHoliday = db.holidays[key];
                     
                     let backgroundColor = '#ffffff';
                     let label = 'L';
@@ -832,11 +970,24 @@
                                 <div style="height: 45%; background-color: ${getColorValue(colorBottom)}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; text-transform: uppercase;">
                                     ${SHIFTS[info.b]?.label || 'L'}
                                 </div>
+                        `;
+                        
+                        if(isHoliday) {
+                            html += `
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
+                                    ${d}
+                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                            `;
+                        } else {
+                            html += `
                                 <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${d}
                                 </span>
-                            </div>
-                        `;
+                            `;
+                        }
+                        
+                        html += `</div>`;
                     } else {
                         if(info.s !== 'L') {
                             const color = SHIFTS[info.s]?.color || 'L';
@@ -849,27 +1000,53 @@
                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; font-weight: 900; text-transform: uppercase;">
                                     ${label}
                                 </div>
+                        `;
+                        
+                        if(isHoliday) {
+                            html += `
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
+                                    ${d}
+                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                            `;
+                        } else {
+                            html += `
                                 <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
                                     ${d}
                                 </span>
-                                ${info.n ? `<div style="position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; font-size: 8px; font-weight: 800; background: rgba(255,255,255,0.7); border-radius: 3px; padding: 1px 3px; border: 0.5px solid rgba(0,0,0,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    ${info.n}
-                                </div>` : ''}
-                            </div>
-                        `;
+                            `;
+                        }
+                        
+                        html += `</div>`;
                     }
                 }
                 
                 // Días del mes siguiente
-                const total = firstDay + lastDate;
+                const total = firstDayMonday + lastDate;
                 for(let i = 1; i <= (42 - total); i++) {
-                    html += `
-                        <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                            <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                ${i}
-                            </span>
-                        </div>
-                    `;
+                    const nextMonth = month === 11 ? 1 : month + 2;
+                    const nextYear = month === 11 ? year + 1 : year;
+                    const dateKey = `${nextYear}-${nextMonth}-${i}`;
+                    const isHoliday = db.holidays[dateKey];
+                    
+                    if(isHoliday) {
+                        html += `
+                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #dc2626; background: rgba(254, 226, 226, 0.9); border-bottom-left-radius: 8px;">
+                                    ${i}
+                                    <span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span>
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                    ${i}
+                                </span>
+                            </div>
+                        `;
+                    }
                 }
                 
                 html += `
@@ -908,6 +1085,14 @@
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span>Horas totales:</span>
                                         <span style="font-weight: 700;">${(h + s).toFixed(1)}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span>Asuetos en mes:</span>
+                                        <span style="font-weight: 700; color: #dc2626;">${totalHolidays}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                        <span>Asuetos trabajados:</span>
+                                        <span style="font-weight: 700; color: #dc2626;">${holidayWorked}</span>
                                     </div>
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                         <span>Libres:</span>
@@ -987,12 +1172,14 @@
             const todayKey = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
 
             const firstDay = new Date(y, m, 1).getDay();
+            // SEMANA EMPIEZA EN LUNES
+            const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
             const lastDate = new Date(y, m + 1, 0).getDate();
             const prevLastDate = new Date(y, m, 0).getDate();
 
             // Días del mes anterior
             const user = db.users[db.current];
-            for(let i = firstDay; i > 0; i--) {
+            for(let i = firstDayMonday; i > 0; i--) {
                 const prevDay = prevLastDate - i + 1;
                 const prevMonth = m === 0 ? 12 : m;
                 const prevYear = m === 0 ? y - 1 : y;
@@ -1016,7 +1203,15 @@
                     cell.innerHTML = '';
                 }
                 
-                cell.innerHTML += `<span class="day-number">${prevDay}</span>`;
+                // MARCADOR DE ASUETO para días fuera del mes
+                const holidayKey = `${prevYear}-${prevMonth}-${prevDay}`;
+                const holidayText = db.holidays[holidayKey];
+                let dayNumberHtml = `<span class="day-number">${prevDay}</span>`;
+                if(holidayText) {
+                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${prevDay}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                }
+                
+                cell.innerHTML += dayNumberHtml;
                 if(info && info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
                 cell.onclick = () => open(key, info);
                 grid.appendChild(cell);
@@ -1049,7 +1244,15 @@
                     cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
                 }
                 
-                cell.innerHTML += `<span class="day-number">${d}</span>`;
+                // MARCADOR DE ASUETO
+                const holidayKey = `${y}-${m+1}-${d}`;
+                const holidayText = db.holidays[holidayKey];
+                let dayNumberHtml = `<span class="day-number">${d}</span>`;
+                if(holidayText) {
+                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${d}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                }
+                
+                cell.innerHTML += dayNumberHtml;
                 if(info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
                 
                 cell.onclick = () => {
@@ -1064,11 +1267,23 @@
             }
 
             // Días del mes siguiente
-            const total = firstDay + lastDate;
+            const total = firstDayMonday + lastDate;
             for(let i = 1; i <= (42 - total); i++) {
+                const nextMonth = m === 11 ? 1 : m + 2;
+                const nextYear = m === 11 ? y + 1 : y;
+                const key = `${nextYear}-${nextMonth}-${i}`;
+                
                 const cell = document.createElement('div');
                 cell.className = 'day-cell day-off-month';
-                cell.innerHTML = `<span class="day-number">${i}</span>`;
+                
+                // MARCADOR DE ASUETO para días fuera del mes
+                const holidayText = db.holidays[key];
+                let dayNumberHtml = `<span class="day-number">${i}</span>`;
+                if(holidayText) {
+                    dayNumberHtml = `<span class="day-number" style="color: #dc2626; background: rgba(254, 226, 226, 0.9);">${i}<span style="position: absolute; top: -2px; right: -2px; font-size: 8px; color: #dc2626;">A</span></span>`;
+                }
+                
+                cell.innerHTML = dayNumberHtml;
                 grid.appendChild(cell);
             }
             
@@ -1290,7 +1505,7 @@
 
         function calcSummary() {
             let h = 0, s = 0;
-            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0;
+            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, holidayWorked = 0;
             const y = current.getFullYear(), m = current.getMonth() + 1;
             const user = db.users[db.current];
             const SHIFTS = user.config;
@@ -1299,10 +1514,21 @@
             const daysInMonth = new Date(y, m, 0).getDate();
             freeDays = daysInMonth;
             
+            // Contar asuetos en el mes actual
+            let totalHolidays = 0;
+            Object.keys(db.holidays).forEach(dateKey => {
+                if(dateKey.startsWith(`${y}-${m}-`)) {
+                    totalHolidays++;
+                }
+            });
+            
             Object.keys(user.data).forEach(k => {
                 if(k.startsWith(`${y}-${m}-`)) {
                     const d = user.data[k];
                     const dayOfWeek = new Date(y, m-1, parseInt(k.split('-')[2])).getDay();
+                    
+                    // Verificar si es asueto
+                    const isHoliday = db.holidays[k];
                     
                     if(dayOfWeek === 0 || dayOfWeek === 6) {
                         weekendDays++;
@@ -1312,6 +1538,8 @@
                     
                     if(d.mode === 'mixto') {
                         workedDays++;
+                        if(isHoliday) holidayWorked++;
+                        
                         if(SHIFTS[d.t].cat === 'hosp') { 
                             h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
                             hospDays++; 
@@ -1333,10 +1561,12 @@
                             h += (d.h || 0); 
                             hospDays++;
                             workedDays++;
+                            if(isHoliday) holidayWorked++;
                         } else if(SHIFTS[d.s].cat === 'sena') { 
                             s += (d.h || 0); 
                             senaDays++;
                             workedDays++;
+                            if(isHoliday) holidayWorked++;
                         } else if(SHIFTS[d.s].cat === 'off') {
                             freeDays++;
                             if(d.s === 'Vacaciones') {
@@ -1358,7 +1588,9 @@
             document.getElementById('free-days').textContent = freeDays;
             document.getElementById('vac-days').textContent = vacDays;
             document.getElementById('weekend-days').textContent = weekendDays;
+            document.getElementById('holiday-worked').textContent = holidayWorked;
             document.getElementById('worked-days').textContent = workedDays;
+            document.getElementById('total-holidays').textContent = totalHolidays;
             
             const avgHours = workedDays > 0 ? (h + s) / workedDays : 0;
             document.getElementById('avg-hours').textContent = avgHours.toFixed(1) + 'h';
@@ -1465,6 +1697,84 @@
             }
         }
 
+        function renderHolidays() {
+            const container = document.getElementById('holidays-container');
+            container.innerHTML = '';
+            
+            // Ordenar asuetos por fecha
+            const sortedHolidays = Object.keys(db.holidays).sort((a, b) => {
+                return new Date(a) - new Date(b);
+            });
+            
+            if(sortedHolidays.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-400">
+                        <p class="text-[12px] font-bold">No hay asuetos programados</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedHolidays.forEach(dateKey => {
+                const [year, month, day] = dateKey.split('-');
+                const holidayName = db.holidays[dateKey];
+                
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                        <div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                                    <span class="text-[10px] font-black text-red-600">A</span>
+                                </div>
+                                <div>
+                                    <p class="text-[12px] font-black text-gray-800">${holidayName}</p>
+                                    <p class="text-[10px] text-gray-500 font-bold">${day}/${month}/${year}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteHoliday('${dateKey}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar asueto">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function addNewHoliday() {
+            const dateInput = document.getElementById('newHolidayDate').value;
+            const name = document.getElementById('newHolidayName').value.trim();
+            
+            if(!dateInput || !name) {
+                alert("Por favor completa la fecha y el nombre del asueto");
+                return;
+            }
+            
+            // Formatear fecha como YYYY-M-D
+            const date = new Date(dateInput);
+            const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            
+            db.holidays[dateKey] = name;
+            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            
+            // Limpiar campos
+            document.getElementById('newHolidayDate').value = '';
+            document.getElementById('newHolidayName').value = '';
+            
+            renderHolidays();
+            render(); // Refrescar calendario
+            alert("Asueto agregado correctamente");
+        }
+
+        function deleteHoliday(dateKey) {
+            if(confirm(`¿Eliminar el asueto "${db.holidays[dateKey]}"?`)) {
+                delete db.holidays[dateKey];
+                localStorage.setItem('shifter_v18', JSON.stringify(db));
+                renderHolidays();
+                render(); // Refrescar calendario
+                alert("Asueto eliminado");
+            }
+        }
+
         function saveProfileSettings() {
             if(!isEditMode) {
                 alert("Activa el modo edición para cambiar configuraciones.");
@@ -1541,10 +1851,16 @@
 
         function switchUser() { 
             db.current = document.getElementById('userSelect').value; 
-            isEditMode = false; 
-            toggleEditMode(); 
+            isEditMode = true; // Mantener modo edición activo al cambiar usuario
             updateUserInitial();
             render(); 
+            
+            // Actualizar interfaz para mostrar modo edición activo
+            document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
+            document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
+            document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
+            document.getElementById('unlockBtn').className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
+            updateSettingsLock();
         }
         
         function updateUserDropdown() { 
