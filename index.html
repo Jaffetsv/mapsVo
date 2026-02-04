@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro - Advanced</title>
+    <title>Shifter Pro v7 - Full Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f3f4f6; color: #1f2937; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; border: 1px solid #e5e7eb; }
-        .day-cell { background-color: #ffffff; height: 125px; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
-        .day-number { font-size: 10px; font-weight: bold; padding: 2px 5px; position: absolute; top: 0; right: 0; z-index: 20; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 6px; }
+        .day-cell { background-color: #ffffff; height: 130px; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+        .day-number { font-size: 11px; font-weight: 800; padding: 2px 6px; position: absolute; top: 0; right: 0; z-index: 20; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px; }
 
         /* Colores de Turnos */
         .bg-Mañana { background-color: #ffff00 !important; }
@@ -19,8 +19,10 @@
         .bg-L { background-color: #ffffff !important; }
         .bg-Vacaciones { background-color: #fed7aa !important; }
 
-        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; }
-        .note-text { font-size: 8px; position: absolute; bottom: 2px; width: 100%; text-align: center; color: #444; font-weight: bold; }
+        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; color: rgba(0,0,0,0.8); }
+        
+        /* Comentarios Resaltados */
+        .note-text { font-size: 10px; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: #000; font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 4px; padding: 1px 2px; border: 0.5px solid rgba(0,0,0,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .view-section { display: none; }
         .view-active { display: block; }
@@ -30,7 +32,7 @@
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
         
-        select, input[type="time"], input[type="number"] { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px; font-weight: bold; font-size: 12px; outline: none; }
+        select, input[type="time"], input[type="number"], input[type="text"] { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; font-weight: 800; font-size: 13px; outline: none; }
     </style>
 </head>
 <body>
@@ -39,20 +41,21 @@
         <div class="flex border-b">
             <button onclick="showView('calendar')" id="btn-cal" class="tab-btn tab-active uppercase">Calendario</button>
             <button onclick="showView('summary')" id="btn-sum" class="tab-btn uppercase">Resumen</button>
+            <button onclick="showView('settings')" id="btn-set" class="p-4 text-gray-400">⚙️</button>
         </div>
         
-        <div id="nav-cal" class="flex items-center justify-between p-3 gap-2">
-            <button onclick="changeMonth(-1)" class="p-2 text-blue-600 font-bold">❮</button>
-            <div class="flex gap-1">
-                <select id="selectMonth" onchange="jumpToDate()" class="border-none bg-transparent text-sm font-black uppercase"></select>
-                <select id="selectYear" onchange="jumpToDate()" class="border-none bg-transparent text-sm font-black"></select>
+        <div id="nav-cal" class="flex items-center justify-between p-3 bg-gray-50/50">
+            <button onclick="changeMonth(-1)" class="p-2 text-blue-600 font-bold text-xl">❮</button>
+            <div class="flex gap-2 items-center">
+                <select id="selectMonth" onchange="jumpToDate()" class="border-none bg-transparent font-black uppercase text-blue-900"></select>
+                <select id="selectYear" onchange="jumpToDate()" class="border-none bg-transparent font-black text-blue-900"></select>
             </div>
-            <button onclick="changeMonth(1)" class="p-2 text-blue-600 font-bold">❯</button>
+            <button onclick="changeMonth(1)" class="p-2 text-blue-600 font-bold text-xl">❯</button>
         </div>
     </div>
 
     <div id="calendar-view" class="view-section view-active">
-        <div class="grid grid-cols-7 text-center text-[9px] font-black py-3 bg-blue-50/50 text-blue-900/60 border-b">
+        <div class="grid grid-cols-7 text-center text-[10px] font-black py-3 bg-blue-100/30 text-blue-800/50 border-b">
             <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
         </div>
         <div id="calendar" class="calendar-grid"></div>
@@ -61,65 +64,74 @@
     <div id="summary-view" class="view-section p-5 bg-gray-100 min-h-screen">
         <div class="space-y-4">
             <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-yellow-400">
-                <p class="text-[10px] font-black text-gray-400 uppercase">Hospital</p>
+                <p class="text-[11px] font-black text-gray-400 uppercase">Hospital</p>
                 <h2 id="hrs-hosp" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
             </div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-purple-400">
-                <p class="text-[10px] font-black text-gray-400 uppercase">Sena (Independiente)</p>
+                <p class="text-[11px] font-black text-gray-400 uppercase">CENA (Independiente)</p>
                 <h2 id="hrs-sena" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
             </div>
         </div>
     </div>
 
+    <div id="settings-view" class="view-section p-6 bg-white min-h-screen">
+        <h2 class="font-black text-xl mb-6 uppercase tracking-tight">Editar Nombres de Turnos</h2>
+        <div id="settings-container" class="space-y-4"></div>
+        <button onclick="saveShiftNames()" class="w-full mt-8 bg-blue-600 text-white p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200">Guardar Cambios</button>
+    </div>
+
     <div id="modal" class="modal">
-        <div class="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl">
-            <div class="bg-blue-600 text-white text-center py-4 font-black text-xs uppercase tracking-widest">Configurar Día</div>
-            <div class="p-6 overflow-y-auto max-h-[85vh]">
+        <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
+            <div class="bg-blue-600 text-white text-center py-5 font-black text-sm uppercase tracking-widest">Configurar Día</div>
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
                 
-                <div class="flex bg-gray-100 p-1 rounded-2xl mb-5">
-                    <button onclick="setMode('simple')" id="m-s" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase bg-white">Simple</button>
-                    <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-2 rounded-xl font-bold text-[10px] uppercase">Mixto</button>
+                <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-6">
+                    <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
+                    <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
                 </div>
 
-                <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-4"></div>
-                <div id="sec-mixto" class="hidden space-y-4 mb-4">
-                    <div class="p-3 bg-gray-50 rounded-2xl">
-                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2">Parte Superior</p>
-                        <div id="mix-t" class="grid grid-cols-3 gap-1"></div>
+                <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-6"></div>
+                <div id="sec-mixto" class="hidden space-y-4 mb-6">
+                    <div class="p-4 bg-gray-50 rounded-[24px]">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Superior</p>
+                        <div id="mix-t" class="grid grid-cols-3 gap-2"></div>
                     </div>
-                    <div class="p-3 bg-gray-50 rounded-2xl">
-                        <p class="text-[9px] font-black text-gray-400 uppercase mb-2">Parte Inferior</p>
-                        <div id="mix-b" class="grid grid-cols-3 gap-1"></div>
+                    <div class="p-4 bg-gray-50 rounded-[24px]">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Inferior</p>
+                        <div id="mix-b" class="grid grid-cols-3 gap-2"></div>
                     </div>
                 </div>
 
-                <div class="bg-blue-50 p-4 rounded-2xl space-y-3">
+                <div class="bg-blue-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-black uppercase text-blue-800">Horario:</span>
-                        <div class="flex items-center gap-1">
+                        <span class="text-[11px] font-black uppercase text-blue-900">Horario:</span>
+                        <div class="flex items-center gap-2">
                             <input type="time" id="tIn" onchange="autoCalc()">
-                            <span class="font-bold">-</span>
+                            <span class="font-black text-blue-300">/</span>
                             <input type="time" id="tOut" onchange="autoCalc()">
                         </div>
                     </div>
-                    <div class="flex items-center justify-between border-t border-blue-100 pt-2">
-                        <span class="text-[10px] font-black uppercase text-blue-800">Total Horas (Editable):</span>
-                        <input type="number" id="tHrs" class="w-20 text-center text-blue-600" step="0.5">
+                    <div class="flex items-center justify-between border-t border-blue-200 pt-3">
+                        <span class="text-[11px] font-black uppercase text-blue-900">Total Horas:</span>
+                        <input type="number" id="tHrs" class="w-24 text-center text-blue-700 bg-white shadow-inner" step="0.5">
                     </div>
                 </div>
 
-                <textarea id="nota" placeholder="Comentario..." class="w-full mt-4 p-4 bg-gray-50 border-none rounded-2xl text-sm h-16 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <div class="mt-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">Comentario Personalizado</p>
+                    <textarea id="nota" placeholder="Escribe aquí (ej: Cita médica, Doble turno...)" class="w-full p-4 bg-gray-100 border-none rounded-[24px] text-sm font-bold h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
                 
-                <div class="flex gap-3 mt-6">
-                    <button onclick="closeModal()" class="flex-1 p-4 bg-gray-100 text-gray-400 rounded-2xl font-black text-[10px] uppercase">Cancelar</button>
-                    <button onclick="save()" class="flex-1 p-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg shadow-emerald-100">Aceptar</button>
+                <div class="flex gap-4 mt-8">
+                    <button onclick="closeModal()" class="flex-1 p-5 bg-gray-100 text-gray-400 rounded-3xl font-black text-[11px] uppercase">Cancelar</button>
+                    <button onclick="save()" class="flex-1 p-5 bg-emerald-500 text-white rounded-3xl font-black text-[11px] uppercase shadow-lg shadow-emerald-100">Aceptar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const SHIFTS = {
+        let SHIFTS = JSON.parse(localStorage.getItem('sh_conf_v7')) || {
             'Mañana': { label: 'Mañana', color: 'Mañana', cat: 'hosp', in: '06:00', out: '14:00' },
             'Tarde': { label: 'Tarde', color: 'Tarde', cat: 'hosp', in: '14:00', out: '22:00' },
             '16hrs': { label: '16hrs', color: '16hrs', cat: 'hosp', in: '06:00', out: '22:00' },
@@ -128,7 +140,7 @@
             'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'none', in: '00:00', out: '00:00' }
         };
 
-        let db = JSON.parse(localStorage.getItem('sh_v6')) || {};
+        let db = JSON.parse(localStorage.getItem('sh_data_v7')) || {};
         let current = new Date();
         let activeKey = "", mode = "simple", selS = "Mañana", selT = "Mañana", selB = "Tarde";
 
@@ -136,6 +148,7 @@
             const mSel = document.getElementById('selectMonth');
             const ySel = document.getElementById('selectYear');
             const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            mSel.innerHTML = ''; ySel.innerHTML = '';
             months.forEach((m, i) => mSel.innerHTML += `<option value="${i}">${m}</option>`);
             for(let y=2024; y<=2030; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
             updateSelectors();
@@ -173,7 +186,8 @@
                         <div class="shift-label bg-${SHIFTS[info.t].color}">${SHIFTS[info.t].label}</div>
                         <div class="shift-label bg-${SHIFTS[info.b].color}">${SHIFTS[info.b].label}</div>`;
                 } else {
-                    cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${SHIFTS[info.s].label}</div>`;
+                    const label = info.s === 'L' ? 'L' : SHIFTS[info.s].label;
+                    cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
                 }
                 cell.innerHTML += `<span class="day-number">${d}</span>`;
                 if(info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
@@ -202,14 +216,14 @@
             let [h1, m1] = start.split(':').map(Number);
             let [h2, m2] = end.split(':').map(Number);
             let diff = (h2 + m2/60) - (h1 + m1/60);
-            if(diff < 0) diff += 24; // Por si pasa de medianoche
+            if(diff < 0) diff += 24;
             document.getElementById('tHrs').value = diff.toFixed(1);
         }
 
         function setMode(m) {
             mode = m;
-            document.getElementById('m-s').className = `flex-1 py-2 rounded-xl font-bold text-[10px] uppercase ${m==='simple'?'bg-white shadow-sm':'text-gray-400'}`;
-            document.getElementById('m-m').className = `flex-1 py-2 rounded-xl font-bold text-[10px] uppercase ${m==='mixto'?'bg-white shadow-sm':'text-gray-400'}`;
+            document.getElementById('m-s').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='simple'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
+            document.getElementById('m-m').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='mixto'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
             document.getElementById('sec-simple').classList.toggle('hidden', m!=='simple');
             document.getElementById('sec-mixto').classList.toggle('hidden', m!=='mixto');
         }
@@ -219,14 +233,13 @@
                 const el = document.getElementById(id); el.innerHTML = '';
                 Object.keys(SHIFTS).forEach(k => {
                     const b = document.createElement('div');
-                    b.className = `p-2 rounded-xl text-[9px] font-black text-center cursor-pointer border-2 bg-${SHIFTS[k].color} ${cur===k?'border-blue-600':'border-transparent'}`;
+                    b.className = `p-3 rounded-xl text-[10px] font-black text-center cursor-pointer border-2 bg-${SHIFTS[k].color} ${cur===k?'border-blue-600 scale-105 shadow-sm':'border-transparent opacity-80'}`;
                     b.innerText = SHIFTS[k].label;
                     b.onclick = () => { 
                         setter(k); 
                         document.getElementById('tIn').value = SHIFTS[k].in; 
                         document.getElementById('tOut').value = SHIFTS[k].out;
-                        autoCalc();
-                        refreshBtns(); 
+                        autoCalc(); refreshBtns(); 
                     };
                     el.appendChild(b);
                 });
@@ -234,6 +247,32 @@
             btn('sec-simple', selS, (v) => selS = v);
             btn('mix-t', selT, (v) => selT = v);
             btn('mix-b', selB, (v) => selB = v);
+        }
+
+        function renderSettings() {
+            const container = document.getElementById('settings-container');
+            container.innerHTML = '';
+            Object.keys(SHIFTS).forEach(id => {
+                if(id === 'L') return;
+                container.innerHTML += `
+                    <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-${SHIFTS[id].color} border-2 border-white shadow-sm"></div>
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre del Turno</p>
+                            <input id="set-${id}" type="text" value="${SHIFTS[id].label}" class="w-full bg-white border-gray-200">
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function saveShiftNames() {
+            Object.keys(SHIFTS).forEach(id => {
+                const input = document.getElementById('set-' + id);
+                if(input) SHIFTS[id].label = input.value;
+            });
+            localStorage.setItem('sh_conf_v7', JSON.stringify(SHIFTS));
+            render();
+            showView('calendar');
         }
 
         function save() {
@@ -244,7 +283,7 @@
                 h: parseFloat(document.getElementById('tHrs').value),
                 n: document.getElementById('nota').value 
             };
-            localStorage.setItem('sh_v6', JSON.stringify(db));
+            localStorage.setItem('sh_data_v7', JSON.stringify(db));
             render(); closeModal();
         }
 
@@ -255,7 +294,7 @@
                 if(k.startsWith(`${y}-${m+1}-`)) {
                     const d = db[k];
                     if(d.mode === 'mixto') {
-                        if(SHIFTS[d.t].cat === 'hosp') h += 8; // Hospital fijo
+                        if(SHIFTS[d.t].cat === 'hosp') h += 8;
                         if(SHIFTS[d.b].cat === 'hosp') h += 8;
                         if(SHIFTS[d.t].cat === 'sena' || SHIFTS[d.b].cat === 'sena') s += d.h;
                     } else {
@@ -269,11 +308,14 @@
         }
 
         function showView(v) {
-            document.getElementById('calendar-view').classList.toggle('view-active', v==='calendar');
-            document.getElementById('summary-view').classList.toggle('view-active', v==='summary');
-            document.getElementById('nav-cal').classList.toggle('hidden', v==='summary');
+            ['calendar','summary','settings'].forEach(id => {
+                document.getElementById(id+'-view').classList.toggle('view-active', id===v);
+            });
+            document.getElementById('nav-cal').classList.toggle('hidden', v!=='calendar');
             document.getElementById('btn-cal').classList.toggle('tab-active', v==='calendar');
             document.getElementById('btn-sum').classList.toggle('tab-active', v==='summary');
+            document.getElementById('btn-set').classList.toggle('text-blue-600', v==='settings');
+            if(v === 'settings') renderSettings();
         }
 
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
