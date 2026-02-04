@@ -3,118 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Web Clone</title>
+    <title>Shifter Web Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #1a1c23; color: white; font-family: sans-serif; touch-action: manipulation; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #374151; border: 1px solid #374151; }
-        .day-cell { background-color: #d1d5db; height: 80px; position: relative; color: #1f2937; padding: 2px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-        .day-cell.other-month { background-color: #4b5563; color: #9ca3af; }
-        .day-header { background-color: #1f2937; color: #9ca3af; text-align: center; padding: 5px 0; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        body { background-color: #1a1c23; color: white; font-family: sans-serif; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #374151; }
+        .day-cell { background-color: #d1d5db; height: 95px; position: relative; color: #1f2937; padding: 2px; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Colores de los turnos según tus capturas */
+        /* Turno Mixto Dividido */
+        .shift-Mixto { background: linear-gradient(to bottom, #fef9c3 50%, #fbcfe8 50%) !important; }
         .shift-Mañana { background-color: #fef9c3 !important; }
         .shift-Tarde { background-color: #fbcfe8 !important; }
         .shift-Noche { background-color: #99f6e4 !important; }
-        .shift-Mixto { background-color: #e9d5ff !important; }
         .shift-Libre { background-color: #dcfce7 !important; }
         .shift-Vacaciones { background-color: #fed7aa !important; }
-        .shift-Cumple { background-color: #bfdbfe !important; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 100; padding: 10px; }
         .modal.active { display: flex; }
-        .shift-btn { width: 100%; padding: 12px; margin-bottom: 8px; border-radius: 8px; font-weight: bold; color: #374151; text-align: center; }
+        .shift-opt { padding: 10px; margin-bottom: 5px; border-radius: 8px; font-weight: bold; text-align: center; border: 2px solid transparent; cursor: pointer; }
+        .selected-opt { border-color: #ef4444; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
-    <div class="p-4 flex justify-between items-center bg-[#1f2937] border-b border-gray-700">
-        <h1 id="currentMonth" class="text-lg font-bold uppercase tracking-widest">MARZO 2026</h1>
+    <div class="p-4 flex justify-between items-center bg-[#1f2937]">
+        <h1 id="monthYear" class="text-lg font-bold uppercase tracking-tighter"></h1>
         <div class="flex gap-4">
-            <button onclick="changeMonth(-1)" class="text-xl">❮</button>
-            <button onclick="changeMonth(1)" class="text-xl">❯</button>
+            <button onclick="changeMonth(-1)">❮</button>
+            <button onclick="changeMonth(1)">❯</button>
         </div>
     </div>
 
-    <div class="calendar-grid">
-        <div class="day-header">Dom</div><div class="day-header">Lun</div><div class="day-header">Mar</div>
-        <div class="day-header">Mié</div><div class="day-header">Jue</div><div class="day-header">Vie</div>
-        <div class="day-header">Sáb</div>
+    <div id="gridHeaders" class="calendar-grid text-center text-[10px] font-bold py-1 bg-[#1f2937] text-gray-400">
+        <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
     </div>
     <div id="calendarDays" class="calendar-grid"></div>
 
-    <div id="shiftModal" class="modal">
-        <div class="bg-[#2d333b] w-11/12 max-w-sm rounded-xl overflow-hidden shadow-2xl">
-            <div class="bg-red-600 text-white text-center py-2 font-bold uppercase tracking-tighter">Añadir Turno</div>
-            <div class="p-4" id="shiftOptions">
-                <div onclick="setShift('Mañana')" class="shift-btn shift-Mañana">Mañana <br><span class="text-[10px] font-normal">(8:00 a.m. - 2:00 p.m.)</span></div>
-                <div onclick="setShift('Tarde')" class="shift-btn shift-Tarde">Tarde <br><span class="text-[10px] font-normal">(2:00 p.m. - 9:00 p.m.)</span></div>
-                <div onclick="setShift('Noche')" class="shift-btn shift-Noche">Noche <br><span class="text-[10px] font-normal">(9:00 p.m. - 7:00 a.m.)</span></div>
-                <div onclick="setShift('Mixto')" class="shift-btn shift-Mixto">Mañana / Tarde <br><span class="text-[10px] font-normal">(10:00 a.m. - 2:00 p.m. / 4:00 - 8:00)</span></div>
-                <div onclick="setShift('Libre')" class="shift-btn shift-Libre">Día libre</div>
-                <div onclick="setShift('Vacaciones')" class="shift-btn shift-Vacaciones">Vacaciones</div>
-                <button onclick="closeModal()" class="w-full mt-2 p-3 bg-rose-200 text-rose-800 rounded-full font-bold">CANCELAR</button>
+    <div id="editModal" class="modal">
+        <div class="bg-[#2d333b] w-full max-w-md rounded-2xl p-4 shadow-2xl">
+            <h2 class="text-center font-bold mb-4 text-gray-300">EDITAR DÍA <span id="selectedDateText"></span></h2>
+            
+            <div id="optionsList" class="grid grid-cols-2 gap-2 mb-4">
+                <div onclick="selectType('Mañana')" id="opt-Mañana" class="shift-opt shift-Mañana text-black">Mañana</div>
+                <div onclick="selectType('Tarde')" id="opt-Tarde" class="shift-opt shift-Tarde text-black">Tarde</div>
+                <div onclick="selectType('Noche')" id="opt-Noche" class="shift-opt shift-Noche text-black">Noche</div>
+                <div onclick="selectType('Mixto')" id="opt-Mixto" class="shift-opt shift-Mixto text-black">Mixto</div>
+                <div onclick="selectType('Libre')" id="opt-Libre" class="shift-opt shift-Libre text-black">Libre</div>
+                <div onclick="selectType('Vacaciones')" id="opt-Vacaciones" class="shift-opt shift-Vacaciones text-black">Vacaciones</div>
+            </div>
+
+            <textarea id="noteInput" placeholder="Añadir comentario o nota..." class="w-full p-3 bg-[#1a1c23] border border-gray-600 rounded-lg mb-4 text-white"></textarea>
+
+            <div class="flex gap-2">
+                <button onclick="closeModal()" class="flex-1 p-3 bg-gray-600 rounded-xl font-bold">CANCELAR</button>
+                <button onclick="saveData()" id="btnAceptar" class="flex-1 p-3 bg-emerald-500 rounded-xl font-bold text-emerald-950 text-center">ACEPTAR</button>
             </div>
         </div>
     </div>
 
     <script>
-        let date = new Date(2026, 2, 1); // Marzo 2026 como en tus capturas
-        let selectedDayKey = null;
-        let shifts = JSON.parse(localStorage.getItem('myShifts')) || {};
+        // CONFIGURACIÓN DE SUPABASE (PEGA TUS DATOS AQUÍ)
+        const SB_URL = "TU_URL_DE_SUPABASE_AQUI";
+        const SB_KEY = "TU_KEY_DE_SUPABASE_AQUI";
+        const supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let currentNavDate = new Date();
+        let selectedDayKey = "";
+        let selectedType = "";
+        let allShifts = {};
+
+        async function fetchShifts() {
+            const { data } = await supabase.from('turnos').select('*');
+            allShifts = {};
+            data.forEach(s => allShifts[s.fecha] = { tipo: s.tipo, notas: s.notas });
+            renderCalendar();
+        }
 
         function renderCalendar() {
             const grid = document.getElementById('calendarDays');
-            const monthLabel = document.getElementById('currentMonth');
             grid.innerHTML = '';
+            const y = currentNavDate.getFullYear();
+            const m = currentNavDate.getMonth();
             
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            monthLabel.innerText = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(date);
+            document.getElementById('monthYear').innerText = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' }).format(currentNavDate);
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(y, m, 1).getDay();
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-            // Celdas vacías mes anterior
-            for (let i = 0; i < firstDay; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'day-cell other-month';
-                grid.appendChild(empty);
-            }
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="day-cell opacity-20"></div>`;
 
-            // Días del mes
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dayKey = `${year}-${month}-${i}`;
+            for (let d = 1; d <= daysInMonth; d++) {
+                const key = `${y}-${m+1}-${d}`;
+                const shift = allShifts[key] || { tipo: '', notas: '' };
                 const cell = document.createElement('div');
-                cell.className = `day-cell ${shifts[dayKey] ? 'shift-' + shifts[dayKey] : ''}`;
-                cell.innerHTML = `<span>${i}</span><div class="text-[10px] mt-2 text-center">${shifts[dayKey] || ''}</div>`;
-                cell.onclick = () => openModal(dayKey);
+                cell.className = `day-cell shift-${shift.tipo}`;
+                cell.innerHTML = `
+                    <span class="text-xs font-bold">${d}</span>
+                    <div class="flex-1 flex items-center justify-center text-[10px] font-bold text-center px-1">
+                        ${shift.tipo === 'Mixto' ? 'M / T' : shift.tipo}
+                    </div>
+                    <div class="text-[8px] bg-black/20 truncate">${shift.notas || ''}</div>
+                `;
+                cell.onclick = () => openModal(key, shift);
                 grid.appendChild(cell);
             }
         }
 
-        function openModal(key) {
+        function openModal(key, data) {
             selectedDayKey = key;
-            document.getElementById('shiftModal').classList.add('active');
+            selectedType = data.tipo;
+            document.getElementById('selectedDateText').innerText = key;
+            document.getElementById('noteInput').value = data.notas || '';
+            document.querySelectorAll('.shift-opt').forEach(el => el.classList.remove('selected-opt'));
+            if(data.tipo) document.getElementById('opt-'+data.tipo)?.classList.add('selected-opt');
+            document.getElementById('editModal').classList.add('active');
         }
 
-        function closeModal() {
-            document.getElementById('shiftModal').classList.remove('active');
+        function selectType(t) {
+            selectedType = t;
+            document.querySelectorAll('.shift-opt').forEach(el => el.classList.remove('selected-opt'));
+            document.getElementById('opt-'+t).classList.add('selected-opt');
         }
 
-        function setShift(type) {
-            shifts[selectedDayKey] = type;
-            localStorage.setItem('myShifts', JSON.stringify(shifts));
-            renderCalendar();
-            closeModal();
+        async function saveData() {
+            const btn = document.getElementById('btnAceptar');
+            btn.innerText = "GUARDANDO...";
+            const notas = document.getElementById('noteInput').value;
+
+            const { error } = await supabase.from('turnos').upsert({ 
+                fecha: selectedDayKey, 
+                tipo: selectedType, 
+                notas: notas 
+            }, { onConflict: 'fecha' });
+
+            if (!error) {
+                await fetchShifts();
+                closeModal();
+            }
+            btn.innerText = "ACEPTAR";
         }
 
-        function changeMonth(dir) {
-            date.setMonth(date.getMonth() + dir);
-            renderCalendar();
-        }
+        function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+        function changeMonth(step) { currentNavDate.setMonth(currentNavDate.getMonth() + step); renderCalendar(); }
 
-        renderCalendar();
+        fetchShifts();
     </script>
 </body>
 </html>
