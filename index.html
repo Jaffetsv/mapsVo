@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v18 - Full Control</title>
+    <title>Calendar Pro v2 - Control Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.css">
     <style>
@@ -16,27 +16,10 @@
         .day-off-month .day-number { opacity: 0.6; }
         .today { border: 2px solid #3b82f6 !important; }
         .weekend { background-color: #f8fafc !important; }
-
-        /* Colores de Turnos - DEFINIDOS EXPLÍCITAMENTE */
-        .bg-Mañana { background-color: #ffff00 !important; }
-        .bg-Tarde { background-color: #fbcfe8 !important; }
-        .bg-CENA { background-color: #d8b4fe !important; }
-        .bg-16hrs { background-color: #bef264 !important; }
-        .bg-L { background-color: #ffffff !important; }
-        .bg-Vacaciones { background-color: #fed7aa !important; }
-        .bg-azul { background-color: #93c5fd !important; }
-        .bg-rojo { background-color: #fca5a5 !important; }
-        .bg-verde { background-color: #86efac !important; }
-        .bg-naranja { background-color: #fdba74 !important; }
-        .bg-rosa { background-color: #f9a8d4 !important; }
-        .bg-cian { background-color: #67e8f9 !important; }
-        .bg-morado { background-color: #d8b4fe !important; }
-        .bg-lima { background-color: #d9f99d !important; }
-        .bg-ambar { background-color: #fcd34d !important; }
-        .bg-teal { background-color: #5eead4 !important; }
-        .bg-indigo { background-color: #a5b4fc !important; }
-        .bg-gris { background-color: #d1d5db !important; }
-
+        
+        /* Colores dinámicos - se generarán automáticamente */
+        .color-preview { width: 20px; height: 20px; border-radius: 6px; margin-right: 8px; display: inline-block; }
+        
         .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; color: rgba(0,0,0,0.8); }
         
         /* Comentarios Resaltados */
@@ -176,6 +159,36 @@
             color: #78350f;
             margin-bottom: 4px;
         }
+        
+        /* Modal de edición de turno mixto - mejorado */
+        .mixto-time-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .mixto-time-section {
+            flex: 1;
+            padding: 16px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+        }
+        .mixto-time-section.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        /* Estilos dinámicos para categorías */
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -198,7 +211,7 @@
             </div>
         </div>
 
-        <!-- Selector de mes/año MEJORADO - SIN DUPLICACIÓN -->
+        <!-- Selector de mes/año -->
         <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-2 shadow-inner">
             <button onclick="changeMonth(-1)" class="p-3 hover:bg-white/10 rounded-full transition-colors">
                 <span class="text-xl font-bold">‹</span>
@@ -254,27 +267,12 @@
         <div id="calendar" class="calendar-grid"></div>
     </div>
 
-    <!-- Vista Resumen MEJORADA - RESPONSIVE -->
+    <!-- Vista Resumen - DINÁMICA POR CATEGORÍAS -->
     <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen">
         <div class="space-y-4 md:space-y-6">
-            <!-- Tarjetas de resumen -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] md:border-l-[12px] border-yellow-400 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-[11px] font-black text-gray-400 uppercase">Hospital</p>
-                        <span class="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Horas</span>
-                    </div>
-                    <h2 id="hrs-hosp" class="text-3xl md:text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
-                    <div class="mt-2 text-[10px] text-gray-500 font-bold" id="hosp-days">0 días</div>
-                </div>
-                <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] md:border-l-[12px] border-purple-400 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-[11px] font-black text-gray-400 uppercase">CENA</p>
-                        <span class="text-[10px] font-bold bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Independiente</span>
-                    </div>
-                    <h2 id="hrs-sena" class="text-3xl md:text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
-                    <div class="mt-2 text-[10px] text-gray-500 font-bold" id="sena-days">0 días</div>
-                </div>
+            <!-- Tarjetas de resumen por categoría -->
+            <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <!-- Se generan dinámicamente -->
             </div>
             
             <!-- Estadísticas adicionales -->
@@ -327,16 +325,24 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Detalle por categoría -->
+            <div class="bg-white p-4 md:p-5 rounded-3xl shadow-sm">
+                <h3 class="text-[12px] font-black text-gray-600 uppercase mb-3 md:mb-4">📊 Detalle por Categoría</h3>
+                <div id="category-details" class="space-y-2">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Vista Ajustes CON PESTAÑAS -->
+    <!-- Vista Ajustes -->
     <div id="view-settings" class="view-section bg-white min-h-screen">
         <!-- Tabs de configuración -->
-        <div class="flex bg-gray-50 border-b">
-            <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab active">🎨 Turnos</button>
-            <button onclick="showConfigTab('nuevo')" id="config-nuevo" class="config-tab">➕ Nuevo</button>
-            <button onclick="showConfigTab('categorias')" id="config-categorias" class="config-tab">🏷️ Categorías</button>
+        <div class="flex bg-gray-50 border-b overflow-x-auto">
+            <button onclick="showConfigTab('categorias')" id="config-categorias" class="config-tab active">🏷️ Categorías</button>
+            <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab">🎨 Turnos</button>
+            <button onclick="showConfigTab('nuevo')" id="config-nuevo" class="config-tab">➕ Nuevo Turno</button>
             <button onclick="showConfigTab('asuetos')" id="config-asuetos" class="config-tab">🎉 Asuetos</button>
             <button onclick="showConfigTab('perfil')" id="config-perfil" class="config-tab">👤 Perfil</button>
             <button onclick="showConfigTab('seguridad')" id="config-seguridad" class="config-tab">🔒 Seguridad</button>
@@ -344,101 +350,65 @@
 
         <!-- Contenido de pestañas -->
         <div id="config-content" class="p-4 md:p-6">
-            <!-- Pestaña 1: Turnos Existentes -->
-            <div id="tab-turnos" class="config-tab-content">
-                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎨 Configurar Turnos Existentes</h3>
-                <div id="settings-container" class="space-y-3 md:space-y-4 mb-6"></div>
-            </div>
-
-            <!-- Pestaña 2: Nuevo Turno -->
-            <div id="tab-nuevo" class="config-tab-content hidden">
-                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">➕ Agregar Nuevo Turno</h3>
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 md:p-5 rounded-3xl border border-amber-100 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
-                        <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Turno</label>
-                            <input type="text" id="newShiftName" placeholder="Ej: Noche, Especial, etc." 
-                                   class="w-full bg-white border-amber-200 focus:border-amber-400">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Categoría</label>
-                            <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400">
-                                <!-- Las categorías se cargarán dinámicamente -->
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Color del Turno</label>
-                        <div class="grid grid-cols-6 gap-2 p-3 bg-white rounded-xl">
-                            <div class="color-option bg-Mañana" onclick="selectColor('Mañana')" title="Amarillo"></div>
-                            <div class="color-option bg-Tarde" onclick="selectColor('Tarde')" title="Rosa"></div>
-                            <div class="color-option bg-CENA" onclick="selectColor('CENA')" title="Morado"></div>
-                            <div class="color-option bg-16hrs" onclick="selectColor('16hrs')" title="Verde Lima"></div>
-                            <div class="color-option bg-Vacaciones" onclick="selectColor('Vacaciones')" title="Naranja"></div>
-                            <div class="color-option bg-L" onclick="selectColor('L')" title="Blanco"></div>
-                            <div class="color-option bg-azul" onclick="selectColor('azul')" title="Azul"></div>
-                            <div class="color-option bg-rojo" onclick="selectColor('rojo')" title="Rojo"></div>
-                            <div class="color-option bg-verde" onclick="selectColor('verde')" title="Verde"></div>
-                            <div class="color-option bg-naranja" onclick="selectColor('naranja')" title="Naranja Oscuro"></div>
-                            <div class="color-option bg-rosa" onclick="selectColor('rosa')" title="Rosa Fuerte"></div>
-                            <div class="color-option bg-cian" onclick="selectColor('cian')" title="Cian"></div>
-                            <div class="color-option bg-morado" onclick="selectColor('morado')" title="Morado"></div>
-                            <div class="color-option bg-lima" onclick="selectColor('lima')" title="Lima"></div>
-                            <div class="color-option bg-ambar" onclick="selectColor('ambar')" title="Ámbar"></div>
-                            <div class="color-option bg-teal" onclick="selectColor('teal')" title="Teal"></div>
-                            <div class="color-option bg-indigo" onclick="selectColor('indigo')" title="Indigo"></div>
-                            <div class="color-option bg-gris" onclick="selectColor('gris')" title="Gris"></div>
-                        </div>
-                        <input type="hidden" id="newShiftColor" value="Mañana">
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                        <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Entrada</label>
-                            <input type="time" id="newShiftIn" class="w-full bg-white border-amber-200 focus:border-amber-400">
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Salida</label>
-                            <input type="time" id="newShiftOut" class="w-full bg-white border-amber-200 focus:border-amber-400">
-                        </div>
-                    </div>
-                    <button onclick="addNewShift()" class="w-full p-3 md:p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-amber-600 hover:to-orange-600 transition-all">
-                        ➕ Agregar Turno
-                    </button>
-                </div>
-            </div>
-
-            <!-- Pestaña 3: Categorías -->
-            <div id="tab-categorias" class="config-tab-content hidden">
+            <!-- Pestaña 1: Categorías (PRINCIPAL) -->
+            <div id="tab-categorias" class="config-tab-content">
                 <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🏷️ Gestionar Categorías</h3>
                 
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 md:p-5 rounded-3xl border border-green-100 mb-6">
                     <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nueva Categoría</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                         <div>
                             <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre de Categoría</label>
-                            <input type="text" id="newCategoryName" placeholder="Ej: Guardia, Emergencia, etc." 
+                            <input type="text" id="newCategoryName" placeholder="Ej: Trabajo, Estudio, Familia..." 
                                    class="w-full bg-white border-green-200 focus:border-green-400">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Color</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="newCategoryColor" value="#3b82f6" class="w-10 h-10 cursor-pointer rounded-lg">
+                                <input type="text" id="newCategoryColorHex" value="#3b82f6" class="flex-1 bg-white border-green-200 focus:border-green-400">
+                            </div>
                         </div>
                         <div>
                             <label class="text-[11px] font-bold text-gray-600 block mb-2">Icono</label>
                             <select id="newCategoryIcon" class="w-full bg-white border-green-200 focus:border-green-400">
-                                <option value="🏥">🏥 Hospital</option>
-                                <option value="🌙">🌙 CENA</option>
-                                <option value="😴">😴 Libre/Vacaciones</option>
-                                <option value="📋">📋 Administrativo</option>
-                                <option value="🛡️">🛡️ Guardia</option>
-                                <option value="⭐">⭐ Extra</option>
-                                <option value="🔧">🔧 Otro</option>
-                                <option value="🚑">🚑 Emergencia</option>
-                                <option value="💊">💊 Farmacia</option>
-                                <option value="🩺">🩺 Consulta</option>
-                                <option value="🏨">🏨 Hospitalización</option>
                                 <option value="🏢">🏢 Oficina</option>
-                                <option value="👨‍⚕️">👨‍⚕️ Médico</option>
-                                <option value="👩‍⚕️">👩‍⚕️ Enfermera</option>
+                                <option value="🏥">🏥 Hospital</option>
+                                <option value="🏫">🏫 Escuela</option>
+                                <option value="🏠">🏠 Casa</option>
+                                <option value="✈️">✈️ Viaje</option>
+                                <option value="🛒">🛒 Compras</option>
+                                <option value="🍽️">🍽️ Comida</option>
+                                <option value="🏋️">🏋️ Ejercicio</option>
+                                <option value="🎨">🎨 Arte</option>
+                                <option value="🎵">🎵 Música</option>
+                                <option value="📚">📚 Estudio</option>
+                                <option value="💼">💼 Trabajo</option>
+                                <option value="👨‍👩‍👧‍👦">👨‍👩‍👧‍👦 Familia</option>
+                                <option value="👥">👥 Social</option>
+                                <option value="⛪">⛪ Religioso</option>
+                                <option value="🎉">🎉 Fiesta</option>
+                                <option value="😴">😴 Descanso</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Tipo</label>
+                            <select id="newCategoryType" class="w-full bg-white border-green-200 focus:border-green-400">
+                                <option value="work">💼 Trabajo</option>
+                                <option value="study">📚 Estudio</option>
+                                <option value="personal">👤 Personal</option>
+                                <option value="family">👨‍👩‍👧‍👦 Familia</option>
+                                <option value="health">❤️ Salud</option>
+                                <option value="leisure">🎮 Ocio</option>
+                                <option value="other">🔧 Otro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Horas estándar (opcional)</label>
+                            <input type="number" id="newCategoryStandardHours" placeholder="Ej: 8" step="0.5" 
+                                   class="w-full bg-white border-green-200 focus:border-green-400">
                         </div>
                     </div>
                     <button onclick="addNewCategory()" class="w-full p-3 md:p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-green-600 hover:to-emerald-600 transition-all">
@@ -454,35 +424,81 @@
                 </div>
             </div>
 
+            <!-- Pestaña 2: Turnos Existentes -->
+            <div id="tab-turnos" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎨 Configurar Turnos Existentes</h3>
+                <div class="mb-4">
+                    <label class="text-[11px] font-bold text-gray-600 block mb-2">Filtrar por categoría:</label>
+                    <select id="filterCategory" onchange="filterShiftsByCategory()" class="w-full bg-gray-50 border-gray-200 focus:border-blue-400">
+                        <option value="">Todas las categorías</option>
+                        <!-- Se llenan dinámicamente -->
+                    </select>
+                </div>
+                <div id="settings-container" class="space-y-3 md:space-y-4 mb-6"></div>
+            </div>
+
+            <!-- Pestaña 3: Nuevo Turno -->
+            <div id="tab-nuevo" class="config-tab-content hidden">
+                <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">➕ Agregar Nuevo Turno</h3>
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 md:p-5 rounded-3xl border border-amber-100 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Turno</label>
+                            <input type="text" id="newShiftName" placeholder="Ej: Mañana, Tarde, Noche, Especial..." 
+                                   class="w-full bg-white border-amber-200 focus:border-amber-400">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Categoría *</label>
+                            <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400" required>
+                                <!-- Las categorías se cargarán dinámicamente -->
+                                <option value="">Selecciona una categoría</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Color del Turno</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="newShiftColorPicker" value="#3b82f6" class="w-12 h-12 cursor-pointer rounded-lg">
+                            <input type="text" id="newShiftColorHex" value="#3b82f6" class="flex-1 bg-white border-amber-200 focus:border-amber-400" placeholder="#3b82f6">
+                            <button onclick="generateRandomColor()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-bold">
+                                🎲 Aleatorio
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Entrada</label>
+                            <input type="time" id="newShiftIn" class="w-full bg-white border-amber-200 focus:border-amber-400" required>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Salida</label>
+                            <input type="time" id="newShiftOut" class="w-full bg-white border-amber-200 focus:border-amber-400" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Descripción (opcional)</label>
+                        <textarea id="newShiftDescription" placeholder="Breve descripción del turno..." 
+                                  class="w-full bg-white border-amber-200 focus:border-amber-400 h-20"></textarea>
+                    </div>
+                    
+                    <button onclick="addNewShift()" class="w-full p-3 md:p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-amber-600 hover:to-orange-600 transition-all">
+                        ➕ Agregar Turno
+                    </button>
+                </div>
+                
+                <div class="text-[10px] text-gray-500 text-center">
+                    * Los turnos se agruparán automáticamente en el resumen según su categoría
+                </div>
+            </div>
+
             <!-- Pestaña 4: Asuetos -->
             <div id="tab-asuetos" class="config-tab-content hidden">
                 <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🎉 Gestionar Asuetos</h3>
                 
                 <div class="mb-6">
-                    <div class="flex gap-3 mb-4">
-                        <button onclick="loadHolidaysYear(2024)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2024
-                        </button>
-                        <button onclick="loadHolidaysYear(2025)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2025
-                        </button>
-                        <button onclick="loadHolidaysYear(2026)" class="flex-1 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2026
-                        </button>
-                        <button onclick="loadHolidaysYear(2027)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2027
-                        </button>
-                        <button onclick="loadHolidaysYear(2028)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2028
-                        </button>
-                        <button onclick="loadHolidaysYear(2029)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2029
-                        </button>
-                        <button onclick="loadHolidaysYear(2030)" class="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-xl font-bold text-[10px] transition-colors">
-                            2030
-                        </button>
-                    </div>
-                    
                     <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 md:p-5 rounded-3xl border border-pink-100 mb-6">
                         <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar/Editar Asueto</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -499,9 +515,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                             <div>
                                 <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
-                                <input type="text" id="newHolidayLocation" placeholder="Ej: General, San Salvador, etc." 
-                                       class="w-full bg-white border-pink-200 focus:border-pink-400">
-                                <p class="text-[9px] text-gray-500 mt-1">Dejar "General" para asuetos nacionales</p>
+                                <select id="newHolidayLocation" class="w-full bg-white border-pink-200 focus:border-pink-400">
+                                    <option value="General">General</option>
+                                    <!-- Se cargan localidades existentes -->
+                                </select>
+                                <p class="text-[9px] text-gray-500 mt-1">O ingresa nueva localidad:</p>
+                                <input type="text" id="newHolidayLocationCustom" placeholder="Nueva localidad..." 
+                                       class="w-full mt-1 bg-white border-pink-200 focus:border-pink-400">
                             </div>
                             <div>
                                 <label class="text-[11px] font-bold text-gray-600 block mb-2">Tipo</label>
@@ -519,6 +539,9 @@
                             </button>
                             <button onclick="updateHoliday()" class="flex-1 p-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-blue-600 hover:to-indigo-600 transition-all">
                                 ✏️ Actualizar
+                            </button>
+                            <button onclick="clearHolidayForm()" class="flex-1 p-3 bg-gradient-to-r from-gray-500 to-slate-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-gray-600 hover:to-slate-600 transition-all">
+                                🔄 Limpiar
                             </button>
                         </div>
                     </div>
@@ -561,8 +584,9 @@
                         </div>
                         <div>
                             <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad de Trabajo</label>
-                            <input type="text" id="userLocation" placeholder="Ej: San Salvador, Santa Ana, etc." 
-                                   class="w-full bg-white border-purple-200 focus:border-purple-400">
+                            <select id="userLocation" class="w-full bg-white border-purple-200 focus:border-purple-400">
+                                <!-- Se cargan localidades existentes -->
+                            </select>
                             <p class="text-[9px] text-gray-500 mt-1">Esta localidad determina qué asuetos locales se consideran para ti</p>
                         </div>
                         <div>
@@ -630,7 +654,7 @@
         </div>
     </div>
 
-    <!-- Modal para editar día CORREGIDO -->
+    <!-- Modal para editar día - MEJORADO PARA MIXTO -->
     <div id="modal" class="modal">
         <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-5 font-black text-sm uppercase tracking-widest">
@@ -652,15 +676,64 @@
                     <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
                 </div>
 
-                <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-6"></div>
+                <div id="sec-simple" class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6"></div>
                 <div id="sec-mixto" class="hidden space-y-4 mb-6">
-                    <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-[24px] border border-gray-200">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Superior</p>
-                        <div id="mix-t" class="grid grid-cols-3 gap-2"></div>
+                    <!-- SECCIÓN SUPERIOR -->
+                    <div class="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-[24px] border border-blue-200">
+                        <p class="text-[10px] font-black text-blue-900 uppercase mb-3 text-center">⏰ Turno Superior</p>
+                        <div class="mb-3">
+                            <div id="mix-t" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+                        </div>
+                        <!-- Horarios para turno superior -->
+                        <div class="mt-4 p-3 bg-white rounded-[20px] border border-blue-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-black text-blue-900">Horario Superior:</span>
+                                <div class="flex items-center gap-2">
+                                    <input type="time" id="tInTop" onchange="autoCalcMixtoTop()" 
+                                           class="bg-white border-blue-200 focus:border-blue-400 text-sm">
+                                    <span class="font-black text-blue-300">→</span>
+                                    <input type="time" id="tOutTop" onchange="autoCalcMixtoTop()" 
+                                           class="bg-white border-blue-200 focus:border-blue-400 text-sm">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-black text-blue-900">Horas:</span>
+                                <input type="number" id="tHrsTop" onchange="manualCalcMixtoTop()" 
+                                       class="w-20 text-center text-blue-700 bg-white border-blue-200" step="0.5">
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-[24px] border border-gray-200">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Inferior</p>
-                        <div id="mix-b" class="grid grid-cols-3 gap-2"></div>
+                    
+                    <!-- SECCIÓN INFERIOR -->
+                    <div class="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-[24px] border border-purple-200">
+                        <p class="text-[10px] font-black text-purple-900 uppercase mb-3 text-center">⏰ Turno Inferior</p>
+                        <div class="mb-3">
+                            <div id="mix-b" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+                        </div>
+                        <!-- Horarios para turno inferior -->
+                        <div class="mt-4 p-3 bg-white rounded-[20px] border border-purple-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-black text-purple-900">Horario Inferior:</span>
+                                <div class="flex items-center gap-2">
+                                    <input type="time" id="tInBottom" onchange="autoCalcMixtoBottom()" 
+                                           class="bg-white border-purple-200 focus:border-purple-400 text-sm">
+                                    <span class="font-black text-purple-300">→</span>
+                                    <input type="time" id="tOutBottom" onchange="autoCalcMixtoBottom()" 
+                                           class="bg-white border-purple-200 focus:border-purple-400 text-sm">
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-black text-purple-900">Horas:</span>
+                                <input type="number" id="tHrsBottom" onchange="manualCalcMixtoBottom()" 
+                                       class="w-20 text-center text-purple-700 bg-white border-purple-200" step="0.5">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- TOTAL MIXTO -->
+                    <div class="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100">
+                        <span class="text-[11px] font-black uppercase text-emerald-900">📊 Total Horas del Día:</span>
+                        <input type="number" id="tHrsMixto" class="w-24 text-center text-emerald-700 bg-white shadow-inner border-emerald-200" step="0.5" readonly>
                     </div>
                 </div>
 
@@ -679,42 +752,6 @@
                     <div class="flex items-center justify-between border-t border-blue-200 pt-3">
                         <span class="text-[11px] font-black uppercase text-blue-900">📊 Total Horas:</span>
                         <input type="number" id="tHrs" onchange="manualCalc()" class="w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
-                    </div>
-                </div>
-
-                <!-- Horarios para modo MIXTO - MEJORADO -->
-                <div id="time-mixto" class="hidden space-y-4 mb-6">
-                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
-                        <p class="text-[11px] font-black uppercase text-blue-900 text-center">⏰ Horario Superior</p>
-                        <div class="flex items-center gap-2 justify-center">
-                            <input type="time" id="tInTop" onchange="autoCalcMixtoTop()" 
-                                   class="w-32 bg-white border-blue-200 focus:border-blue-400">
-                            <span class="font-black text-blue-300">→</span>
-                            <input type="time" id="tOutTop" onchange="autoCalcMixtoTop()" 
-                                   class="w-32 bg-white border-blue-200 focus:border-blue-400">
-                        </div>
-                        <div class="flex items-center justify-between border-t border-blue-200 pt-3">
-                            <span class="text-[11px] font-black uppercase text-blue-900">Horas Superior:</span>
-                            <input type="number" id="tHrsTop" onchange="manualCalcMixtoTop()" class="w-20 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
-                        </div>
-                    </div>
-                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-[24px] space-y-4 border border-purple-100">
-                        <p class="text-[11px] font-black uppercase text-purple-900 text-center">⏰ Horario Inferior</p>
-                        <div class="flex items-center gap-2 justify-center">
-                            <input type="time" id="tInBottom" onchange="autoCalcMixtoBottom()" 
-                                   class="w-32 bg-white border-purple-200 focus:border-purple-400">
-                            <span class="font-black text-purple-300">→</span>
-                            <input type="time" id="tOutBottom" onchange="autoCalcMixtoBottom()" 
-                                   class="w-32 bg-white border-purple-200 focus:border-purple-400">
-                        </div>
-                        <div class="flex items-center justify-between border-t border-purple-200 pt-3">
-                            <span class="text-[11px] font-black uppercase text-purple-900">Horas Inferior:</span>
-                            <input type="number" id="tHrsBottom" onchange="manualCalcMixtoBottom()" class="w-20 text-center text-purple-700 bg-white shadow-inner border-purple-200" step="0.5">
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100">
-                        <span class="text-[11px] font-black uppercase text-emerald-900">📊 Total Horas:</span>
-                        <input type="number" id="tHrsMixto" class="w-24 text-center text-emerald-700 bg-white shadow-inner border-emerald-200" step="0.5" readonly>
                     </div>
                 </div>
 
@@ -747,8 +784,10 @@
             <input type="password" id="newUserPin" placeholder="PIN (4 dígitos)" maxlength="4" class="mb-6 bg-gray-50 border-gray-200 focus:border-blue-400">
             <div class="mb-4">
                 <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad de Trabajo</label>
-                <input type="text" id="newUserLocation" placeholder="Ej: San Salvador" 
-                       class="w-full bg-gray-50 border-gray-200 focus:border-blue-400">
+                <select id="newUserLocation" class="w-full bg-gray-50 border-gray-200 focus:border-blue-400">
+                    <!-- Se cargan localidades existentes -->
+                </select>
+                <p class="text-[9px] text-gray-500 mt-1">Puedes crear nuevas localidades en la configuración de asuetos</p>
             </div>
             <button onclick="createNewUser()" class="w-full p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black uppercase text-xs hover:from-blue-700 hover:to-indigo-700 transition-all">
                 👤 Crear Perfil
@@ -816,24 +855,23 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // Base de datos con múltiples usuarios
-        let db = JSON.parse(localStorage.getItem('shifter_v18')) || {
+        // Base de datos con múltiples usuarios - ESTRUCTURA MEJORADA
+        let db = JSON.parse(localStorage.getItem('calendar_pro_v2')) || {
             users: {
                 'ADMIN': {
                     pin: '1234',
                     data: {},
-                    config: {
-                        'Mañana': { label: 'Mañana', color: 'Mañana', cat: 'hosp', in: '06:00', out: '14:00' },
-                        'Tarde': { label: 'Tarde', color: 'Tarde', cat: 'hosp', in: '14:00', out: '22:00' },
-                        '16hrs': { label: '16hrs', color: '16hrs', cat: 'hosp', in: '06:00', out: '22:00' },
-                        'CENA': { label: 'CENA', color: 'CENA', cat: 'sena', in: '05:00', out: '17:00' },
-                        'L': { label: 'L', color: 'L', cat: 'off', in: '00:00', out: '00:00' },
-                        'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'off', in: '00:00', out: '00:00' }
+                    shifts: {
+                        'Mañana': { label: 'Mañana', color: '#ffff00', cat: 'trabajo', in: '06:00', out: '14:00', description: '' },
+                        'Tarde': { label: 'Tarde', color: '#fbcfe8', cat: 'trabajo', in: '14:00', out: '22:00', description: '' },
+                        'Noche': { label: 'Noche', color: '#93c5fd', cat: 'trabajo', in: '22:00', out: '06:00', description: '' },
+                        'Libre': { label: 'Libre', color: '#86efac', cat: 'descanso', in: '00:00', out: '00:00', description: '' },
+                        'Vacaciones': { label: 'Vacaciones', color: '#fed7aa', cat: 'descanso', in: '00:00', out: '00:00', description: '' }
                     },
                     editLocked: false,
                     profile: {
                         fullName: 'ADMIN',
-                        location: 'San Salvador',
+                        location: 'General',
                         considerNational: true,
                         considerLocal: true,
                         considerRegional: false,
@@ -844,14 +882,13 @@
             current: 'ADMIN',
             holidays: {},
             categories: {
-                'hosp': { name: 'Hospital', icon: '🏥' },
-                'sena': { name: 'CENA', icon: '🌙' },
-                'off': { name: 'Libre/Vacaciones', icon: '😴' },
-                'admin': { name: 'Administrativo', icon: '📋' },
-                'guardia': { name: 'Guardia', icon: '🛡️' },
-                'extra': { name: 'Extra', icon: '⭐' },
-                'otro': { name: 'Otro', icon: '🔧' }
-            }
+                'trabajo': { name: 'Trabajo', color: '#3b82f6', icon: '💼', type: 'work', standardHours: 8 },
+                'estudio': { name: 'Estudio', color: '#8b5cf6', icon: '📚', type: 'study', standardHours: 6 },
+                'descanso': { name: 'Descanso', color: '#10b981', icon: '😴', type: 'personal', standardHours: 0 },
+                'familia': { name: 'Familia', color: '#f59e0b', icon: '👨‍👩‍👧‍👦', type: 'family', standardHours: 0 },
+                'personal': { name: 'Personal', color: '#ec4899', icon: '👤', type: 'personal', standardHours: 0 }
+            },
+            locations: ['General', 'San Salvador', 'Santa Ana', 'San Miguel', 'La Libertad']
         };
 
         // Variables globales
@@ -861,7 +898,7 @@
         let selS = "Mañana";
         let selT = "Mañana";
         let selB = "Tarde";
-        let selectedColor = "Mañana";
+        let selectedColor = "#3b82f6";
         let editingHolidayKey = null;
 
         // Obtener estado de edición del usuario actual
@@ -874,7 +911,7 @@
         function setEditMode(locked) {
             const user = db.users[db.current];
             user.editLocked = locked;
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             updateUIEditMode();
         }
 
@@ -883,14 +920,66 @@
             updateUserDropdown();
             updateUserInitial();
             updateMonthDisplay();
-            loadDefaultHolidays(); // Cargar asuetos por defecto
-            loadDefaultCategories(); // Cargar categorías
+            loadDefaultHolidays();
             render();
-            updateUIEditMode(); // Actualizar interfaz según estado de edición
-            loadUserProfileSettings(); // Cargar configuración de perfil
+            updateUIEditMode();
+            loadUserProfileSettings();
+            loadLocations();
+            generateDynamicStyles();
+            updateSummaryView();
         }
 
-        // Función para calcular Semana Santa (Algoritmo de Gauss)
+        // Generar estilos dinámicos para colores de turnos
+        function generateDynamicStyles() {
+            let styleSheet = document.createElement('style');
+            let styleRules = '';
+            
+            // Generar reglas para cada turno del usuario actual
+            const user = db.users[db.current];
+            Object.keys(user.shifts).forEach(shiftKey => {
+                const shift = user.shifts[shiftKey];
+                const color = shift.color || '#ffffff';
+                const className = `bg-${shiftKey.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                
+                styleRules += `.${className} { background-color: ${color} !important; }\n`;
+            });
+            
+            styleSheet.textContent = styleRules;
+            document.head.appendChild(styleSheet);
+        }
+
+        // Cargar localidades en selects
+        function loadLocations() {
+            const locationSelects = [
+                document.getElementById('userLocation'),
+                document.getElementById('newUserLocation'),
+                document.getElementById('newHolidayLocation')
+            ];
+            
+            locationSelects.forEach(select => {
+                if (select) {
+                    select.innerHTML = db.locations.map(loc => 
+                        `<option value="${loc}">${loc}</option>`
+                    ).join('');
+                    
+                    if (select.id === 'userLocation') {
+                        const user = db.users[db.current];
+                        select.value = user.profile.location || 'General';
+                    }
+                }
+            });
+        }
+
+        // Agregar nueva localidad si no existe
+        function addLocationIfNew(location) {
+            if (location && !db.locations.includes(location)) {
+                db.locations.push(location);
+                localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
+                loadLocations(); // Actualizar todos los selects
+            }
+        }
+
+        // Calcular Semana Santa (Algoritmo de Gauss)
         function calculateEaster(year) {
             const a = year % 19;
             const b = Math.floor(year / 100);
@@ -910,50 +999,27 @@
             return new Date(year, month - 1, day);
         }
 
-        // Función para calcular días de Semana Santa
-        function calculateHolyWeek(year) {
-            const easter = calculateEaster(year);
-            const holyWeek = {
-                miercolesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3),
-                juevesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2),
-                viernesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 1),
-                sabadoGloria: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 0)
-            };
-            return holyWeek;
-        }
-
         function loadDefaultHolidays() {
             // Cargar asuetos fijos para cada año
             for (let year = 2024; year <= 2030; year++) {
-                // Asuetos fijos (mismos días cada año)
                 const fixedHolidays = {
                     [`${year}-1-1`]: { name: 'Año Nuevo', location: 'General', type: 'nacional' },
                     [`${year}-5-1`]: { name: 'Día del Trabajo', location: 'General', type: 'nacional' },
                     [`${year}-8-6`]: { name: 'Fiestas Agostinas', location: 'General', type: 'nacional' },
                     [`${year}-9-15`]: { name: 'Aniversario de Independencia', location: 'General', type: 'nacional' },
                     [`${year}-11-2`]: { name: 'Día de los Difuntos', location: 'General', type: 'nacional' },
-                    [`${year}-12-25`]: { name: 'Navidad', location: 'General', type: 'nacional' },
-                    
-                    // Asuetos locales (ejemplos)
-                    [`${year}-1-20`]: { name: 'Fiestas de Cojutepeque', location: 'Cojutepeque', type: 'local' },
-                    [`${year}-2-10`]: { name: 'Fiesta de Lourdes Colón', location: 'Lourdes, Colón', type: 'local' },
-                    [`${year}-5-10`]: { name: 'Día de la Madre', location: 'General', type: 'nacional' },
-                    [`${year}-6-17`]: { name: 'Día del Padre', location: 'General', type: 'nacional' },
-                    [`${year}-8-3`]: { name: 'Día del Comercio', location: 'General', type: 'nacional' },
-                    [`${year}-8-4`]: { name: 'Fiestas Patronales', location: 'San Salvador', type: 'local' },
-                    [`${year}-8-5`]: { name: 'Fiestas Patronales', location: 'San Salvador', type: 'local' },
-                    [`${year}-10-2`]: { name: 'Víspera del día del Trabajador de la Industria Eléctrica', location: 'General', type: 'especial' },
-                    [`${year}-10-3`]: { name: 'Día del Trabajador de la Industria Eléctrica', location: 'General', type: 'especial' },
-                    [`${year}-12-8`]: { name: 'Fiestas de La Libertad', location: 'La Libertad', type: 'local' },
-                    [`${year}-12-19`]: { name: 'Fiestas Patronales', location: 'Quezaltepeque y Rosario de la Paz', type: 'local' },
-                    [`${year}-12-24`]: { name: 'Navidad', location: 'General', type: 'nacional' },
-                    [`${year}-12-26`]: { name: 'Fiestas Patronales', location: 'Zacatecoluca, San Vicente y Santa Tecla', type: 'local' },
-                    [`${year}-12-27`]: { name: 'Fiestas de San Juan Opico', location: 'San Juan Opico', type: 'local' },
-                    [`${year}-12-31`]: { name: 'Fin de Año', location: 'General', type: 'nacional' }
+                    [`${year}-12-25`]: { name: 'Navidad', location: 'General', type: 'nacional' }
                 };
                 
-                // Calcular Semana Santa para cada año
-                const holyWeek = calculateHolyWeek(year);
+                // Calcular Semana Santa
+                const easter = calculateEaster(year);
+                const holyWeek = {
+                    miercolesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 3),
+                    juevesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2),
+                    viernesSanto: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 1),
+                    sabadoGloria: new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 0)
+                };
+                
                 const semanaSanta = {
                     [`${year}-${holyWeek.miercolesSanto.getMonth() + 1}-${holyWeek.miercolesSanto.getDate()}`]: { name: 'Miércoles Santo', location: 'General', type: 'nacional' },
                     [`${year}-${holyWeek.juevesSanto.getMonth() + 1}-${holyWeek.juevesSanto.getDate()}`]: { name: 'Jueves Santo', location: 'General', type: 'nacional' },
@@ -961,10 +1027,8 @@
                     [`${year}-${holyWeek.sabadoGloria.getMonth() + 1}-${holyWeek.sabadoGloria.getDate()}`]: { name: 'Sábado de Gloria', location: 'General', type: 'nacional' }
                 };
                 
-                // Combinar todos los asuetos
                 const yearHolidays = { ...fixedHolidays, ...semanaSanta };
                 
-                // Agregar al db.holidays si no existen
                 for (const [key, value] of Object.entries(yearHolidays)) {
                     if (!db.holidays[key]) {
                         db.holidays[key] = value;
@@ -972,24 +1036,7 @@
                 }
             }
             
-            // Guardar cambios
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
-        }
-
-        function loadDefaultCategories() {
-            // Asegurar que las categorías por defecto existan
-            const defaultCategories = {
-                'hosp': { name: 'Hospital', icon: '🏥' },
-                'sena': { name: 'CENA', icon: '🌙' },
-                'off': { name: 'Libre/Vacaciones', icon: '😴' },
-                'admin': { name: 'Administrativo', icon: '📋' },
-                'guardia': { name: 'Guardia', icon: '🛡️' },
-                'extra': { name: 'Extra', icon: '⭐' },
-                'otro': { name: 'Otro', icon: '🔧' }
-            };
-            
-            // Combinar con categorías existentes
-            db.categories = { ...defaultCategories, ...db.categories };
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
         }
 
         function initDateSelectors() {
@@ -1037,39 +1084,27 @@
             document.getElementById('exportModal').classList.remove('active');
         }
 
-        function selectColor(color) {
-            selectedColor = color;
-            document.getElementById('newShiftColor').value = color;
-            
-            // Actualizar selección visual
-            document.querySelectorAll('.color-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-        }
-
         function showConfigTab(tab) {
-            // Actualizar pestañas activas
             document.querySelectorAll('.config-tab').forEach(t => {
                 t.classList.remove('active');
             });
             document.getElementById(`config-${tab}`).classList.add('active');
             
-            // Mostrar contenido correspondiente
             document.querySelectorAll('.config-tab-content').forEach(content => {
                 content.classList.add('hidden');
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             
-            // Cargar contenido específico de la pestaña
             if(tab === 'asuetos') {
                 filterHolidaysByYear();
             } else if(tab === 'categorias') {
                 renderCategories();
             } else if(tab === 'nuevo') {
                 loadCategoriesSelect();
+                loadShiftCategories();
             } else if(tab === 'turnos') {
                 renderSettings();
+                loadFilterCategories();
             } else if(tab === 'perfil') {
                 loadUserProfileSettings();
             }
@@ -1098,7 +1133,6 @@
 
         function toggleEditMode() {
             if(isEditMode()) {
-                // Pedir PIN para bloquear
                 const p = prompt("Ingresa tu PIN para bloquear la edición:");
                 const user = db.users[db.current];
                 
@@ -1110,11 +1144,9 @@
                     return;
                 }
             } else {
-                // Para desbloquear - pedir PIN
                 const p = prompt("Ingresa tu PIN para editar:");
                 const user = db.users[db.current];
                 
-                // Clave universal ADMIN (solo en código, no se muestra al usuario)
                 const adminUniversalPin = '120720';
                 
                 if(p === user.pin || p === adminUniversalPin) {
@@ -1134,29 +1166,24 @@
             const user = db.users[db.current];
             const profile = user.profile;
             
-            // Verificar tipo de asueto
             if (!profile[`consider${holidayData.type.charAt(0).toUpperCase() + holidayData.type.slice(1)}`]) {
                 return false;
             }
             
-            // Verificar localidad
             if (holidayData.location === 'General') {
-                return true; // Asueto nacional aplica a todos
+                return true;
             }
             
-            // Verificar si la localidad del asueto coincide con la del usuario
             if (holidayData.location && profile.location) {
                 const userLocationLower = profile.location.toLowerCase();
                 const holidayLocationLower = holidayData.location.toLowerCase();
                 
-                // Verificar coincidencia exacta o parcial
                 if (holidayLocationLower.includes(userLocationLower) || 
                     userLocationLower.includes(holidayLocationLower)) {
                     return true;
                 }
                 
-                // Verificar ciudades principales
-                const mainCities = ['san salvador', 'santa ana', 'san miguel', 'san vicente', 'la libertad', 'san salvador'];
+                const mainCities = ['san salvador', 'santa ana', 'san miguel', 'san vicente', 'la libertad'];
                 if (mainCities.includes(userLocationLower) && holidayLocationLower.includes(userLocationLower)) {
                     return true;
                 }
@@ -1168,418 +1195,10 @@
         // Obtener tipo de indicador para asueto
         function getHolidayIndicator(holidayData) {
             if (!isHolidayApplicable(holidayData)) {
-                return { class: 'holiday-indicator', text: 'A' }; // Rojo - no aplica
+                return { class: 'holiday-indicator', text: 'A' };
             }
             
-            // Verde - aplica localmente
             return { class: 'local-holiday-indicator', text: 'A' };
-        }
-
-        async function exportMonthAsImage() {
-            try {
-                closeExportModal();
-                
-                // Obtener estadísticas del mes
-                const month = parseInt(document.getElementById('exportMonth').value);
-                const year = parseInt(document.getElementById('exportYear').value);
-                const user = db.users[db.current];
-                const profile = user.profile;
-                const SHIFTS = user.config;
-                
-                let h = 0, s = 0, freeDays = 0, vacDays = 0, weekendDays = 0, holidayWorked = 0, localHolidays = 0;
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                freeDays = daysInMonth;
-                
-                // Contar asuetos en el mes
-                let totalHolidays = 0;
-                Object.keys(db.holidays).forEach(dateKey => {
-                    if(dateKey.startsWith(`${year}-${month+1}-`)) {
-                        const holidayData = db.holidays[dateKey];
-                        if (isHolidayApplicable(holidayData)) {
-                            localHolidays++;
-                        }
-                        totalHolidays++;
-                    }
-                });
-                
-                Object.keys(user.data).forEach(k => {
-                    if(k.startsWith(`${year}-${month+1}-`)) {
-                        const d = user.data[k];
-                        const dayOfWeek = new Date(year, month, parseInt(k.split('-')[2])).getDay();
-                        const isHoliday = db.holidays[k];
-                        const isApplicableHoliday = isHoliday && isHolidayApplicable(isHoliday);
-                        
-                        if(dayOfWeek === 0 || dayOfWeek === 6) {
-                            weekendDays++;
-                        }
-                        
-                        freeDays--;
-                        
-                        if(d.mode === 'mixto') {
-                            if(isApplicableHoliday) holidayWorked++;
-                            
-                            if(SHIFTS[d.t].cat === 'hosp') h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
-                            if(SHIFTS[d.t].cat === 'sena') s += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
-                            if(SHIFTS[d.b].cat === 'hosp') h += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out));
-                            if(SHIFTS[d.b].cat === 'sena') s += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out));
-                        } else {
-                            if(SHIFTS[d.s].cat === 'hosp') h += (d.h || 0);
-                            else if(SHIFTS[d.s].cat === 'sena') s += (d.h || 0);
-                            else if(SHIFTS[d.s].cat === 'off') {
-                                freeDays++;
-                                if(d.s === 'Vacaciones') {
-                                    vacDays++;
-                                }
-                            }
-                            
-                            if((SHIFTS[d.s].cat === 'hosp' || SHIFTS[d.s].cat === 'sena') && isApplicableHoliday) {
-                                holidayWorked++;
-                            }
-                        }
-                    }
-                });
-                
-                freeDays = Math.max(0, freeDays);
-                
-                // Crear contenedor temporal
-                const tempContainer = document.createElement('div');
-                tempContainer.style.position = 'fixed';
-                tempContainer.style.left = '-9999px';
-                tempContainer.style.top = '-9999px';
-                tempContainer.style.width = '800px';
-                tempContainer.style.backgroundColor = 'white';
-                tempContainer.style.padding = '25px';
-                tempContainer.style.borderRadius = '20px';
-                tempContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
-                
-                // Crear HTML para exportación
-                const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-                let html = `
-                    <div style="font-family: system-ui, -apple-system, sans-serif;">
-                        <!-- Encabezado -->
-                        <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
-                            <h1 style="font-size: 32px; font-weight: 900; color: #1e293b; margin-bottom: 5px;">
-                                ${profile.fullName} - ${months[month]} ${year}
-                            </h1>
-                            <p style="font-size: 14px; color: #64748b; font-weight: 600;">
-                                Generado el ${new Date().toLocaleDateString('es-ES')} | Localidad: ${profile.location}
-                            </p>
-                        </div>
-                        
-                        <!-- Estadísticas del mes -->
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; background: linear-gradient(to right, #f0f9ff, #fefce8); padding: 20px; border-radius: 15px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">🏥 HOSPITAL</div>
-                                <div style="font-size: 24px; font-weight: 900; color: #1e293b;">${h.toFixed(1)} HRS</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">🌙 CENA</div>
-                                <div style="font-size: 24px; font-weight: 900; color: #1e293b;">${s.toFixed(1)} HRS</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">😴 DESCANSO</div>
-                                <div style="font-size: 24px; font-weight: 900; color: #1e293b;">${freeDays + vacDays + weekendDays} DÍAS</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">🎉 ASUETOS TRAB.</div>
-                                <div style="font-size: 24px; font-weight: 900; color: #dc2626;">${holidayWorked}</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Calendario -->
-                        <div style="margin-bottom: 25px;">
-                            <h3 style="font-size: 16px; font-weight: 800; color: #374151; margin-bottom: 15px; text-align: center;">CALENDARIO DE TURNOS</h3>
-                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background-color: #e5e7eb; border: 1px solid #e5e7eb;">
-                `;
-                
-                // Días de la semana (LUN a DOM)
-                const daysOfWeek = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
-                daysOfWeek.forEach(day => {
-                    const color = day === 'DOM' ? '#ef4444' : (day === 'SÁB' ? '#3b82f6' : '#64748b');
-                    html += `
-                        <div style="background-color: #f8fafc; padding: 12px; text-align: center; font-weight: 900; font-size: 12px; color: ${color};">
-                            ${day}
-                        </div>
-                    `;
-                });
-                
-                // Calcular días del mes (semana empieza en lunes)
-                const firstDay = new Date(year, month, 1).getDay();
-                const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
-                const lastDate = new Date(year, month + 1, 0).getDate();
-                const prevLastDate = new Date(year, month, 0).getDate();
-                
-                // Días del mes anterior
-                for(let i = firstDayMonday; i > 0; i--) {
-                    const prevDay = prevLastDate - i + 1;
-                    const prevMonth = month === 0 ? 12 : month;
-                    const prevYear = month === 0 ? year - 1 : year;
-                    const dateKey = `${prevYear}-${prevMonth}-${prevDay}`;
-                    const holidayData = db.holidays[dateKey];
-                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
-                    
-                    if(holidayData) {
-                        const indicatorColor = isApplicable ? '#059669' : '#dc2626';
-                        const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
-                        
-                        html += `
-                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${prevDay}
-                                </span>
-                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
-                                    A
-                                </span>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${prevDay}
-                                </span>
-                            </div>
-                        `;
-                    }
-                }
-                
-                // Días del mes actual
-                for(let d = 1; d <= lastDate; d++) {
-                    const key = `${year}-${month+1}-${d}`;
-                    const info = user.data[key] || { mode: 'simple', s: 'L' };
-                    const holidayData = db.holidays[key];
-                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
-                    
-                    let backgroundColor = '#ffffff';
-                    let label = 'L';
-                    
-                    if(info.mode === 'mixto') {
-                        const colorTop = SHIFTS[info.t]?.color || 'L';
-                        const colorBottom = SHIFTS[info.b]?.color || 'L';
-                        html += `
-                            <div style="height: 90px; position: relative;">
-                                <div style="height: 45%; background-color: ${getColorValue(colorTop)}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.1);">
-                                    ${SHIFTS[info.t]?.label || 'L'}
-                                </div>
-                                <div style="height: 45%; background-color: ${getColorValue(colorBottom)}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; text-transform: uppercase;">
-                                    ${SHIFTS[info.b]?.label || 'L'}
-                                </div>
-                        `;
-                        
-                        html += `
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${d}
-                                </span>
-                        `;
-                        
-                        if(holidayData) {
-                            const indicatorColor = isApplicable ? '#059669' : '#dc2626';
-                            const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
-                            
-                            html += `
-                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
-                                    A
-                                </span>
-                            `;
-                        }
-                        
-                        html += `</div>`;
-                    } else {
-                        if(info.s !== 'L') {
-                            const color = SHIFTS[info.s]?.color || 'L';
-                            backgroundColor = getColorValue(color);
-                            label = SHIFTS[info.s]?.label || 'L';
-                        }
-                        
-                        html += `
-                            <div style="background-color: ${backgroundColor}; height: 90px; position: relative;">
-                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; font-weight: 900; text-transform: uppercase;">
-                                    ${label}
-                                </div>
-                        `;
-                        
-                        html += `
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${d}
-                                </span>
-                        `;
-                        
-                        if(holidayData) {
-                            const indicatorColor = isApplicable ? '#059669' : '#dc2626';
-                            const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
-                            
-                            html += `
-                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
-                                    A
-                                </span>
-                            `;
-                        }
-                        
-                        html += `</div>`;
-                    }
-                }
-                
-                // Días del mes siguiente
-                const total = firstDayMonday + lastDate;
-                for(let i = 1; i <= (42 - total); i++) {
-                    const nextMonth = month === 11 ? 1 : month + 2;
-                    const nextYear = month === 11 ? year + 1 : year;
-                    const dateKey = `${nextYear}-${nextMonth}-${i}`;
-                    const holidayData = db.holidays[dateKey];
-                    const isApplicable = holidayData && isHolidayApplicable(holidayData);
-                    
-                    if(holidayData) {
-                        const indicatorColor = isApplicable ? '#059669' : '#dc2626';
-                        const indicatorBg = isApplicable ? 'rgba(209, 250, 229, 0.9)' : 'rgba(254, 226, 226, 0.9)';
-                        
-                        html += `
-                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${i}
-                                </span>
-                                <span style="position: absolute; top: 0; left: 0; font-size: 8px; font-weight: 900; color: ${indicatorColor}; background: ${indicatorBg}; padding: 1px 4px; border-bottom-right-radius: 8px;">
-                                    A
-                                </span>
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div style="background-color: #f9fafb; height: 90px; position: relative; opacity: 0.3;">
-                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
-                                    ${i}
-                                </span>
-                            </div>
-                        `;
-                    }
-                }
-                
-                html += `
-                            </div>
-                        </div>
-                        
-                        <!-- Leyenda y detalles -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 25px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-                            <div style="flex: 1;">
-                                <h4 style="font-size: 14px; font-weight: 800; color: #374151; margin-bottom: 10px;">LEYENDA</h4>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                `;
-                
-                // Leyenda de colores
-                Object.keys(SHIFTS).forEach(key => {
-                    const shift = SHIFTS[key];
-                    html += `
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; border-radius: 4px; background-color: ${getColorValue(shift.color)}; border: 1px solid #d1d5db;"></div>
-                            <span style="font-size: 11px; font-weight: 700;">${shift.label}</span>
-                        </div>
-                    `;
-                });
-                
-                html += `
-                                </div>
-                                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                                        <div style="width: 16px; height: 16px; border-radius: 4px; background-color: #dc2626; border: 1px solid #d1d5db;"></div>
-                                        <span style="font-size: 10px; font-weight: 700;">Asueto Nacional/Local</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div style="width: 16px; height: 16px; border-radius: 4px; background-color: #059669; border: 1px solid #d1d5db;"></div>
-                                        <span style="font-size: 10px; font-weight: 700;">Asueto que aplica a ${profile.location}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div style="flex: 1; padding-left: 20px; border-left: 1px solid #e5e7eb;">
-                                <h4 style="font-size: 14px; font-weight: 800; color: #374151; margin-bottom: 10px;">DETALLES DEL MES</h4>
-                                <div style="font-size: 12px; color: #4b5563;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Días trabajados:</span>
-                                        <span style="font-weight: 700;">${Math.ceil((h + s) / 8)}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Horas totales:</span>
-                                        <span style="font-weight: 700;">${(h + s).toFixed(1)}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Asuetos en mes:</span>
-                                        <span style="font-weight: 700; color: #dc2626;">${totalHolidays}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Asuetos locales aplicables:</span>
-                                        <span style="font-weight: 700; color: #059669;">${localHolidays}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Asuetos trabajados:</span>
-                                        <span style="font-weight: 700; color: #dc2626;">${holidayWorked}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Libres:</span>
-                                        <span style="font-weight: 700;">${freeDays}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                        <span>Vacaciones:</span>
-                                        <span style="font-weight: 700;">${vacDays}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span>Días fin de semana:</span>
-                                        <span style="font-weight: 700;">${weekendDays}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                tempContainer.innerHTML = html;
-                document.body.appendChild(tempContainer);
-                
-                // Capturar como imagen
-                const canvas = await html2canvas(tempContainer, {
-                    scale: 2,
-                    backgroundColor: '#ffffff',
-                    useCORS: true,
-                    logging: false
-                });
-                
-                // Crear enlace para descargar
-                const link = document.createElement('a');
-                link.download = `Turnos_${profile.fullName}_${months[month]}_${year}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                // Limpiar
-                document.body.removeChild(tempContainer);
-                
-                alert('¡Calendario exportado como imagen! Se ha guardado en tus descargas.');
-                
-            } catch (error) {
-                console.error('Error al exportar imagen:', error);
-                alert('Error al exportar. Intenta nuevamente.');
-            }
-        }
-
-        function getColorValue(colorName) {
-            const colorMap = {
-                'Mañana': '#ffff00',
-                'Tarde': '#fbcfe8',
-                'CENA': '#d8b4fe',
-                '16hrs': '#bef264',
-                'L': '#ffffff',
-                'Vacaciones': '#fed7aa',
-                'azul': '#93c5fd',
-                'rojo': '#fca5a5',
-                'verde': '#86efac',
-                'naranja': '#fdba74',
-                'rosa': '#f9a8d4',
-                'cian': '#67e8f9',
-                'morado': '#d8b4fe',
-                'lima': '#d9f99d',
-                'ambar': '#fcd34d',
-                'teal': '#5eead4',
-                'indigo': '#a5b4fc',
-                'gris': '#d1d5db'
-            };
-            return colorMap[colorName] || '#ffffff';
         }
 
         function render() {
@@ -1590,10 +1209,12 @@
             const todayKey = `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
 
             const firstDay = new Date(y, m, 1).getDay();
-            // SEMANA EMPIEZA EN LUNES
             const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
             const lastDate = new Date(y, m + 1, 0).getDate();
             const prevLastDate = new Date(y, m, 0).getDate();
+
+            // Generar estilos dinámicos para los turnos actuales
+            generateDynamicStyles();
 
             // Días del mes anterior
             const user = db.users[db.current];
@@ -1608,20 +1229,22 @@
                 
                 const info = user.data[key];
                 if(info) {
-                    const SHIFTS = user.config;
+                    const SHIFTS = user.shifts;
                     if(info.mode === 'mixto') {
+                        const classNameTop = `bg-${info.t.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                        const classNameBottom = `bg-${info.b.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
                         cell.innerHTML = `
-                            <div class="shift-label bg-${SHIFTS[info.t].color}">${SHIFTS[info.t].label}</div>
-                            <div class="shift-label bg-${SHIFTS[info.b].color}">${SHIFTS[info.b].label}</div>`;
+                            <div class="shift-label ${classNameTop}">${SHIFTS[info.t]?.label || info.t}</div>
+                            <div class="shift-label ${classNameBottom}">${SHIFTS[info.b]?.label || info.b}</div>`;
                     } else {
-                        const label = info.s === 'L' ? 'L' : SHIFTS[info.s].label;
-                        cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
+                        const className = info.s === 'Libre' ? '' : `bg-${info.s.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                        const label = info.s === 'Libre' ? 'Libre' : (SHIFTS[info.s]?.label || info.s);
+                        cell.innerHTML = `<div class="shift-label ${className}">${label}</div>`;
                     }
                 } else {
                     cell.innerHTML = '';
                 }
                 
-                // MARCADOR DE ASUETO en esquina superior izquierda
                 const holidayKey = `${prevYear}-${prevMonth}-${prevDay}`;
                 const holidayData = db.holidays[holidayKey];
                 if(holidayData) {
@@ -1638,8 +1261,8 @@
             // Días del mes actual
             for(let d = 1; d <= lastDate; d++) {
                 const key = `${y}-${m+1}-${d}`;
-                const info = user.data[key] || { mode: 'simple', s: 'L' };
-                const SHIFTS = user.config;
+                const info = user.data[key] || { mode: 'simple', s: 'Libre' };
+                const SHIFTS = user.shifts;
                 const cell = document.createElement('div');
                 
                 let cellClasses = 'day-cell';
@@ -1654,15 +1277,17 @@
                 cell.className = cellClasses;
                 
                 if(info.mode === 'mixto') {
+                    const classNameTop = `bg-${info.t.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                    const classNameBottom = `bg-${info.b.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
                     cell.innerHTML = `
-                        <div class="shift-label bg-${SHIFTS[info.t].color}">${SHIFTS[info.t].label}</div>
-                        <div class="shift-label bg-${SHIFTS[info.b].color}">${SHIFTS[info.b].label}</div>`;
+                        <div class="shift-label ${classNameTop}">${SHIFTS[info.t]?.label || info.t}</div>
+                        <div class="shift-label ${classNameBottom}">${SHIFTS[info.b]?.label || info.b}</div>`;
                 } else {
-                    const label = info.s === 'L' ? 'L' : SHIFTS[info.s].label;
-                    cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
+                    const className = info.s === 'Libre' ? '' : `bg-${info.s.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                    const label = info.s === 'Libre' ? 'Libre' : (SHIFTS[info.s]?.label || info.s);
+                    cell.innerHTML = `<div class="shift-label ${className}">${label}</div>`;
                 }
                 
-                // MARCADOR DE ASUETO en esquina superior izquierda
                 const holidayKey = `${y}-${m+1}-${d}`;
                 const holidayData = db.holidays[holidayKey];
                 if(holidayData) {
@@ -1694,7 +1319,6 @@
                 const cell = document.createElement('div');
                 cell.className = 'day-cell day-off-month';
                 
-                // MARCADOR DE ASUETO en esquina superior izquierda
                 const holidayData = db.holidays[key];
                 if(holidayData) {
                     const indicator = getHolidayIndicator(holidayData);
@@ -1706,6 +1330,7 @@
             }
             
             calcSummary();
+            updateSummaryView();
         }
 
         function updateUserInitial() {
@@ -1718,11 +1343,11 @@
             
             activeKey = key;
             mode = info.mode || 'simple';
-            selS = info.s || 'Mañana'; 
+            selS = info.s || 'Libre'; 
             selT = info.t || 'Mañana'; 
             selB = info.b || 'Tarde';
             
-            const SHIFTS = db.users[db.current].config;
+            const SHIFTS = db.users[db.current].shifts;
             
             // Mostrar información de asueto si existe
             const holidayData = db.holidays[key];
@@ -1733,7 +1358,6 @@
                 document.getElementById('holidayName').textContent = holidayData.name;
                 document.getElementById('holidayLocation').textContent = `📍 ${holidayData.location}`;
                 
-                // Traducir tipo
                 const typeMap = {
                     'nacional': '🇸🇻 Nacional',
                     'local': '🏙️ Local',
@@ -1742,7 +1366,6 @@
                 };
                 document.getElementById('holidayType').textContent = `📋 ${typeMap[holidayData.type] || holidayData.type}`;
                 
-                // Resaltar si aplica al usuario
                 if(isHolidayApplicable(holidayData)) {
                     holidayPanel.style.background = 'linear-gradient(to right, #d1fae5, #a7f3d0)';
                     holidayPanel.style.borderColor = '#10b981';
@@ -1753,20 +1376,20 @@
             
             // Configurar campos según el modo
             if(mode === 'simple') {
-                document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
-                document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
-                document.getElementById('tHrs').value = info.h || calculateHours(info.tIn || SHIFTS[selS].in, info.tOut || SHIFTS[selS].out);
+                document.getElementById('tIn').value = info.tIn || (SHIFTS[selS]?.in || '00:00');
+                document.getElementById('tOut').value = info.tOut || (SHIFTS[selS]?.out || '00:00');
+                document.getElementById('tHrs').value = info.h || calculateHours(info.tIn || (SHIFTS[selS]?.in || '00:00'), info.tOut || (SHIFTS[selS]?.out || '00:00'));
                 
                 document.getElementById('time-simple').classList.remove('hidden');
                 document.getElementById('time-mixto').classList.add('hidden');
             } else {
-                document.getElementById('tInTop').value = info.tInTop || SHIFTS[selT].in;
-                document.getElementById('tOutTop').value = info.tOutTop || SHIFTS[selT].out;
-                document.getElementById('tInBottom').value = info.tInBottom || SHIFTS[selB].in;
-                document.getElementById('tOutBottom').value = info.tOutBottom || SHIFTS[selB].out;
+                document.getElementById('tInTop').value = info.tInTop || (SHIFTS[selT]?.in || '00:00');
+                document.getElementById('tOutTop').value = info.tOutTop || (SHIFTS[selT]?.out || '00:00');
+                document.getElementById('tInBottom').value = info.tInBottom || (SHIFTS[selB]?.in || '00:00');
+                document.getElementById('tOutBottom').value = info.tOutBottom || (SHIFTS[selB]?.out || '00:00');
                 
-                const hrsTop = info.hrsTop || calculateHours(info.tInTop || SHIFTS[selT].in, info.tOutTop || SHIFTS[selT].out);
-                const hrsBottom = info.hrsBottom || calculateHours(info.tInBottom || SHIFTS[selB].in, info.tOutBottom || SHIFTS[selB].out);
+                const hrsTop = info.hrsTop || calculateHours(info.tInTop || (SHIFTS[selT]?.in || '00:00'), info.tOutTop || (SHIFTS[selT]?.out || '00:00'));
+                const hrsBottom = info.hrsBottom || calculateHours(info.tInBottom || (SHIFTS[selB]?.in || '00:00'), info.tOutBottom || (SHIFTS[selB]?.out || '00:00'));
                 
                 document.getElementById('tHrsTop').value = hrsTop.toFixed(1);
                 document.getElementById('tHrsBottom').value = hrsBottom.toFixed(1);
@@ -1803,19 +1426,25 @@
             document.getElementById('m-m').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='mixto'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
             document.getElementById('sec-simple').classList.toggle('hidden', m!=='simple');
             document.getElementById('sec-mixto').classList.toggle('hidden', m!=='mixto');
+            document.getElementById('time-simple').classList.toggle('hidden', m!=='simple');
+            document.getElementById('time-mixto').classList.toggle('hidden', m!=='mixto');
         }
 
         function refreshBtns() {
-            const SHIFTS = db.users[db.current].config;
+            const SHIFTS = db.users[db.current].shifts;
             
             // Función para crear botones
-            const createBtn = (shiftKey, isSelected) => {
-                const color = SHIFTS[shiftKey].color;
+            const createBtn = (shiftKey, isSelected, target) => {
+                const shift = SHIFTS[shiftKey];
+                if (!shift) return null;
+                
                 const btn = document.createElement('div');
-                btn.className = `shift-option ${isSelected ? 'selected' : ''} bg-${color}`;
+                const className = `bg-${shiftKey.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')}`;
+                btn.className = `shift-option ${className} ${isSelected ? 'selected' : ''}`;
                 btn.style.border = isSelected ? '2px solid #2563eb' : '2px solid transparent';
-                btn.innerText = SHIFTS[shiftKey].label;
+                btn.innerText = shift.label;
                 btn.dataset.shift = shiftKey;
+                btn.title = shift.description || shift.label;
                 return btn;
             };
 
@@ -1824,20 +1453,22 @@
             simpleContainer.innerHTML = '';
             Object.keys(SHIFTS).forEach(k => {
                 const btn = createBtn(k, selS === k);
-                btn.onclick = () => {
-                    selS = k;
-                    if(SHIFTS[k].in !== '00:00') {
-                        document.getElementById('tIn').value = SHIFTS[k].in;
-                        document.getElementById('tOut').value = SHIFTS[k].out;
-                        autoCalc();
-                    } else {
-                        document.getElementById('tIn').value = '00:00';
-                        document.getElementById('tOut').value = '00:00';
-                        document.getElementById('tHrs').value = 0;
-                    }
-                    refreshBtns();
-                };
-                simpleContainer.appendChild(btn);
+                if (btn) {
+                    btn.onclick = () => {
+                        selS = k;
+                        if(SHIFTS[k].in !== '00:00') {
+                            document.getElementById('tIn').value = SHIFTS[k].in;
+                            document.getElementById('tOut').value = SHIFTS[k].out;
+                            autoCalc();
+                        } else {
+                            document.getElementById('tIn').value = '00:00';
+                            document.getElementById('tOut').value = '00:00';
+                            document.getElementById('tHrs').value = 0;
+                        }
+                        refreshBtns();
+                    };
+                    simpleContainer.appendChild(btn);
+                }
             });
 
             // Mixto mode - Top
@@ -1845,14 +1476,16 @@
             mixTopContainer.innerHTML = '';
             Object.keys(SHIFTS).forEach(k => {
                 const btn = createBtn(k, selT === k);
-                btn.onclick = () => {
-                    selT = k;
-                    document.getElementById('tInTop').value = SHIFTS[k].in;
-                    document.getElementById('tOutTop').value = SHIFTS[k].out;
-                    autoCalcMixtoTop();
-                    refreshBtns();
-                };
-                mixTopContainer.appendChild(btn);
+                if (btn) {
+                    btn.onclick = () => {
+                        selT = k;
+                        document.getElementById('tInTop').value = SHIFTS[k].in;
+                        document.getElementById('tOutTop').value = SHIFTS[k].out;
+                        autoCalcMixtoTop();
+                        refreshBtns();
+                    };
+                    mixTopContainer.appendChild(btn);
+                }
             });
 
             // Mixto mode - Bottom
@@ -1860,14 +1493,16 @@
             mixBottomContainer.innerHTML = '';
             Object.keys(SHIFTS).forEach(k => {
                 const btn = createBtn(k, selB === k);
-                btn.onclick = () => {
-                    selB = k;
-                    document.getElementById('tInBottom').value = SHIFTS[k].in;
-                    document.getElementById('tOutBottom').value = SHIFTS[k].out;
-                    autoCalcMixtoBottom();
-                    refreshBtns();
-                };
-                mixBottomContainer.appendChild(btn);
+                if (btn) {
+                    btn.onclick = () => {
+                        selB = k;
+                        document.getElementById('tInBottom').value = SHIFTS[k].in;
+                        document.getElementById('tOutBottom').value = SHIFTS[k].out;
+                        autoCalcMixtoBottom();
+                        refreshBtns();
+                    };
+                    mixBottomContainer.appendChild(btn);
+                }
             });
         }
 
@@ -1943,25 +1578,48 @@
             
             user.data[activeKey] = data;
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             render(); 
             closeModal();
         }
 
         function calcSummary() {
-            let h = 0, s = 0;
-            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, holidayWorked = 0, localHolidays = 0;
-            const y = current.getFullYear(), m = current.getMonth() + 1;
+            updateSummaryView();
+        }
+
+        function updateSummaryView() {
             const user = db.users[db.current];
-            const SHIFTS = user.config;
-            const profile = user.profile;
+            const SHIFTS = user.shifts;
+            const y = current.getFullYear(), m = current.getMonth() + 1;
             
-            // Contar días libres por defecto
+            // Inicializar contadores por categoría
+            let categoryStats = {};
+            let totalHours = 0;
+            let workedDays = 0;
+            let freeDays = 0;
+            let vacDays = 0;
+            let weekendDays = 0;
+            let holidayWorked = 0;
+            let localHolidays = 0;
+            let totalHolidays = 0;
+            
+            // Inicializar categorías
+            Object.keys(db.categories).forEach(catId => {
+                const cat = db.categories[catId];
+                categoryStats[catId] = {
+                    name: cat.name,
+                    icon: cat.icon,
+                    color: cat.color,
+                    hours: 0,
+                    days: 0,
+                    percentage: 0
+                };
+            });
+            
             const daysInMonth = new Date(y, m, 0).getDate();
             freeDays = daysInMonth;
             
-            // Contar asuetos en el mes actual
-            let totalHolidays = 0;
+            // Contar asuetos
             Object.keys(db.holidays).forEach(dateKey => {
                 if(dateKey.startsWith(`${y}-${m}-`)) {
                     const holidayData = db.holidays[dateKey];
@@ -1972,12 +1630,11 @@
                 }
             });
             
+            // Procesar datos del mes
             Object.keys(user.data).forEach(k => {
                 if(k.startsWith(`${y}-${m}-`)) {
                     const d = user.data[k];
                     const dayOfWeek = new Date(y, m-1, parseInt(k.split('-')[2])).getDay();
-                    
-                    // Verificar si es asueto aplicable
                     const holidayData = db.holidays[k];
                     const isApplicableHoliday = holidayData && isHolidayApplicable(holidayData);
                     
@@ -1991,37 +1648,42 @@
                         workedDays++;
                         if(isApplicableHoliday) holidayWorked++;
                         
-                        if(SHIFTS[d.t].cat === 'hosp') { 
-                            h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
-                            hospDays++; 
+                        // Procesar turno superior
+                        if(SHIFTS[d.t]) {
+                            const cat = SHIFTS[d.t].cat;
+                            if(categoryStats[cat]) {
+                                categoryStats[cat].hours += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
+                                categoryStats[cat].days++;
+                            }
+                            totalHours += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out));
                         }
-                        if(SHIFTS[d.t].cat === 'sena') { 
-                            s += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
-                            senaDays++; 
-                        }
-                        if(SHIFTS[d.b].cat === 'hosp') { 
-                            h += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out)); 
-                            hospDays++; 
-                        }
-                        if(SHIFTS[d.b].cat === 'sena') { 
-                            s += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out)); 
-                            senaDays++; 
+                        
+                        // Procesar turno inferior
+                        if(SHIFTS[d.b]) {
+                            const cat = SHIFTS[d.b].cat;
+                            if(categoryStats[cat]) {
+                                categoryStats[cat].hours += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out));
+                                categoryStats[cat].days++;
+                            }
+                            totalHours += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out));
                         }
                     } else {
-                        if(SHIFTS[d.s].cat === 'hosp') { 
-                            h += (d.h || 0); 
-                            hospDays++;
-                            workedDays++;
-                            if(isApplicableHoliday) holidayWorked++;
-                        } else if(SHIFTS[d.s].cat === 'sena') { 
-                            s += (d.h || 0); 
-                            senaDays++;
-                            workedDays++;
-                            if(isApplicableHoliday) holidayWorked++;
-                        } else if(SHIFTS[d.s].cat === 'off') {
-                            freeDays++;
-                            if(d.s === 'Vacaciones') {
-                                vacDays++;
+                        if(SHIFTS[d.s]) {
+                            const cat = SHIFTS[d.s].cat;
+                            if(categoryStats[cat]) {
+                                categoryStats[cat].hours += (d.h || 0);
+                                categoryStats[cat].days++;
+                                totalHours += (d.h || 0);
+                                
+                                if(cat !== 'descanso') {
+                                    workedDays++;
+                                    if(isApplicableHoliday) holidayWorked++;
+                                } else {
+                                    freeDays++;
+                                    if(d.s === 'Vacaciones') {
+                                        vacDays++;
+                                    }
+                                }
                             }
                         }
                     }
@@ -2030,11 +1692,12 @@
             
             freeDays = Math.max(0, freeDays);
             
-            // Actualizar estadísticas
-            document.getElementById('hrs-hosp').textContent = h.toFixed(1) + " HRS";
-            document.getElementById('hrs-sena').textContent = s.toFixed(1) + " HRS";
-            document.getElementById('hosp-days').textContent = hospDays + " día" + (hospDays !== 1 ? 's' : '');
-            document.getElementById('sena-days').textContent = senaDays + " día" + (senaDays !== 1 ? 's' : '');
+            // Calcular porcentajes
+            Object.keys(categoryStats).forEach(catId => {
+                categoryStats[catId].percentage = totalHours > 0 ? (categoryStats[catId].hours / totalHours * 100).toFixed(1) : 0;
+            });
+            
+            // Actualizar estadísticas generales
             document.getElementById('total-off').textContent = (freeDays + vacDays + weekendDays);
             document.getElementById('free-days').textContent = freeDays;
             document.getElementById('vac-days').textContent = vacDays;
@@ -2044,18 +1707,147 @@
             document.getElementById('total-holidays').textContent = totalHolidays;
             document.getElementById('local-holidays').textContent = localHolidays;
             
-            const avgHours = workedDays > 0 ? (h + s) / workedDays : 0;
+            const avgHours = workedDays > 0 ? totalHours / workedDays : 0;
             document.getElementById('avg-hours').textContent = avgHours.toFixed(1) + 'h';
-            
             document.getElementById('total-days').textContent = daysInMonth;
+            
+            // Actualizar tarjetas de categorías
+            updateCategoryCards(categoryStats);
+            
+            // Actualizar detalles por categoría
+            updateCategoryDetails(categoryStats);
+        }
+
+        function updateCategoryCards(categoryStats) {
+            const container = document.getElementById('summary-categories');
+            container.innerHTML = '';
+            
+            // Filtrar categorías con horas > 0
+            const activeCategories = Object.keys(categoryStats).filter(catId => 
+                categoryStats[catId].hours > 0 || categoryStats[catId].days > 0
+            );
+            
+            if(activeCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-2 bg-white p-6 md:p-8 rounded-3xl shadow-sm border-l-[12px] border-gray-300 text-center">
+                        <p class="text-[12px] font-black text-gray-400 uppercase mb-2">📊 Sin datos este mes</p>
+                        <p class="text-[10px] text-gray-500">Agrega turnos en el calendario para ver estadísticas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            activeCategories.forEach(catId => {
+                const stat = categoryStats[catId];
+                const borderColor = stat.color || '#d1d5db';
+                
+                container.innerHTML += `
+                    <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] md:border-l-[12px] hover:shadow-md transition-shadow" style="border-left-color: ${borderColor}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">${stat.icon}</span>
+                                <p class="text-[11px] font-black text-gray-400 uppercase">${stat.name}</p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background-color: ${borderColor}20; color: ${borderColor}">
+                                ${stat.percentage}%
+                            </span>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-black text-gray-800 tracking-tighter">${stat.hours.toFixed(1)} HRS</h2>
+                        <div class="mt-2 text-[10px] text-gray-500 font-bold">${stat.days} día${stat.days !== 1 ? 's' : ''}</div>
+                        <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full" style="width: ${stat.percentage}%; background-color: ${borderColor}"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateCategoryDetails(categoryStats) {
+            const container = document.getElementById('category-details');
+            container.innerHTML = '';
+            
+            // Ordenar categorías por horas (descendente)
+            const sortedCategories = Object.keys(categoryStats)
+                .filter(catId => categoryStats[catId].hours > 0)
+                .sort((a, b) => categoryStats[b].hours - categoryStats[a].hours);
+            
+            if(sortedCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-gray-400">
+                        <p class="text-[11px]">No hay horas registradas por categoría</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedCategories.forEach(catId => {
+                const stat = categoryStats[catId];
+                
+                container.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background-color: ${stat.color}20">
+                                <span style="color: ${stat.color}">${stat.icon}</span>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-gray-800">${stat.name}</p>
+                                <p class="text-[9px] text-gray-500">${stat.days} día${stat.days !== 1 ? 's' : ''}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[12px] font-black text-gray-800">${stat.hours.toFixed(1)}h</p>
+                            <p class="text-[9px] text-gray-500">${stat.percentage}% del total</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Función para generar color aleatorio
+        function generateRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            document.getElementById('newShiftColorPicker').value = color;
+            document.getElementById('newShiftColorHex').value = color;
+        }
+
+        // Cargar categorías en selects
+        function loadCategoriesSelect() {
+            const select = document.getElementById('newShiftCat');
+            select.innerHTML = '<option value="">Selecciona una categoría</option>' + 
+                Object.keys(db.categories).map(catId => {
+                    const cat = db.categories[catId];
+                    return `<option value="${catId}" style="color: ${cat.color}">${cat.icon} ${cat.name}</option>`;
+                }).join('');
+        }
+
+        // Cargar categorías para filtro
+        function loadFilterCategories() {
+            const select = document.getElementById('filterCategory');
+            select.innerHTML = '<option value="">Todas las categorías</option>' + 
+                Object.keys(db.categories).map(catId => {
+                    const cat = db.categories[catId];
+                    return `<option value="${catId}">${cat.icon} ${cat.name}</option>`;
+                }).join('');
+        }
+
+        // Cargar categorías para turnos (en resumen)
+        function loadShiftCategories() {
+            // Esta función asegura que los selects de categoría estén actualizados
+            loadCategoriesSelect();
+            loadFilterCategories();
         }
 
         function addNewShift() {
             const name = document.getElementById('newShiftName').value.trim();
-            const color = document.getElementById('newShiftColor').value;
+            const color = document.getElementById('newShiftColorHex').value;
             const cat = document.getElementById('newShiftCat').value;
             const inTime = document.getElementById('newShiftIn').value || '00:00';
             const outTime = document.getElementById('newShiftOut').value || '00:00';
+            const description = document.getElementById('newShiftDescription').value.trim();
             
             if(!name) {
                 alert("Por favor ingresa un nombre para el turno");
@@ -2067,39 +1859,51 @@
                 return;
             }
             
-            const user = db.users[db.current];
-            const shiftKey = name.replace(/\s+/g, '_');
+            if(!inTime || !outTime) {
+                alert("Por favor ingresa horas de entrada y salida");
+                return;
+            }
             
-            user.config[shiftKey] = {
+            const user = db.users[db.current];
+            const shiftKey = name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+            
+            user.shifts[shiftKey] = {
                 label: name,
                 color: color,
                 cat: cat,
                 in: inTime,
-                out: outTime
+                out: outTime,
+                description: description
             };
             
             // Limpiar campos
             document.getElementById('newShiftName').value = '';
             document.getElementById('newShiftIn').value = '';
             document.getElementById('newShiftOut').value = '';
+            document.getElementById('newShiftDescription').value = '';
             
+            // Actualizar estilos dinámicos
+            generateDynamicStyles();
+            
+            // Actualizar vistas
             renderSettings();
+            filterShiftsByCategory();
             alert("Turno agregado correctamente");
         }
 
         function renderSettings() {
             const container = document.getElementById('settings-container');
             container.innerHTML = '';
-            const SHIFTS = db.users[db.current].config;
+            const SHIFTS = db.users[db.current].shifts;
             
             Object.keys(SHIFTS).forEach(id => {
                 const conf = SHIFTS[id];
-                const category = db.categories[conf.cat] || { name: 'Desconocida', icon: '❓' };
+                const category = db.categories[conf.cat] || { name: 'Desconocida', icon: '❓', color: '#cccccc' };
                 
                 container.innerHTML += `
                     <div class="flex items-center gap-4 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center">
-                            <span class="text-[10px] font-black text-gray-800">${conf.label.charAt(0)}</span>
+                        <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm flex items-center justify-center" style="background-color: ${conf.color}">
+                            <span class="text-[10px] font-black" style="color: ${getContrastColor(conf.color)}">${conf.label.charAt(0)}</span>
                         </div>
                         <div class="flex-1">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -2130,41 +1934,308 @@
                                            class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
                                 </div>
                             </div>
+                            <div class="mt-2">
+                                <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="set-color-${id}" value="${conf.color}" 
+                                           class="w-8 h-8 cursor-pointer rounded-lg">
+                                    <input type="text" id="set-color-hex-${id}" value="${conf.color}" 
+                                           class="flex-1 bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Descripción</p>
+                                <input type="text" id="set-desc-${id}" value="${conf.description || ''}" 
+                                       class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm" 
+                                       placeholder="Descripción opcional">
+                            </div>
                         </div>
-                        <button onclick="deleteShift('${id}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar turno">
-                            🗑️
-                        </button>
+                        ${id !== 'Libre' && id !== 'Vacaciones' ? 
+                            `<button onclick="deleteShift('${id}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar turno">
+                                🗑️
+                            </button>` : 
+                            `<span class="text-[9px] text-gray-400 font-bold px-2">Básico</span>`
+                        }
+                    </div>
+                `;
+            });
+            
+            // Agregar eventos a los campos de color
+            Object.keys(SHIFTS).forEach(id => {
+                const colorPicker = document.getElementById(`set-color-${id}`);
+                const colorHex = document.getElementById(`set-color-hex-${id}`);
+                
+                if(colorPicker && colorHex) {
+                    colorPicker.addEventListener('input', (e) => {
+                        colorHex.value = e.target.value;
+                    });
+                    
+                    colorHex.addEventListener('input', (e) => {
+                        if(/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                            colorPicker.value = e.target.value;
+                        }
+                    });
+                }
+            });
+        }
+
+        function filterShiftsByCategory() {
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const SHIFTS = db.users[db.current].shifts;
+            const container = document.getElementById('settings-container');
+            
+            if(!categoryFilter) {
+                renderSettings();
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            Object.keys(SHIFTS).forEach(id => {
+                const conf = SHIFTS[id];
+                if(conf.cat === categoryFilter) {
+                    const category = db.categories[conf.cat] || { name: 'Desconocida', icon: '❓', color: '#cccccc' };
+                    
+                    container.innerHTML += `
+                        <div class="flex items-center gap-4 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors">
+                            <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm flex items-center justify-center" style="background-color: ${conf.color}">
+                                <span class="text-[10px] font-black" style="color: ${getContrastColor(conf.color)}">${conf.label.charAt(0)}</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
+                                        <input id="set-label-${id}" type="text" value="${conf.label}" 
+                                               class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
+                                        <select id="set-cat-${id}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                            ${Object.keys(db.categories).map(catId => {
+                                                const cat = db.categories[catId];
+                                                return `<option value="${catId}" ${conf.cat === catId ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`;
+                                            }).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <div>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Entrada</p>
+                                        <input type="time" id="set-in-${id}" value="${conf.in}" 
+                                               class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Salida</p>
+                                        <input type="time" id="set-out-${id}" value="${conf.out}" 
+                                               class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
+                                    <div class="flex items-center gap-2">
+                                        <input type="color" id="set-color-${id}" value="${conf.color}" 
+                                               class="w-8 h-8 cursor-pointer rounded-lg">
+                                        <input type="text" id="set-color-hex-${id}" value="${conf.color}" 
+                                               class="flex-1 bg-white border-gray-200 focus:border-blue-400 rounded-xl text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                            ${id !== 'Libre' && id !== 'Vacaciones' ? 
+                                `<button onclick="deleteShift('${id}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar turno">
+                                    🗑️
+                                </button>` : 
+                                `<span class="text-[9px] text-gray-400 font-bold px-2">Básico</span>`
+                            }
+                        </div>
+                    `;
+                }
+            });
+            
+            if(container.innerHTML === '') {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        <p class="text-[12px] font-bold">No hay turnos en esta categoría</p>
+                        <p class="text-[10px] mt-2">Agrega un nuevo turno en la pestaña "Nuevo Turno"</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getContrastColor(hexColor) {
+            // Convertir hex a RGB
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+            
+            // Calcular luminosidad
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Retornar blanco o negro según luminosidad
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+
+        function deleteShift(shiftKey) {
+            if(shiftKey === 'Libre' || shiftKey === 'Vacaciones') {
+                alert("No se puede eliminar este turno básico");
+                return;
+            }
+            
+            // Verificar si el turno está en uso
+            const user = db.users[db.current];
+            let inUse = false;
+            
+            Object.keys(user.data).forEach(dateKey => {
+                const data = user.data[dateKey];
+                if(data.mode === 'simple' && data.s === shiftKey) {
+                    inUse = true;
+                } else if(data.mode === 'mixto' && (data.t === shiftKey || data.b === shiftKey)) {
+                    inUse = true;
+                }
+            });
+            
+            if(inUse) {
+                alert("No se puede eliminar este turno porque está en uso en el calendario");
+                return;
+            }
+            
+            if(confirm(`¿Eliminar el turno "${user.shifts[shiftKey].label}"?`)) {
+                delete user.shifts[shiftKey];
+                localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
+                renderSettings();
+                generateDynamicStyles();
+                alert("Turno eliminado");
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            const sortedCategories = Object.keys(db.categories).sort((a, b) => {
+                return db.categories[a].name.localeCompare(db.categories[b].name);
+            });
+            
+            if(sortedCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-400">
+                        <p class="text-[12px] font-bold">No hay categorías definidas</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            sortedCategories.forEach(catId => {
+                const cat = db.categories[catId];
+                const typeMap = {
+                    'work': '💼 Trabajo',
+                    'study': '📚 Estudio',
+                    'personal': '👤 Personal',
+                    'family': '👨‍👩‍👧‍👦 Familia',
+                    'health': '❤️ Salud',
+                    'leisure': '🎮 Ocio',
+                    'other': '🔧 Otro'
+                };
+                
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: ${cat.color}20">
+                                <span class="text-[16px]" style="color: ${cat.color}">${cat.icon}</span>
+                            </div>
+                            <div>
+                                <p class="text-[12px] font-black text-gray-800">${cat.name}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[9px] px-2 py-1 rounded-full" style="background-color: ${cat.color}20; color: ${cat.color}">
+                                        ${typeMap[cat.type] || cat.type}
+                                    </span>
+                                    ${cat.standardHours > 0 ? 
+                                        `<span class="text-[9px] text-gray-500">${cat.standardHours}h estándar</span>` : 
+                                        ''
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        ${catId !== 'descanso' ? 
+                            `<button onclick="deleteCategory('${catId}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar categoría">
+                                🗑️
+                            </button>` : 
+                            `<span class="text-[9px] text-gray-400 font-bold">Sistema</span>`
+                        }
                     </div>
                 `;
             });
         }
 
-        function loadCategoriesSelect() {
-            const select = document.getElementById('newShiftCat');
-            select.innerHTML = Object.keys(db.categories).map(catId => {
-                const cat = db.categories[catId];
-                return `<option value="${catId}">${cat.icon} ${cat.name}</option>`;
-            }).join('');
-        }
-
-        function deleteShift(shiftKey) {
-            if(shiftKey === 'L' || shiftKey === 'Vacaciones') {
-                alert("No se puede eliminar este turno básico");
+        function addNewCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const color = document.getElementById('newCategoryColorHex').value || document.getElementById('newCategoryColor').value;
+            const icon = document.getElementById('newCategoryIcon').value;
+            const type = document.getElementById('newCategoryType').value;
+            const standardHours = parseFloat(document.getElementById('newCategoryStandardHours').value) || 0;
+            
+            if(!name) {
+                alert("Por favor ingresa un nombre para la categoría");
                 return;
             }
             
-            if(confirm(`¿Eliminar el turno "${shiftKey}"?`)) {
-                const user = db.users[db.current];
-                delete user.config[shiftKey];
-                renderSettings();
-                alert("Turno eliminado");
+            // Generar ID único
+            const catId = name.toLowerCase()
+                .replace(/\s+/g, '_')
+                .replace(/[^a-z0-9_]/g, '')
+                .substring(0, 20);
+            
+            if(db.categories[catId]) {
+                alert("Ya existe una categoría con ese nombre o ID similar");
+                return;
             }
+            
+            db.categories[catId] = {
+                name: name,
+                color: color,
+                icon: icon,
+                type: type,
+                standardHours: standardHours
+            };
+            
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
+            
+            // Limpiar campos
+            document.getElementById('newCategoryName').value = '';
+            document.getElementById('newCategoryStandardHours').value = '';
+            
+            renderCategories();
+            loadShiftCategories(); // Actualizar selects en otras pestañas
+            alert("Categoría agregada correctamente");
         }
 
-        function loadHolidaysYear(year) {
-            // Cargar asuetos de un año específico
-            document.getElementById('holidayYearFilter').value = year;
-            filterHolidaysByYear();
+        function deleteCategory(catId) {
+            if(catId === 'descanso') {
+                alert("No se puede eliminar la categoría de descanso básica");
+                return;
+            }
+            
+            // Verificar si la categoría está en uso
+            const user = db.users[db.current];
+            let inUse = false;
+            
+            Object.keys(user.shifts).forEach(shiftKey => {
+                if(user.shifts[shiftKey].cat === catId) {
+                    inUse = true;
+                }
+            });
+            
+            if(inUse) {
+                alert("No se puede eliminar esta categoría porque está siendo usada por uno o más turnos");
+                return;
+            }
+            
+            if(confirm(`¿Eliminar la categoría "${db.categories[catId].name}"?`)) {
+                delete db.categories[catId];
+                localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
+                renderCategories();
+                loadShiftCategories();
+                alert("Categoría eliminada");
+            }
         }
 
         function filterHolidaysByYear() {
@@ -2176,14 +2247,12 @@
             const container = document.getElementById('holidays-container');
             container.innerHTML = '';
             
-            // Filtrar asuetos por año
             let holidaysToShow = Object.keys(db.holidays);
             
             if (yearFilter !== 'all') {
                 holidaysToShow = holidaysToShow.filter(dateKey => dateKey.startsWith(`${yearFilter}-`));
             }
             
-            // Ordenar asuetos por fecha
             holidaysToShow.sort((a, b) => {
                 return new Date(a) - new Date(b);
             });
@@ -2243,48 +2312,6 @@
             });
         }
 
-        function renderCategories() {
-            const container = document.getElementById('categories-container');
-            container.innerHTML = '';
-            
-            const sortedCategories = Object.keys(db.categories).sort((a, b) => {
-                return db.categories[a].name.localeCompare(db.categories[b].name);
-            });
-            
-            if(sortedCategories.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center text-gray-400">
-                        <p class="text-[12px] font-bold">No hay categorías definidas</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            sortedCategories.forEach(catId => {
-                const cat = db.categories[catId];
-                
-                container.innerHTML += `
-                    <div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <span class="text-[14px]">${cat.icon}</span>
-                            </div>
-                            <div>
-                                <p class="text-[12px] font-black text-gray-800">${cat.name}</p>
-                                <p class="text-[10px] text-gray-500 font-bold">ID: ${catId}</p>
-                            </div>
-                        </div>
-                        ${catId !== 'hosp' && catId !== 'sena' && catId !== 'off' ? 
-                            `<button onclick="deleteCategory('${catId}')" class="p-2 text-red-500 hover:text-red-700" title="Eliminar categoría">
-                                🗑️
-                            </button>` : 
-                            `<span class="text-[9px] text-gray-400 font-bold">Sistema</span>`
-                        }
-                    </div>
-                `;
-            });
-        }
-
         function editHoliday(dateKey) {
             const holidayData = db.holidays[dateKey];
             if (!holidayData) return;
@@ -2296,17 +2323,18 @@
             document.getElementById('newHolidayName').value = holidayData.name;
             document.getElementById('newHolidayLocation').value = holidayData.location;
             document.getElementById('newHolidayType').value = holidayData.type;
+            document.getElementById('newHolidayLocationCustom').value = '';
             
             editingHolidayKey = dateKey;
             
-            // Desplazar a la sección de agregar/editar
             document.getElementById('tab-asuetos').scrollTop = 0;
         }
 
         function addNewHoliday() {
             const dateInput = document.getElementById('newHolidayDate').value;
             const name = document.getElementById('newHolidayName').value.trim();
-            const location = document.getElementById('newHolidayLocation').value.trim() || 'General';
+            let location = document.getElementById('newHolidayLocation').value;
+            const customLocation = document.getElementById('newHolidayLocationCustom').value.trim();
             const type = document.getElementById('newHolidayType').value;
             
             if(!dateInput || !name) {
@@ -2314,7 +2342,12 @@
                 return;
             }
             
-            // Formatear fecha como YYYY-M-D
+            // Usar localidad personalizada si se ingresó
+            if(customLocation) {
+                location = customLocation;
+                addLocationIfNew(location);
+            }
+            
             const date = new Date(dateInput);
             const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
             
@@ -2324,16 +2357,11 @@
                 type: type
             };
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             
-            // Limpiar campos
-            document.getElementById('newHolidayDate').value = '';
-            document.getElementById('newHolidayName').value = '';
-            document.getElementById('newHolidayLocation').value = '';
-            editingHolidayKey = null;
-            
+            clearHolidayForm();
             filterHolidaysByYear();
-            render(); // Refrescar calendario
+            render();
             alert("Asueto agregado correctamente");
         }
 
@@ -2345,7 +2373,8 @@
             
             const dateInput = document.getElementById('newHolidayDate').value;
             const name = document.getElementById('newHolidayName').value.trim();
-            const location = document.getElementById('newHolidayLocation').value.trim() || 'General';
+            let location = document.getElementById('newHolidayLocation').value;
+            const customLocation = document.getElementById('newHolidayLocationCustom').value.trim();
             const type = document.getElementById('newHolidayType').value;
             
             if(!dateInput || !name) {
@@ -2353,11 +2382,14 @@
                 return;
             }
             
-            // Formatear fecha como YYYY-M-D
+            if(customLocation) {
+                location = customLocation;
+                addLocationIfNew(location);
+            }
+            
             const date = new Date(dateInput);
             const newDateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
             
-            // Si cambió la fecha, eliminar el antiguo y crear nuevo
             if (editingHolidayKey !== newDateKey) {
                 delete db.holidays[editingHolidayKey];
             }
@@ -2368,84 +2400,31 @@
                 type: type
             };
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             
-            // Limpiar campos
-            document.getElementById('newHolidayDate').value = '';
-            document.getElementById('newHolidayName').value = '';
-            document.getElementById('newHolidayLocation').value = '';
-            editingHolidayKey = null;
-            
+            clearHolidayForm();
             filterHolidaysByYear();
-            render(); // Refrescar calendario
+            render();
             alert("Asueto actualizado correctamente");
         }
 
-        function addNewCategory() {
-            const name = document.getElementById('newCategoryName').value.trim();
-            const icon = document.getElementById('newCategoryIcon').value;
-            
-            if(!name) {
-                alert("Por favor ingresa un nombre para la categoría");
-                return;
-            }
-            
-            // Generar ID único (sin espacios, en minúsculas)
-            const catId = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-            
-            if(db.categories[catId]) {
-                alert("Ya existe una categoría con ese nombre o ID similar");
-                return;
-            }
-            
-            db.categories[catId] = {
-                name: name,
-                icon: icon
-            };
-            
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
-            
-            // Limpiar campos
-            document.getElementById('newCategoryName').value = '';
-            
-            renderCategories();
-            loadCategoriesSelect(); // Actualizar select en "Nuevo Turno"
-            alert("Categoría agregada correctamente");
+        function clearHolidayForm() {
+            document.getElementById('newHolidayDate').value = '';
+            document.getElementById('newHolidayName').value = '';
+            document.getElementById('newHolidayLocation').value = 'General';
+            document.getElementById('newHolidayLocationCustom').value = '';
+            document.getElementById('newHolidayType').value = 'nacional';
+            editingHolidayKey = null;
         }
 
         function deleteHoliday(dateKey) {
             const holiday = db.holidays[dateKey];
             if(confirm(`¿Eliminar el asueto "${holiday.name}" (${dateKey})?`)) {
                 delete db.holidays[dateKey];
-                localStorage.setItem('shifter_v18', JSON.stringify(db));
+                localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
                 filterHolidaysByYear();
-                render(); // Refrescar calendario
+                render();
                 alert("Asueto eliminado");
-            }
-        }
-
-        function deleteCategory(catId) {
-            // Verificar si la categoría está en uso
-            const user = db.users[db.current];
-            let inUse = false;
-            
-            Object.keys(user.config).forEach(shiftKey => {
-                if(user.config[shiftKey].cat === catId) {
-                    inUse = true;
-                }
-            });
-            
-            if(inUse) {
-                alert("No se puede eliminar esta categoría porque está siendo usada por uno o más turnos");
-                return;
-            }
-            
-            if(confirm(`¿Eliminar la categoría "${db.categories[catId].name}"?`)) {
-                delete db.categories[catId];
-                localStorage.setItem('shifter_v18', JSON.stringify(db));
-                renderCategories();
-                loadCategoriesSelect(); // Actualizar select en "Nuevo Turno"
-                alert("Categoría eliminada");
             }
         }
 
@@ -2454,7 +2433,15 @@
             const profile = user.profile;
             
             document.getElementById('userFullName').value = profile.fullName;
-            document.getElementById('userLocation').value = profile.location;
+            
+            // Actualizar select de localidad
+            const locationSelect = document.getElementById('userLocation');
+            if (locationSelect) {
+                locationSelect.innerHTML = db.locations.map(loc => 
+                    `<option value="${loc}" ${loc === profile.location ? 'selected' : ''}>${loc}</option>`
+                ).join('');
+            }
+            
             document.getElementById('considerNational').checked = profile.considerNational;
             document.getElementById('considerLocal').checked = profile.considerLocal;
             document.getElementById('considerRegional').checked = profile.considerRegional;
@@ -2468,19 +2455,23 @@
             }
             
             const user = db.users[db.current];
-            const SHIFTS = user.config;
+            const SHIFTS = user.shifts;
             
-            // Guardar configuración de turnos
+            // Guardar configuración de turnos desde la pestaña de turnos
             Object.keys(SHIFTS).forEach(id => {
                 const labelInput = document.getElementById(`set-label-${id}`);
                 const catInput = document.getElementById(`set-cat-${id}`);
                 const inInput = document.getElementById(`set-in-${id}`);
                 const outInput = document.getElementById(`set-out-${id}`);
+                const colorInput = document.getElementById(`set-color-${id}`);
+                const descInput = document.getElementById(`set-desc-${id}`);
                 
                 if(labelInput) SHIFTS[id].label = labelInput.value;
                 if(catInput) SHIFTS[id].cat = catInput.value;
                 if(inInput) SHIFTS[id].in = inInput.value;
                 if(outInput) SHIFTS[id].out = outInput.value;
+                if(colorInput) SHIFTS[id].color = colorInput.value;
+                if(descInput) SHIFTS[id].description = descInput.value;
             });
             
             // Guardar configuración de perfil
@@ -2491,9 +2482,13 @@
             user.profile.considerRegional = document.getElementById('considerRegional').checked;
             user.profile.considerSpecial = document.getElementById('considerSpecial').checked;
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
+            
+            // Actualizar estilos con nuevos colores
+            generateDynamicStyles();
+            
             render(); 
-            alert("Configuración de perfil guardada correctamente");
+            alert("Configuración guardada correctamente");
         }
 
         function saveSecuritySettings() {
@@ -2519,14 +2514,14 @@
                 }
             }
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             alert("Configuración de seguridad guardada correctamente");
         }
 
         function createNewUser() {
             const name = document.getElementById('newUserName').value.trim().toUpperCase();
             const pin = document.getElementById('newUserPin').value;
-            const location = document.getElementById('newUserLocation').value.trim() || 'San Salvador';
+            const location = document.getElementById('newUserLocation').value;
             
             if(!name || name.length < 2) {
                 alert("El nombre debe tener al menos 2 caracteres");
@@ -2543,35 +2538,41 @@
                 return;
             }
             
-            db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
-            db.users[name].pin = pin; 
-            db.users[name].data = {}; 
-            db.users[name].editLocked = false;
-            db.users[name].profile = {
-                fullName: name,
-                location: location,
-                considerNational: true,
-                considerLocal: true,
-                considerRegional: false,
-                considerSpecial: false
+            // Crear nuevo usuario con estructura básica
+            db.users[name] = {
+                pin: pin,
+                data: {},
+                shifts: {
+                    'Libre': { label: 'Libre', color: '#86efac', cat: 'descanso', in: '00:00', out: '00:00', description: 'Día libre' },
+                    'Vacaciones': { label: 'Vacaciones', color: '#fed7aa', cat: 'descanso', in: '00:00', out: '00:00', description: 'Vacaciones' }
+                },
+                editLocked: false,
+                profile: {
+                    fullName: name,
+                    location: location,
+                    considerNational: true,
+                    considerLocal: true,
+                    considerRegional: false,
+                    considerSpecial: false
+                }
             };
             
             db.current = name;
             
-            localStorage.setItem('shifter_v18', JSON.stringify(db));
+            localStorage.setItem('calendar_pro_v2', JSON.stringify(db));
             updateUserDropdown(); 
             updateUserInitial();
             render(); 
             closeUserModal();
             
-            alert("Usuario creado correctamente");
+            alert("Usuario creado correctamente. Configura tus categorías y turnos en la sección de ajustes.");
         }
 
         function switchUser() { 
             db.current = document.getElementById('userSelect').value; 
             updateUserInitial();
             render(); 
-            updateUIEditMode(); // Actualizar interfaz según estado de edición del nuevo usuario
+            updateUIEditMode();
         }
         
         function updateUserDropdown() { 
@@ -2590,7 +2591,6 @@
             document.getElementById('userModal').classList.remove('active');
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserPin').value = '';
-            document.getElementById('newUserLocation').value = '';
         }
         
         function openUserModal() { 
@@ -2620,8 +2620,10 @@
             if(v === 'settings') {
                 updateUIEditMode();
                 if(isEditMode()) {
-                    showConfigTab('turnos');
+                    showConfigTab('categorias');
                 }
+            } else if(v === 'summary') {
+                updateSummaryView();
             }
         }
 
