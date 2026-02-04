@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v16 - Full Control</title>
+    <title>Shifter Pro v17 - Full Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.css">
     <style>
         body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; border: 1px solid #e5e7eb; }
@@ -220,10 +221,6 @@
                         <span class="text-[11px] font-bold text-gray-500">Total días mes:</span>
                         <span id="total-days" class="font-black text-gray-800">30</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-bold text-gray-500">Libres reales:</span>
-                        <span id="real-free-days" class="font-black text-blue-600">0</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -347,7 +344,7 @@
                     </div>
                     <div class="flex items-center justify-between border-t border-blue-200 pt-3">
                         <span class="text-[11px] font-black uppercase text-blue-900">📊 Total Horas:</span>
-                        <input type="number" id="tHrs" class="w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
+                        <input type="number" id="tHrs" onchange="manualCalc()" class="w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
                     </div>
                 </div>
 
@@ -355,26 +352,30 @@
                 <div id="time-mixto" class="hidden space-y-4 mb-6">
                     <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
                         <p class="text-[11px] font-black uppercase text-blue-900 text-center">⏰ Horario Superior</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <input type="time" id="tInTop" onchange="autoCalcMixto()" 
-                                       class="bg-white border-blue-200 focus:border-blue-400">
-                                <span class="font-black text-blue-300">→</span>
-                                <input type="time" id="tOutTop" onchange="autoCalcMixto()" 
-                                       class="bg-white border-blue-200 focus:border-blue-400">
-                            </div>
+                        <div class="flex items-center gap-2 justify-center">
+                            <input type="time" id="tInTop" onchange="autoCalcMixto()" 
+                                   class="w-32 bg-white border-blue-200 focus:border-blue-400">
+                            <span class="font-black text-blue-300">→</span>
+                            <input type="time" id="tOutTop" onchange="autoCalcMixto()" 
+                                   class="w-32 bg-white border-blue-200 focus:border-blue-400">
+                        </div>
+                        <div class="flex items-center justify-between border-t border-blue-200 pt-3">
+                            <span class="text-[11px] font-black uppercase text-blue-900">Horas Superior:</span>
+                            <input type="number" id="tHrsTop" onchange="manualCalcMixto('top')" class="w-20 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
                         </div>
                     </div>
                     <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-[24px] space-y-4 border border-purple-100">
                         <p class="text-[11px] font-black uppercase text-purple-900 text-center">⏰ Horario Inferior</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <input type="time" id="tInBottom" onchange="autoCalcMixto()" 
-                                       class="bg-white border-purple-200 focus:border-purple-400">
-                                <span class="font-black text-purple-300">→</span>
-                                <input type="time" id="tOutBottom" onchange="autoCalcMixto()" 
-                                       class="bg-white border-purple-200 focus:border-purple-400">
-                            </div>
+                        <div class="flex items-center gap-2 justify-center">
+                            <input type="time" id="tInBottom" onchange="autoCalcMixto()" 
+                                   class="w-32 bg-white border-purple-200 focus:border-purple-400">
+                            <span class="font-black text-purple-300">→</span>
+                            <input type="time" id="tOutBottom" onchange="autoCalcMixto()" 
+                                   class="w-32 bg-white border-purple-200 focus:border-purple-400">
+                        </div>
+                        <div class="flex items-center justify-between border-t border-purple-200 pt-3">
+                            <span class="text-[11px] font-black uppercase text-purple-900">Horas Inferior:</span>
+                            <input type="number" id="tHrsBottom" onchange="manualCalcMixto('bottom')" class="w-20 text-center text-purple-700 bg-white shadow-inner border-purple-200" step="0.5">
                         </div>
                     </div>
                     <div class="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100">
@@ -457,14 +458,12 @@
                 
                 <div>
                     <label class="text-[12px] font-bold text-gray-600 block mb-2">Formato de exportación</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="exportMonthAsText()" class="p-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-[11px] transition-colors">
-                            📝 Texto
-                        </button>
-                        <button onclick="exportMonthAsImage()" class="p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold text-[11px] transition-colors">
-                            🖼️ Imagen
+                    <div class="grid grid-cols-1 gap-3">
+                        <button onclick="exportMonthAsImage()" class="p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold text-[11px] transition-colors flex items-center justify-center gap-2">
+                            🖼️ Capturar como Imagen
                         </button>
                     </div>
+                    <p class="text-[10px] text-gray-500 mt-2 text-center">Se guardará como imagen del calendario actual</p>
                 </div>
             </div>
             
@@ -474,9 +473,10 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         // Base de datos con múltiples usuarios
-        let db = JSON.parse(localStorage.getItem('shifter_v16')) || {
+        let db = JSON.parse(localStorage.getItem('shifter_v17')) || {
             users: {
                 'ADMIN': {
                     pin: '1234',
@@ -552,42 +552,198 @@
             document.getElementById('exportModal').classList.remove('active');
         }
 
-        function exportMonthAsText() {
-            const month = parseInt(document.getElementById('exportMonth').value);
-            const year = parseInt(document.getElementById('exportYear').value);
-            const user = db.users[db.current];
-            
-            let text = `Turnos de ${db.current} - ${month+1}/${year}\n`;
-            text += '='.repeat(40) + '\n\n';
-            
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            
-            for(let d = 1; d <= daysInMonth; d++) {
-                const key = `${year}-${month+1}-${d}`;
-                const info = user.data[key] || { mode: 'simple', s: 'L' };
-                const SHIFTS = user.config;
+        async function exportMonthAsImage() {
+            try {
+                closeExportModal();
                 
-                if(info.mode === 'mixto') {
-                    text += `${d.toString().padStart(2, '0')}: ${SHIFTS[info.t].label} + ${SHIFTS[info.b].label}`;
-                } else {
-                    text += `${d.toString().padStart(2, '0')}: ${info.s === 'L' ? 'Libre' : SHIFTS[info.s].label}`;
+                // Crear un contenedor temporal para la captura
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'fixed';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.top = '-9999px';
+                tempContainer.style.width = '800px';
+                tempContainer.style.backgroundColor = 'white';
+                tempContainer.style.padding = '20px';
+                tempContainer.style.borderRadius = '20px';
+                tempContainer.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+                
+                // Obtener datos del mes
+                const month = parseInt(document.getElementById('exportMonth').value);
+                const year = parseInt(document.getElementById('exportYear').value);
+                const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                
+                // Crear contenido del calendario exportado
+                let html = `
+                    <div style="font-family: system-ui, -apple-system, sans-serif;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h1 style="font-size: 28px; font-weight: 800; color: #1e293b; margin-bottom: 5px;">
+                                ${db.current} - ${months[month]} ${year}
+                            </h1>
+                            <p style="font-size: 14px; color: #64748b; font-weight: 600;">
+                                Generado el ${new Date().toLocaleDateString('es-ES')}
+                            </p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background-color: #e5e7eb; border: 1px solid #e5e7eb; margin-bottom: 20px;">
+                `;
+                
+                // Días de la semana
+                const daysOfWeek = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+                daysOfWeek.forEach(day => {
+                    const color = day === 'DOM' ? '#ef4444' : (day === 'SÁB' ? '#3b82f6' : '#64748b');
+                    html += `
+                        <div style="background-color: #f8fafc; padding: 10px; text-align: center; font-weight: 900; font-size: 12px; color: ${color};">
+                            ${day}
+                        </div>
+                    `;
+                });
+                
+                // Calcular días del mes
+                const firstDay = new Date(year, month, 1).getDay();
+                const lastDate = new Date(year, month + 1, 0).getDate();
+                const prevLastDate = new Date(year, month, 0).getDate();
+                
+                // Días del mes anterior (vacíos)
+                for(let i = firstDay; i > 0; i--) {
+                    const prevDay = prevLastDate - i + 1;
+                    html += `
+                        <div style="background-color: #f9fafb; height: 100px; position: relative; opacity: 0.3;">
+                            <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                ${prevDay}
+                            </span>
+                        </div>
+                    `;
                 }
                 
-                if(info.n) text += ` (${info.n})`;
-                text += '\n';
+                // Días del mes actual
+                const user = db.users[db.current];
+                for(let d = 1; d <= lastDate; d++) {
+                    const key = `${year}-${month+1}-${d}`;
+                    const info = user.data[key] || { mode: 'simple', s: 'L' };
+                    const SHIFTS = user.config;
+                    
+                    let backgroundColor = '#ffffff';
+                    let label = 'L';
+                    
+                    if(info.mode === 'mixto') {
+                        // Para mixto, mostrar ambos colores
+                        const colorTop = SHIFTS[info.t]?.color || 'L';
+                        const colorBottom = SHIFTS[info.b]?.color || 'L';
+                        html += `
+                            <div style="height: 100px; position: relative;">
+                                <div style="height: 50%; background-color: ${getColorValue(colorTop)}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase;">
+                                    ${SHIFTS[info.t]?.label || 'L'}
+                                </div>
+                                <div style="height: 50%; background-color: ${getColorValue(colorBottom)}; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase;">
+                                    ${SHIFTS[info.b]?.label || 'L'}
+                                </div>
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                    ${d}
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        if(info.s !== 'L') {
+                            const color = SHIFTS[info.s]?.color || 'L';
+                            backgroundColor = getColorValue(color);
+                            label = SHIFTS[info.s]?.label || 'L';
+                        }
+                        
+                        html += `
+                            <div style="background-color: ${backgroundColor}; height: 100px; position: relative;">
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; font-weight: 900; text-transform: uppercase;">
+                                    ${label}
+                                </div>
+                                <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                    ${d}
+                                </span>
+                                ${info.n ? `<div style="position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; font-size: 9px; font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 4px; padding: 1px 2px; border: 0.5px solid rgba(0,0,0,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    ${info.n}
+                                </div>` : ''}
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Días del mes siguiente (vacíos)
+                const total = firstDay + lastDate;
+                for(let i = 1; i <= (42 - total); i++) {
+                    html += `
+                        <div style="background-color: #f9fafb; height: 100px; position: relative; opacity: 0.3;">
+                            <span style="position: absolute; top: 0; right: 0; font-size: 11px; font-weight: 800; padding: 2px 6px; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px;">
+                                ${i}
+                            </span>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                        </div>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
+                `;
+                
+                // Leyenda de colores
+                const SHIFTS = user.config;
+                Object.keys(SHIFTS).forEach(key => {
+                    const shift = SHIFTS[key];
+                    html += `
+                        <div style="display: flex; align-items: center; gap: 8px; margin: 5px;">
+                            <div style="width: 20px; height: 20px; border-radius: 4px; background-color: ${getColorValue(shift.color)};"></div>
+                            <span style="font-size: 12px; font-weight: 700;">${shift.label}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+                
+                tempContainer.innerHTML = html;
+                document.body.appendChild(tempContainer);
+                
+                // Capturar como imagen
+                const canvas = await html2canvas(tempContainer, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    logging: false
+                });
+                
+                // Crear enlace para descargar
+                const link = document.createElement('a');
+                link.download = `Turnos_${db.current}_${months[month]}_${year}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // Limpiar
+                document.body.removeChild(tempContainer);
+                
+                alert('¡Calendario exportado como imagen! Se ha guardado en tus descargas.');
+                
+            } catch (error) {
+                console.error('Error al exportar imagen:', error);
+                alert('Error al exportar. Intenta nuevamente.');
             }
-            
-            // Copiar al portapapeles
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Calendario copiado al portapapeles 📋\nPuedes pegarlo en cualquier lugar.');
-            });
-            closeExportModal();
         }
 
-        async function exportMonthAsImage() {
-            alert('Exportar como imagen: Esta función se activará en una versión futura.\nPor ahora, usa la función de exportación de texto.');
-            closeExportModal();
+        function getColorValue(colorName) {
+            const colorMap = {
+                'Mañana': '#ffff00',
+                'Tarde': '#fbcfe8',
+                'CENA': '#d8b4fe',
+                '16hrs': '#bef264',
+                'L': '#ffffff',
+                'Vacaciones': '#fed7aa',
+                'blue': '#93c5fd',
+                'red': '#fca5a5',
+                'green': '#86efac',
+                'orange': '#fdba74',
+                'pink': '#f9a8d4',
+                'cyan': '#67e8f9'
+            };
+            return colorMap[colorName] || '#ffffff';
         }
 
         function render() {
@@ -727,7 +883,7 @@
             if(mode === 'simple') {
                 document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
                 document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
-                document.getElementById('tHrs').value = info.h || SHIFTS[selS].in === '00:00' ? 0 : 8;
+                document.getElementById('tHrs').value = info.h || calculateHours(info.tIn || SHIFTS[selS].in, info.tOut || SHIFTS[selS].out);
                 
                 document.getElementById('time-simple').classList.remove('hidden');
                 document.getElementById('time-mixto').classList.add('hidden');
@@ -737,8 +893,11 @@
                 document.getElementById('tInBottom').value = info.tInBottom || SHIFTS[selB].in;
                 document.getElementById('tOutBottom').value = info.tOutBottom || SHIFTS[selB].out;
                 
-                const hrsTop = calculateHours(info.tInTop || SHIFTS[selT].in, info.tOutTop || SHIFTS[selT].out);
-                const hrsBottom = calculateHours(info.tInBottom || SHIFTS[selB].in, info.tOutBottom || SHIFTS[selB].out);
+                const hrsTop = info.hrsTop || calculateHours(info.tInTop || SHIFTS[selT].in, info.tOutTop || SHIFTS[selT].out);
+                const hrsBottom = info.hrsBottom || calculateHours(info.tInBottom || SHIFTS[selB].in, info.tOutBottom || SHIFTS[selB].out);
+                
+                document.getElementById('tHrsTop').value = hrsTop.toFixed(1);
+                document.getElementById('tHrsBottom').value = hrsBottom.toFixed(1);
                 document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
                 
                 document.getElementById('time-simple').classList.add('hidden');
@@ -758,12 +917,12 @@
         }
 
         function calculateHours(start, end) {
-            if(!start || !end) return 0;
+            if(!start || !end || start === '00:00' && end === '00:00') return 0;
             let [h1, m1] = start.split(':').map(Number);
             let [h2, m2] = end.split(':').map(Number);
             let diff = (h2 + m2/60) - (h1 + m1/60);
             if(diff < 0) diff += 24;
-            return diff;
+            return parseFloat(diff.toFixed(1));
         }
 
         function setMode(m) {
@@ -780,24 +939,8 @@
             // Función para crear botones
             const createBtn = (shiftKey, isSelected) => {
                 const color = SHIFTS[shiftKey].color;
-                const colorMap = {
-                    'Mañana': '#ffff00',
-                    'Tarde': '#fbcfe8',
-                    'CENA': '#d8b4fe',
-                    '16hrs': '#bef264',
-                    'L': '#ffffff',
-                    'Vacaciones': '#fed7aa',
-                    'blue': '#93c5fd',
-                    'red': '#fca5a5',
-                    'green': '#86efac',
-                    'orange': '#fdba74',
-                    'pink': '#f9a8d4',
-                    'cyan': '#67e8f9'
-                };
-                
                 const btn = document.createElement('div');
-                btn.className = `shift-option ${isSelected ? 'selected' : ''}`;
-                btn.style.backgroundColor = colorMap[color] || '#ffffff';
+                btn.className = `shift-option ${isSelected ? 'selected' : ''} bg-${color}`;
                 btn.style.border = isSelected ? '2px solid #2563eb' : '2px solid transparent';
                 btn.innerText = SHIFTS[shiftKey].label;
                 btn.dataset.shift = shiftKey;
@@ -815,6 +958,10 @@
                         document.getElementById('tIn').value = SHIFTS[k].in;
                         document.getElementById('tOut').value = SHIFTS[k].out;
                         autoCalc();
+                    } else {
+                        document.getElementById('tIn').value = '00:00';
+                        document.getElementById('tOut').value = '00:00';
+                        document.getElementById('tHrs').value = 0;
                     }
                     refreshBtns();
                 };
@@ -855,8 +1002,14 @@
         function autoCalc() {
             const start = document.getElementById('tIn').value;
             const end = document.getElementById('tOut').value;
-            if(!start || !end) return;
-            document.getElementById('tHrs').value = calculateHours(start, end).toFixed(1);
+            const hours = calculateHours(start, end);
+            document.getElementById('tHrs').value = hours.toFixed(1);
+        }
+
+        function manualCalc() {
+            // Permitir edición manual de horas
+            const hours = parseFloat(document.getElementById('tHrs').value) || 0;
+            document.getElementById('tHrs').value = hours.toFixed(1);
         }
 
         function autoCalcMixto() {
@@ -868,7 +1021,23 @@
             const hrsTop = calculateHours(startTop, endTop);
             const hrsBottom = calculateHours(startBottom, endBottom);
             
+            document.getElementById('tHrsTop').value = hrsTop.toFixed(1);
+            document.getElementById('tHrsBottom').value = hrsBottom.toFixed(1);
             document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
+        }
+
+        function manualCalcMixto(part) {
+            if(part === 'top') {
+                const hrsTop = parseFloat(document.getElementById('tHrsTop').value) || 0;
+                const hrsBottom = parseFloat(document.getElementById('tHrsBottom').value) || 0;
+                document.getElementById('tHrsTop').value = hrsTop.toFixed(1);
+                document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
+            } else {
+                const hrsTop = parseFloat(document.getElementById('tHrsTop').value) || 0;
+                const hrsBottom = parseFloat(document.getElementById('tHrsBottom').value) || 0;
+                document.getElementById('tHrsBottom').value = hrsBottom.toFixed(1);
+                document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
+            }
         }
 
         function save() {
@@ -890,22 +1059,28 @@
                 data.tOutTop = document.getElementById('tOutTop').value;
                 data.tInBottom = document.getElementById('tInBottom').value;
                 data.tOutBottom = document.getElementById('tOutBottom').value;
+                data.hrsTop = parseFloat(document.getElementById('tHrsTop').value) || 0;
+                data.hrsBottom = parseFloat(document.getElementById('tHrsBottom').value) || 0;
                 data.h = parseFloat(document.getElementById('tHrsMixto').value) || 0;
             }
             
             user.data[activeKey] = data;
             
-            localStorage.setItem('shifter_v16', JSON.stringify(db));
+            localStorage.setItem('shifter_v17', JSON.stringify(db));
             render(); 
             closeModal();
         }
 
         function calcSummary() {
             let h = 0, s = 0;
-            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, realFreeDays = 0;
+            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0;
             const y = current.getFullYear(), m = current.getMonth() + 1;
             const user = db.users[db.current];
             const SHIFTS = user.config;
+            
+            // Contar días libres por defecto (todos los días del mes)
+            const daysInMonth = new Date(y, m, 0).getDate();
+            freeDays = daysInMonth; // Todos los días empiezan como libres
             
             Object.keys(user.data).forEach(k => {
                 if(k.startsWith(`${y}-${m}-`)) {
@@ -916,57 +1091,60 @@
                         weekendDays++;
                     }
                     
+                    // Restar del conteo de libres porque este día tiene turno
+                    freeDays--;
+                    
                     if(d.mode === 'mixto') {
-                        if(SHIFTS[d.t].cat === 'hosp') { h += (d.h || 8); hospDays++; }
-                        if(SHIFTS[d.b].cat === 'hosp') { h += (d.h || 8); hospDays++; }
-                        if(SHIFTS[d.t].cat === 'sena') { s += (d.h || 8); senaDays++; }
-                        if(SHIFTS[d.b].cat === 'sena') { s += (d.h || 8); senaDays++; }
                         workedDays++;
+                        if(SHIFTS[d.t].cat === 'hosp') { 
+                            h += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
+                            hospDays++; 
+                        }
+                        if(SHIFTS[d.t].cat === 'sena') { 
+                            s += (d.hrsTop || calculateHours(d.tInTop || SHIFTS[d.t].in, d.tOutTop || SHIFTS[d.t].out)); 
+                            senaDays++; 
+                        }
+                        if(SHIFTS[d.b].cat === 'hosp') { 
+                            h += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out)); 
+                            hospDays++; 
+                        }
+                        if(SHIFTS[d.b].cat === 'sena') { 
+                            s += (d.hrsBottom || calculateHours(d.tInBottom || SHIFTS[d.b].in, d.tOutBottom || SHIFTS[d.b].out)); 
+                            senaDays++; 
+                        }
                     } else {
                         if(SHIFTS[d.s].cat === 'hosp') { 
                             h += (d.h || 0); 
                             hospDays++;
                             workedDays++;
-                        }
-                        if(SHIFTS[d.s].cat === 'sena') { 
+                        } else if(SHIFTS[d.s].cat === 'sena') { 
                             s += (d.h || 0); 
                             senaDays++;
                             workedDays++;
-                        }
-                        if(SHIFTS[d.s].cat === 'off') {
-                            if(d.s === 'L') {
-                                freeDays++;
-                                realFreeDays++;
-                            }
+                        } else if(SHIFTS[d.s].cat === 'off') {
+                            // Si es libre o vacaciones, vuelve a sumar al conteo de libres
+                            freeDays++;
                             if(d.s === 'Vacaciones') {
                                 vacDays++;
-                                realFreeDays++;
                             }
                         }
                     }
                 }
             });
             
-            // Contar días libres del mes (sin turno asignado)
-            const daysInMonth = new Date(y, m, 0).getDate();
-            for(let d = 1; d <= daysInMonth; d++) {
-                const key = `${y}-${m}-${d}`;
-                if(!user.data[key]) {
-                    realFreeDays++;
-                }
-            }
+            // Asegurarse de que freeDays no sea negativo
+            freeDays = Math.max(0, freeDays);
             
             // Actualizar estadísticas
             document.getElementById('hrs-hosp').textContent = h.toFixed(1) + " HRS";
             document.getElementById('hrs-sena').textContent = s.toFixed(1) + " HRS";
             document.getElementById('hosp-days').textContent = hospDays + " día" + (hospDays !== 1 ? 's' : '');
             document.getElementById('sena-days').textContent = senaDays + " día" + (senaDays !== 1 ? 's' : '');
-            document.getElementById('total-off').textContent = freeDays + vacDays + weekendDays;
+            document.getElementById('total-off').textContent = (freeDays + vacDays + weekendDays);
             document.getElementById('free-days').textContent = freeDays;
             document.getElementById('vac-days').textContent = vacDays;
             document.getElementById('weekend-days').textContent = weekendDays;
             document.getElementById('worked-days').textContent = workedDays;
-            document.getElementById('real-free-days').textContent = realFreeDays;
             
             // Calcular promedio diario
             const avgHours = workedDays > 0 ? (h + s) / workedDays : 0;
@@ -1075,7 +1253,7 @@
                 }
             }
             
-            localStorage.setItem('shifter_v16', JSON.stringify(db));
+            localStorage.setItem('shifter_v17', JSON.stringify(db));
             render(); 
             alert("Configuración guardada correctamente");
         }
@@ -1104,7 +1282,7 @@
             db.users[name].data = {}; 
             db.current = name;
             
-            localStorage.setItem('shifter_v16', JSON.stringify(db));
+            localStorage.setItem('shifter_v17', JSON.stringify(db));
             updateUserDropdown(); 
             updateUserInitial();
             render(); 
