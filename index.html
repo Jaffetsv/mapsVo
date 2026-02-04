@@ -3,557 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v13</title>
+    <title>Shifter Final Pro v12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; }
-        .day-cell { background-color: #ffffff; min-height: 110px; position: relative; cursor: pointer; display: flex; flex-direction: column; transition: 0.1s; }
-        .day-cell:active { background-color: #f3f4f6; }
-        .day-off-month { background-color: #f9fafb !important; opacity: 0.3; pointer-events: none; }
-        .day-number { font-size: 11px; font-weight: 800; padding: 4px 6px; color: #374151; z-index: 10; }
+        body { background-color: #f1f5f9; color: #0f172a; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #cbd5e1; border: 1px solid #cbd5e1; }
+        .day-cell { background: white; min-height: 100px; padding: 4px; position: relative; cursor: pointer; }
+        .day-off { background: #f8fafc !important; opacity: 0.4; pointer-events: none; }
+        .day-num { font-size: 11px; font-weight: 900; color: #64748b; }
         
-        /* Colores de Turnos - DEFINIENDO MANUALMENTE */
-        .bg-mañana { background-color: #ffff00 !important; }
-        .bg-tarde { background-color: #fbcfe8 !important; }
-        .bg-cena { background-color: #d8b4fe !important; }
+        /* Colores */
+        .bg-Mañana { background-color: #ffff00 !important; }
+        .bg-Tarde { background-color: #fbcfe8 !important; }
+        .bg-CENA { background-color: #d8b4fe !important; }
         .bg-16hrs { background-color: #bef264 !important; }
-        .bg-libre { background-color: #ffffff !important; }
-        .bg-vacaciones { background-color: #fed7aa !important; }
-        
-        .shift-color-mañana { background-color: #ffff00 !important; }
-        .shift-color-tarde { background-color: #fbcfe8 !important; }
-        .shift-color-cena { background-color: #d8b4fe !important; }
-        .shift-color-16hrs { background-color: #bef264 !important; }
-        .shift-color-libre { background-color: #ffffff !important; }
-        .shift-color-vacaciones { background-color: #fed7aa !important; }
+        .bg-L { background-color: #ffffff !important; }
+        .bg-Vacaciones { background-color: #fed7aa !important; }
 
-        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; pointer-events: none; }
-        .note-indicator { font-size: 9px; background: rgba(255,255,255,0.8); margin: 2px; border-radius: 4px; padding: 2px; text-align: center; font-weight: 800; border: 1px solid rgba(0,0,0,0.05); }
+        .shift-txt { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; }
+        .note-dot { font-size: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; padding: 2px; margin-top: auto; font-weight: bold; overflow: hidden; white-space: nowrap; }
 
-        .view-section { display: none; }
-        .view-active { display: block; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
-        .modal.active { display: flex; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 15px; }
+        .modal-overlay.active { display: flex; }
         
-        .tab-btn { flex: 1; padding: 15px; font-size: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 3px solid transparent; color: #9ca3af; }
-        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #f8fafc; }
-        
-        input, select, textarea { border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px; font-weight: 700; width: 100%; }
-        
-        /* Estilos para botones del modal */
-        .shift-btn { 
-            transition: all 0.2s; 
-            border-width: 2px;
-            border-color: transparent;
-            padding: 12px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        .shift-btn.selected { 
-            transform: scale(1.05); 
-            border-color: #2563eb !important; 
-            opacity: 1 !important; 
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-        .shift-btn:not(.selected) { 
-            opacity: 0.7; 
-            border-color: transparent !important; 
-        }
+        .tab-link { flex: 1; text-align: center; padding: 15px; font-size: 10px; font-weight: 900; color: #94a3b8; border-bottom: 3px solid transparent; }
+        .tab-link.active { color: #2563eb; border-bottom-color: #2563eb; background: white; }
     </style>
 </head>
 <body>
 
-    <div class="bg-[#1e293b] text-white p-4 sticky top-0 z-50 shadow-lg">
+    <div class="bg-[#1e293b] text-white p-4 sticky top-0 z-50">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <select id="userSelect" onchange="switchUser()" class="bg-transparent border-none text-xl font-black p-0 focus:ring-0 w-auto text-white"></select>
-                <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400">Modo Vista</p>
+                <select id="userSelect" onchange="cambiarUsuario()" class="bg-transparent text-xl font-black border-none focus:ring-0 p-0"></select>
+                <div id="statusTag" class="text-[9px] font-black px-2 py-0.5 rounded bg-gray-600 w-fit mt-1">MODO VISTA</div>
             </div>
             <div class="flex gap-2">
-                <button onclick="openUserModal()" class="bg-blue-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase">+ Perfil</button>
-                <button id="unlockBtn" onclick="toggleEditMode()" class="bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase">🔓 Editar</button>
+                <button onclick="abrirNuevoUsuario()" class="bg-blue-600 px-3 py-2 rounded-lg text-[10px] font-black uppercase">+ PERFIL</button>
+                <button id="btnLock" onclick="manejarEdicion()" class="bg-slate-700 px-3 py-2 rounded-lg text-[10px] font-black uppercase">🔓 EDITAR</button>
             </div>
         </div>
-
-        <div class="flex items-center justify-between bg-slate-800 rounded-2xl p-1">
-            <button onclick="changeMonth(-1)" class="p-3">❮</button>
-            <div class="flex gap-2 font-bold text-xs uppercase">
-                <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto"></select>
-                <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 w-auto"></select>
-            </div>
-            <button onclick="changeMonth(1)" class="p-3">❯</button>
+        <div class="flex items-center justify-between bg-slate-800 rounded-xl p-1">
+            <button onclick="moverMes(-1)" class="p-2 px-4 text-xl">❮</button>
+            <div id="fechaTxt" class="font-black text-xs uppercase tracking-widest">ENERO 2025</div>
+            <button onclick="moverMes(1)" class="p-2 px-4 text-xl">❯</button>
         </div>
     </div>
 
-    <div class="flex bg-white shadow-sm sticky top-[135px] z-40">
-        <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn active">Calendario</button>
-        <button onclick="showView('summary')" id="tab-summary" class="tab-btn">Resumen</button>
-        <button onclick="showView('settings')" id="tab-settings" class="tab-btn">Ajustes</button>
+    <div class="flex bg-slate-50 sticky top-[125px] z-40 border-b">
+        <button onclick="ver('cal')" id="tab-cal" class="tab-link active">CALENDARIO</button>
+        <button onclick="ver('sum')" id="tab-sum" class="tab-link">RESUMEN</button>
+        <button onclick="ver('set')" id="tab-set" class="tab-link">AJUSTES</button>
     </div>
 
-    <div id="view-calendar" class="view-section view-active">
-        <div class="grid grid-cols-7 text-center text-[9px] font-black py-2 bg-gray-50 text-gray-400">
+    <div id="v-cal" class="block">
+        <div class="grid grid-cols-7 text-center text-[9px] font-black py-2 bg-white text-slate-400">
             <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
         </div>
-        <div id="calendarContainer" class="calendar-grid"></div>
+        <div id="contenedorCal" class="calendar-grid"></div>
     </div>
 
-    <div id="view-summary" class="view-section p-5 space-y-4">
+    <div id="v-sum" class="hidden p-4 space-y-4">
         <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-8 border-yellow-400">
-                <p class="text-[10px] font-black text-gray-400 uppercase">Hospital</p>
-                <h3 id="res-hosp" class="text-3xl font-black">0.0h</h3>
-            </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-8 border-purple-400">
-                <p class="text-[10px] font-black text-gray-400 uppercase">CENA</p>
-                <h3 id="res-cena" class="text-3xl font-black">0.0h</h3>
-            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm"><p class="text-[10px] font-black text-slate-400">HOSPITAL</p><h3 id="h-hosp" class="text-2xl font-black">0h</h3></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm"><p class="text-[10px] font-black text-slate-400">CENA</p><h3 id="h-cena" class="text-2xl font-black">0h</h3></div>
         </div>
-        <div class="bg-emerald-500 p-8 rounded-[40px] text-white text-center shadow-xl">
-            <p class="text-xs font-black uppercase opacity-80 mb-2">Días de Descanso Totales</p>
-            <h2 id="res-off" class="text-6xl font-black">0</h2>
-            <p class="text-[10px] font-bold mt-2 opacity-70">LIBRES + VACACIONES</p>
+        <div class="bg-emerald-500 p-10 rounded-[40px] text-white text-center shadow-xl">
+            <p class="text-xs font-black opacity-80 uppercase">Días de Descanso</p>
+            <h2 id="h-desc" class="text-7xl font-black my-2">0</h2>
+            <p class="text-[10px] font-bold">LIBRES + VACACIONES</p>
         </div>
     </div>
 
-    <div id="view-settings" class="view-section p-6">
-        <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100 mb-6">
-            <h4 class="text-[10px] font-black uppercase text-blue-600 mb-3">Seguridad</h4>
-            <label class="text-[10px] font-bold text-gray-400 block mb-1">CAMBIAR PIN (4 dígitos)</label>
-            <input type="password" id="changePinInput" placeholder="Nuevo PIN" maxlength="4" class="bg-white">
+    <div id="v-set" class="hidden p-6 bg-white min-h-screen">
+        <div class="bg-blue-50 p-5 rounded-2xl mb-6">
+            <p class="text-[10px] font-black text-blue-600 mb-2 uppercase">Seguridad del Perfil</p>
+            <input type="password" id="setPin" placeholder="Nuevo PIN de 4 dígitos" maxlength="4" class="w-full p-3 rounded-xl border-none font-bold">
         </div>
-        <div id="settingsList" class="space-y-3"></div>
-        <button onclick="saveProfileSettings()" class="w-full mt-8 bg-blue-600 text-white p-5 rounded-3xl font-black uppercase">Guardar Cambios</button>
+        <div id="listaAjustes" class="space-y-3"></div>
+        <button onclick="guardarAjustes()" class="w-full mt-8 bg-blue-600 text-white p-4 rounded-2xl font-black">GUARDAR CAMBIOS</button>
     </div>
 
-    <div id="dayModal" class="modal">
-        <div class="bg-white w-full max-w-md rounded-[45px] overflow-hidden shadow-2xl">
-            <div id="modalHeader" class="bg-blue-600 p-5 text-white text-center font-black text-xs uppercase tracking-widest">Editar Día</div>
+    <div id="modalEditor" class="modal-overlay">
+        <div class="bg-white w-full max-w-sm rounded-[30px] overflow-hidden shadow-2xl">
+            <div id="modTit" class="bg-blue-600 p-4 text-white text-center font-black text-xs uppercase">EDITAR DÍA</div>
             <div class="p-6">
-                <div id="modalShifts" class="grid grid-cols-3 gap-2 mb-6"></div>
-                <div class="bg-gray-100 p-5 rounded-3xl flex justify-between items-center mb-4">
-                    <input type="time" id="editIn" onchange="calcEditHours()" class="w-24 text-center bg-transparent border-none">
-                    <span class="text-gray-300">→</span>
-                    <input type="time" id="editOut" onchange="calcEditHours()" class="w-24 text-center bg-transparent border-none">
+                <div id="modBotones" class="grid grid-cols-3 gap-2 mb-6"></div>
+                <div class="flex gap-2 mb-4">
+                    <input type="time" id="modIn" class="flex-1 p-3 bg-gray-100 rounded-xl text-center font-bold border-none">
+                    <input type="time" id="modOut" class="flex-1 p-3 bg-gray-100 rounded-xl text-center font-bold border-none">
                 </div>
                 <div class="flex justify-between items-center mb-6 px-2">
-                    <span class="text-[10px] font-black uppercase text-gray-400">Total Horas</span>
-                    <input type="number" id="editHrs" step="0.5" class="w-20 text-right font-black text-blue-600 bg-transparent border-none text-2xl">
+                    <span class="text-[10px] font-black text-gray-400">HORAS TOTALES</span>
+                    <input type="number" id="modHrs" step="0.5" class="w-20 text-right font-black text-blue-600 text-2xl border-none">
                 </div>
-                <textarea id="editNote" placeholder="Notas del día..." class="h-20 bg-gray-50 mb-6"></textarea>
-                <div class="flex gap-3">
-                    <button onclick="closeDayModal()" class="flex-1 p-5 bg-gray-100 text-gray-400 rounded-3xl font-black uppercase text-xs">Cancelar</button>
-                    <button onclick="saveDayData()" class="flex-1 p-5 bg-emerald-500 text-white rounded-3xl font-black uppercase text-xs shadow-lg shadow-emerald-200">Guardar</button>
+                <textarea id="modNota" placeholder="Notas..." class="w-full p-4 bg-gray-50 rounded-2xl border-none mb-6 h-20 font-bold"></textarea>
+                <div class="flex gap-2">
+                    <button onclick="cerrarModal()" class="flex-1 p-4 bg-gray-100 text-gray-400 rounded-2xl font-black text-xs">CANCELAR</button>
+                    <button onclick="guardarDia()" class="flex-1 p-4 bg-emerald-500 text-white rounded-2xl font-black text-xs">GUARDAR</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="userModal" class="modal">
-        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 shadow-2xl">
-            <h3 class="font-black text-center uppercase mb-6">Nuevo Perfil</h3>
-            <input type="text" id="newUserName" placeholder="Nombre" class="mb-3">
-            <input type="password" id="newUserPin" placeholder="PIN" maxlength="4" class="mb-6">
-            <button onclick="createNewUser()" class="w-full p-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs">Crear</button>
-            <button onclick="closeUserModal()" class="w-full mt-2 p-4 text-gray-400 font-bold uppercase text-[10px]">Cerrar</button>
+    <div id="modalUser" class="modal-overlay">
+        <div class="bg-white p-8 rounded-[30px] w-full max-w-xs text-center">
+            <h3 class="font-black mb-6 uppercase">Nuevo Perfil</h3>
+            <input type="text" id="newName" placeholder="Nombre" class="w-full p-3 bg-gray-100 rounded-xl mb-3 border-none font-bold">
+            <input type="password" id="newPin" placeholder="PIN 4 dígitos" maxlength="4" class="w-full p-3 bg-gray-100 rounded-xl mb-6 border-none font-bold">
+            <button onclick="crearUsuario()" class="w-full p-4 bg-blue-600 text-white rounded-xl font-black mb-2">CREAR</button>
+            <button onclick="this.parentElement.parentElement.classList.remove('active')" class="text-gray-400 font-bold text-xs uppercase">Cerrar</button>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('shifter_v13')) || {
-            users: {
-                'ADMIN': {
-                    pin: '1234',
-                    data: {},
-                    config: {
-                        'mañana': { label: 'Mañana', cat: 'hosp', color: 'mañana', in: '08:00', out: '14:00', h: 6 },
-                        'tarde': { label: 'Tarde', cat: 'hosp', color: 'tarde', in: '14:00', out: '21:00', h: 7 },
-                        'cena': { label: 'CENA', cat: 'sena', color: 'cena', in: '21:00', out: '07:00', h: 10 },
-                        '16hrs': { label: '16hrs', cat: 'hosp', color: '16hrs', in: '07:00', out: '23:00', h: 16 },
-                        'libre': { label: 'Libre', cat: 'off', color: 'libre', in: '00:00', out: '00:00', h: 0 },
-                        'vacaciones': { label: 'Vacaciones', cat: 'off', color: 'vacaciones', in: '00:00', out: '00:00', h: 0 }
-                    }
-                }
-            },
+        let core = JSON.parse(localStorage.getItem('shifter_v12')) || {
+            users: { 'ADMIN': { pin: '1234', data: {}, config: {
+                'Mañana': { label: 'Mañana', cat: 'hosp', color: 'Mañana', in: '08:00', out: '14:00', h: 6 },
+                'Tarde': { label: 'Tarde', cat: 'hosp', color: 'Tarde', in: '14:00', out: '21:00', h: 7 },
+                'CENA': { label: 'CENA', cat: 'sena', color: 'CENA', in: '21:00', out: '07:00', h: 10 },
+                '16hrs': { label: '16hrs', cat: 'hosp', color: '16hrs', in: '07:00', out: '23:00', h: 16 },
+                'L': { label: 'L', cat: 'off', color: 'L', in: '00:00', out: '00:00', h: 0 },
+                'Vacaciones': { label: 'Vacaciones', cat: 'off', color: 'Vacaciones', in: '00:00', out: '00:00', h: 0 }
+            }}},
             current: 'ADMIN'
         };
 
-        let isEditMode = false;
-        let activeDate = new Date();
-        let editingKey = null;
-        let editingShift = 'libre';
+        let editHabilitado = false;
+        let fechaAct = new Date();
+        let diaEditando = null;
+        let turnoEditando = 'L';
 
         function init() {
-            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            const mSel = document.getElementById('selectMonth');
-            const ySel = document.getElementById('selectYear');
-            mSel.innerHTML = months.map((m, i) => `<option value="${i}">${m}</option>`).join('');
-            for(let y=2024; y<=2035; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
-            updateUserDropdown();
-            render();
-            updateSummary();
+            actualizarDrowdown();
+            dibujar();
         }
 
-        function toggleEditMode() {
-            if(isEditMode) {
-                isEditMode = false;
-                document.getElementById('editStatus').innerText = "MODO VISTA";
-                document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-gray-400";
-                document.getElementById('unlockBtn').innerText = "🔓 Editar";
-                document.getElementById('unlockBtn').className = "bg-slate-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
+        function manejarEdicion() {
+            if(editHabilitado) {
+                editHabilitado = false;
             } else {
-                const p = prompt("PIN para editar " + db.current);
-                if(p === db.users[db.current].pin) {
-                    isEditMode = true;
-                    document.getElementById('editStatus').innerText = "MODO EDICIÓN ACTIVADO";
-                    document.getElementById('editStatus').className = "text-[10px] font-black uppercase text-emerald-400";
-                    document.getElementById('unlockBtn').innerText = "🔒 Bloquear";
-                    document.getElementById('unlockBtn').className = "bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase";
+                const p = prompt("PIN de " + core.current);
+                if(p === core.users[core.current].pin) {
+                    editHabilitado = true;
                 } else {
-                    alert("PIN Incorrecto");
+                    alert("PIN INCORRECTO");
                 }
             }
+            actualizarUIEdicion();
         }
 
-        function render() {
-            const container = document.getElementById('calendarContainer');
-            container.innerHTML = '';
-            const y = activeDate.getFullYear(), m = activeDate.getMonth();
-            document.getElementById('selectMonth').value = m;
-            document.getElementById('selectYear').value = y;
-
-            const firstDay = new Date(y, m, 1).getDay();
-            const lastDate = new Date(y, m + 1, 0).getDate();
-            const prevLastDate = new Date(y, m, 0).getDate();
-
-            for(let i = firstDay; i > 0; i--) {
-                container.innerHTML += `<div class="day-cell day-off-month"><span class="day-number">${prevLastDate - i + 1}</span></div>`;
+        function actualizarUIEdicion() {
+            const st = document.getElementById('statusTag');
+            const bt = document.getElementById('btnLock');
+            if(editHabilitado) {
+                st.innerText = "MODO EDICIÓN";
+                st.className = "text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500 w-fit mt-1";
+                bt.innerText = "🔒 BLOQUEAR";
+                bt.className = "bg-emerald-600 px-3 py-2 rounded-lg text-[10px] font-black uppercase";
+            } else {
+                st.innerText = "MODO VISTA";
+                st.className = "text-[9px] font-black px-2 py-0.5 rounded bg-gray-600 w-fit mt-1";
+                bt.innerText = "🔓 EDITAR";
+                bt.className = "bg-slate-700 px-3 py-2 rounded-lg text-[10px] font-black uppercase";
             }
+        }
 
-            const user = db.users[db.current];
-            const monthStr = String(m + 1).padStart(2, '0');
+        function dibujar() {
+            const cont = document.getElementById('contenedorCal');
+            cont.innerHTML = '';
+            const y = fechaAct.getFullYear(), m = fechaAct.getMonth();
+            const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            document.getElementById('fechaTxt').innerText = `${meses[m]} ${y}`;
+
+            const fD = new Date(y, m, 1).getDay();
+            const lD = new Date(y, m + 1, 0).getDate();
+            const pLD = new Date(y, m, 0).getDate();
+
+            for(let i=fD; i>0; i--) cont.innerHTML += `<div class="day-cell day-off"><span class="day-num">${pLD-i+1}</span></div>`;
+
+            const u = core.users[core.current];
+            for(let d=1; d<=lD; d++) {
+                const key = `${y}-${m+1}-${d}`;
+                const info = u.data[key] || { s: 'L' };
+                const conf = u.config[info.s] || u.config['L'];
+                const div = document.createElement('div');
+                div.className = `day-cell bg-${conf.color}`;
+                div.innerHTML = `<span class="day-num">${d}</span><div class="shift-txt">${info.s==='L'?'':conf.label}</div>`;
+                if(info.n) div.innerHTML += `<div class="note-dot">${info.n}</div>`;
+                
+                // EL FIX: Usar mousedown o click directo sin condiciones raras
+                div.onclick = function() { clicsobredia(key); };
+                cont.appendChild(div);
+            }
             
-            for(let d = 1; d <= lastDate; d++) {
-                const dayStr = String(d).padStart(2, '0');
-                const key = `${y}-${monthStr}-${dayStr}`;
-                const data = user.data[key] || { s: 'libre' };
-                const conf = user.config[data.s] || user.config['libre'];
-                const cell = document.createElement('div');
-                
-                // Usar la clase CSS definida manualmente
-                cell.className = `day-cell shift-color-${conf.color}`;
-                cell.innerHTML = `
-                    <span class="day-number">${d}</span>
-                    <div class="shift-label">${data.s === 'libre' ? '' : conf.label}</div>
-                    ${data.n ? `<div class="note-indicator">${data.n}</div>` : ''}
-                `;
-                
-                // Hacer que la celda sea clickeable SIEMPRE
-                cell.onclick = () => handleDayClick(key, d);
-                container.appendChild(cell);
-            }
-
-            const total = firstDay + lastDate;
-            for(let i = 1; i <= (42 - total); i++) {
-                container.innerHTML += `<div class="day-cell day-off-month"><span class="day-number">${i}</span></div>`;
-            }
+            for(let i=1; (fD+lD+i)<=42; i++) cont.innerHTML += `<div class="day-cell day-off"><span class="day-num">${i}</span></div>`;
+            resumen();
         }
 
-        function handleDayClick(key, dayNumber) {
-            if(!isEditMode) {
-                alert("Para editar, primero presiona '🔓 Editar' e ingresa tu PIN");
+        function clicsobredia(key) {
+            if(!editHabilitado) {
+                alert("Primero pulsa el botón '🔓 EDITAR' e ingresa tu PIN.");
                 return;
             }
-            openDayEditor(key, dayNumber);
-        }
-
-        function openDayEditor(key, dayNumber) {
-            editingKey = key;
-            const user = db.users[db.current];
-            const data = user.data[key] || { s: 'libre', n: '', in: '', out: '', h: 0 };
+            diaEditando = key;
+            const u = core.users[core.current];
+            const info = u.data[key] || { s: 'L', n: '', in: '', out: '', h: 0 };
             
-            const grid = document.getElementById('modalShifts');
+            const grid = document.getElementById('modBotones');
             grid.innerHTML = '';
-            
-            // Crear botones para todos los turnos disponibles
-            const shifts = Object.keys(user.config);
-            shifts.forEach(shiftKey => {
-                const conf = user.config[shiftKey];
-                const isSelected = data.s === shiftKey;
-                const btn = document.createElement('button');
-                
-                // Usar estilos en línea para asegurar que los colores se apliquen
-                const colorMap = {
-                    'mañana': '#ffff00',
-                    'tarde': '#fbcfe8',
-                    'cena': '#d8b4fe',
-                    '16hrs': '#bef264',
-                    'libre': '#ffffff',
-                    'vacaciones': '#fed7aa'
-                };
-                
-                const bgColor = colorMap[conf.color] || '#ffffff';
-                
-                btn.className = `shift-btn ${isSelected ? 'selected' : ''}`;
-                btn.style.backgroundColor = bgColor;
-                btn.style.border = isSelected ? '2px solid #2563eb' : '2px solid transparent';
-                btn.innerText = conf.label;
-                btn.dataset.shift = shiftKey;
-                btn.onclick = function() {
-                    selectShiftModal(shiftKey);
-                };
-                grid.appendChild(btn);
+            Object.keys(u.config).forEach(k => {
+                const b = document.createElement('button');
+                b.className = `p-3 rounded-xl text-[9px] font-black border-2 bg-${u.config[k].color} ${info.s===k?'border-blue-600 shadow-md':'border-transparent opacity-50'}`;
+                b.innerText = u.config[k].label;
+                b.onclick = () => seleccionarTurno(k);
+                grid.appendChild(b);
             });
 
-            // Mostrar la fecha formateada
-            const [year, month] = key.split('-');
-            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            document.getElementById('modalHeader').innerText = `${dayNumber} de ${monthNames[parseInt(month)-1]} de ${year}`;
-            
-            // Configurar valores del modal
-            editingShift = data.s;
-            document.getElementById('editIn').value = data.in || user.config[data.s].in;
-            document.getElementById('editOut').value = data.out || user.config[data.s].out;
-            document.getElementById('editHrs').value = data.h || user.config[data.s].h;
-            document.getElementById('editNote').value = data.n || '';
-            
-            document.getElementById('dayModal').classList.add('active');
+            document.getElementById('modIn').value = info.in || u.config[info.s].in;
+            document.getElementById('modOut').value = info.out || u.config[info.s].out;
+            document.getElementById('modHrs').value = info.h || u.config[info.s].h;
+            document.getElementById('modNota').value = info.n || '';
+            turnoEditando = info.s;
+            document.getElementById('modalEditor').classList.add('active');
         }
 
-        function selectShiftModal(shiftKey) {
-            editingShift = shiftKey;
-            const user = db.users[db.current];
-            const conf = user.config[shiftKey];
+        function seleccionarTurno(k) {
+            turnoEditando = k;
+            const conf = core.users[core.current].config[k];
+            document.getElementById('modIn').value = conf.in;
+            document.getElementById('modOut').value = conf.out;
+            document.getElementById('modHrs').value = conf.h;
             
-            // Actualizar campos con la configuración del turno seleccionado
-            document.getElementById('editIn').value = conf.in;
-            document.getElementById('editOut').value = conf.out;
-            document.getElementById('editHrs').value = conf.h;
-            
-            // Actualizar estado visual de todos los botones
-            const btns = document.querySelectorAll('#modalShifts .shift-btn');
-            btns.forEach(btn => {
-                if(btn.dataset.shift === shiftKey) {
-                    btn.classList.add('selected');
-                    btn.style.border = '2px solid #2563eb';
-                    btn.style.opacity = '1';
-                } else {
-                    btn.classList.remove('selected');
-                    btn.style.border = '2px solid transparent';
-                    btn.style.opacity = '0.7';
-                }
+            const btns = document.getElementById('modBotones').children;
+            Object.keys(core.users[core.current].config).forEach((key, i) => {
+                btns[i].classList.toggle('border-blue-600', key === k);
+                btns[i].classList.toggle('opacity-50', key !== k);
+                btns[i].classList.toggle('border-transparent', key !== k);
             });
         }
 
-        function saveDayData() {
-            if(!editingKey) return;
-            
-            const hrs = parseFloat(document.getElementById('editHrs').value) || 0;
-            
-            db.users[db.current].data[editingKey] = {
-                s: editingShift,
-                in: document.getElementById('editIn').value,
-                out: document.getElementById('editOut').value,
-                h: hrs,
-                n: document.getElementById('editNote').value
+        function guardarDia() {
+            core.users[core.current].data[diaEditando] = {
+                s: turnoEditando,
+                in: document.getElementById('modIn').value,
+                out: document.getElementById('modOut').value,
+                h: parseFloat(document.getElementById('modHrs').value) || 0,
+                n: document.getElementById('modNota').value
             };
-            
-            saveToDisk(); 
-            render(); 
-            closeDayModal();
-            updateSummary();
+            persistir(); dibujar(); cerrarModal();
         }
 
-        function calcEditHours() {
-            const inTime = document.getElementById('editIn').value;
-            const outTime = document.getElementById('editOut').value;
-            
-            if(!inTime || !outTime) return;
-            
-            const [inHours, inMinutes] = inTime.split(':').map(Number);
-            const [outHours, outMinutes] = outTime.split(':').map(Number);
-            
-            let diff = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
-            if(diff < 0) diff += 24 * 60;
-            
-            document.getElementById('editHrs').value = (diff / 60).toFixed(1);
-        }
-
-        function updateSummary() {
-            let h = 0, c = 0, off = 0;
-            const y = activeDate.getFullYear();
-            const m = String(activeDate.getMonth() + 1).padStart(2, '0');
-            const user = db.users[db.current];
-            
-            Object.keys(user.data).forEach(k => {
-                if(k.startsWith(`${y}-${m}-`)) {
-                    const d = user.data[k];
-                    const conf = user.config[d.s];
-                    if(conf.cat === 'hosp') h += (d.h || conf.h);
-                    if(conf.cat === 'sena') c += (d.h || conf.h);
-                    if(conf.cat === 'off') off++;
+        function resumen() {
+            let h = 0, c = 0, d = 0;
+            const mKey = `${fechaAct.getFullYear()}-${fechaAct.getMonth()+1}-`;
+            const u = core.users[core.current];
+            Object.keys(u.data).forEach(k => {
+                if(k.startsWith(mKey)) {
+                    const item = u.data[k];
+                    const conf = u.config[item.s];
+                    if(conf.cat === 'hosp') h += item.h;
+                    if(conf.cat === 'sena') c += item.h;
+                    if(conf.cat === 'off') d++;
                 }
             });
-            
-            document.getElementById('res-hosp').innerText = h.toFixed(1) + 'h';
-            document.getElementById('res-cena').innerText = c.toFixed(1) + 'h';
-            document.getElementById('res-off').innerText = off;
+            document.getElementById('h-hosp').innerText = h.toFixed(1) + 'h';
+            document.getElementById('h-cena').innerText = c.toFixed(1) + 'h';
+            document.getElementById('h-desc').innerText = d;
         }
 
-        function createNewUser() {
-            const name = document.getElementById('newUserName').value.trim().toUpperCase();
-            const pin = document.getElementById('newUserPin').value;
-            
-            if(!name || name.length < 2) {
-                alert("El nombre debe tener al menos 2 caracteres");
-                return;
-            }
-            
-            if(pin.length !== 4 || isNaN(pin)) {
-                alert("El PIN debe ser de 4 dígitos numéricos");
-                return;
-            }
-            
-            if(db.users[name]) {
-                alert("Ya existe un usuario con ese nombre");
-                return;
-            }
-            
-            db.users[name] = JSON.parse(JSON.stringify(db.users['ADMIN']));
-            db.users[name].pin = pin; 
-            db.users[name].data = {}; 
-            db.current = name;
-            
-            saveToDisk(); 
-            updateUserDropdown(); 
-            render(); 
-            closeUserModal();
-            
-            alert("Usuario creado correctamente");
+        function persistir() { localStorage.setItem('shifter_v12', JSON.stringify(core)); }
+        function cerrarModal() { document.getElementById('modalEditor').classList.remove('active'); }
+        function moverMes(v) { fechaAct.setMonth(fechaAct.getMonth() + v); dibujar(); }
+        function ver(v) {
+            ['cal','sum','set'].forEach(x => {
+                document.getElementById('v-'+x).style.display = (x===v?'block':'none');
+                document.getElementById('tab-'+x).classList.toggle('active', x===v);
+            });
+            if(v === 'set') ajustarUI();
         }
 
-        function switchUser() { 
-            db.current = document.getElementById('userSelect').value; 
-            isEditMode = false; 
-            toggleEditMode(); 
-            render(); 
-            updateSummary();
-        }
-        
-        function saveToDisk() { 
-            localStorage.setItem('shifter_v13', JSON.stringify(db)); 
-        }
-        
-        function closeDayModal() { 
-            document.getElementById('dayModal').classList.remove('active'); 
-            editingKey = null;
-        }
-        
-        function closeUserModal() {
-            document.getElementById('userModal').classList.remove('active');
-            document.getElementById('newUserName').value = '';
-            document.getElementById('newUserPin').value = '';
-        }
-        
-        function openUserModal() { 
-            document.getElementById('userModal').classList.add('active'); 
-        }
-        
-        function changeMonth(v) { 
-            activeDate.setMonth(activeDate.getMonth() + v); 
-            render(); 
-            updateSummary();
-        }
-        
-        function jumpToDate() { 
-            activeDate.setMonth(parseInt(document.getElementById('selectMonth').value)); 
-            activeDate.setFullYear(parseInt(document.getElementById('selectYear').value)); 
-            render(); 
-            updateSummary();
-        }
-        
-        function updateUserDropdown() { 
-            const select = document.getElementById('userSelect');
-            select.innerHTML = Object.keys(db.users).map(u => 
-                `<option value="${u}" ${u===db.current?'selected':''}>${u}</option>`
-            ).join(''); 
-        }
-        
-        function showView(v) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('view-active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-'+v).classList.add('view-active');
-            document.getElementById('tab-'+v).classList.add('active');
-            if(v === 'settings') renderSettings();
-        }
-
-        function renderSettings() {
-            const container = document.getElementById('settingsList');
-            container.innerHTML = '';
-            const config = db.users[db.current].config;
-            
-            Object.keys(config).forEach(k => {
-                if(k === 'libre') return;
-                const conf = config[k];
-                container.innerHTML += `
-                <div class="p-4 bg-white rounded-2xl border border-gray-200 space-y-3 mb-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-5 h-5 rounded-full shift-color-${conf.color} flex-shrink-0"></div>
-                        <input type="text" id="cfg-label-${k}" value="${conf.label}" 
-                               class="text-sm font-black uppercase p-2 bg-gray-50 border border-gray-200 rounded-xl w-full">
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Entrada</label>
-                            <input type="time" id="cfg-in-${k}" value="${conf.in}" 
-                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Salida</label>
-                            <input type="time" id="cfg-out-${k}" value="${conf.out}" 
-                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 block mb-1">Horas</label>
-                            <input type="number" step="0.5" id="cfg-h-${k}" value="${conf.h}" 
-                                   class="p-2 text-sm border border-gray-200 rounded-xl w-full">
-                        </div>
-                    </div>
+        function ajustarUI() {
+            const l = document.getElementById('listaAjustes');
+            l.innerHTML = '';
+            const conf = core.users[core.current].config;
+            Object.keys(conf).forEach(k => {
+                if(k === 'L') return;
+                l.innerHTML += `<div class="p-4 bg-slate-50 rounded-xl flex items-center gap-2">
+                    <input type="text" id="cfg-l-${k}" value="${conf[k].label}" class="w-20 font-black text-[10px] uppercase bg-transparent border-none">
+                    <input type="time" id="cfg-i-${k}" value="${conf[k].in}" class="flex-1 p-1 text-[10px] rounded-lg border-none shadow-inner">
+                    <input type="time" id="cfg-o-${k}" value="${conf[k].out}" class="flex-1 p-1 text-[10px] rounded-lg border-none shadow-inner">
+                    <input type="number" id="cfg-h-${k}" value="${conf[k].h}" class="w-12 p-1 text-[10px] rounded-lg border-none shadow-inner font-bold">
                 </div>`;
             });
         }
 
-        function saveProfileSettings() {
-            if(!isEditMode) {
-                alert("Activa el modo edición para cambiar configuraciones.");
-                return;
-            }
-            
-            const user = db.users[db.current];
-            Object.keys(user.config).forEach(k => {
-                if(k === 'libre') return;
-                user.config[k].label = document.getElementById(`cfg-label-${k}`).value;
-                user.config[k].in = document.getElementById(`cfg-in-${k}`).value;
-                user.config[k].out = document.getElementById(`cfg-out-${k}`).value;
-                user.config[k].h = parseFloat(document.getElementById(`cfg-h-${k}`).value);
+        function guardarAjustes() {
+            if(!editHabilitado) return alert("Desbloquea primero.");
+            const u = core.users[core.current];
+            Object.keys(u.config).forEach(k => {
+                if(k === 'L') return;
+                u.config[k].label = document.getElementById(`cfg-l-${k}`).value;
+                u.config[k].in = document.getElementById(`cfg-i-${k}`).value;
+                u.config[k].out = document.getElementById(`cfg-o-${k}`).value;
+                u.config[k].h = parseFloat(document.getElementById(`cfg-h-${k}`).value);
             });
-            
-            const newPin = document.getElementById('changePinInput').value;
-            if(newPin.length === 4) {
-                user.pin = newPin;
-                document.getElementById('changePinInput').value = '';
-            }
-            
-            saveToDisk(); 
-            render(); 
-            alert("Configuración guardada correctamente");
+            const np = document.getElementById('setPin').value;
+            if(np.length === 4) u.pin = np;
+            persistir(); dibujar(); alert("AJUSTES GUARDADOS");
         }
 
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', init);
+        function actualizarDrowdown() {
+            document.getElementById('userSelect').innerHTML = Object.keys(core.users).map(u => `<option value="${u}" ${u===core.current?'selected':''}>${u}</option>`).join('');
+        }
+
+        function cambiarUsuario() {
+            core.current = document.getElementById('userSelect').value;
+            editHabilitado = false;
+            actualizarUIEdicion();
+            dibujar();
+        }
+
+        function abrirNuevoUsuario() { document.getElementById('modalUser').classList.add('active'); }
+        function crearUsuario() {
+            const n = document.getElementById('newName').value.trim().toUpperCase();
+            const p = document.getElementById('newPin').value;
+            if(!n || p.length < 4) return alert("Datos inválidos");
+            core.users[n] = JSON.parse(JSON.stringify(core.users['ADMIN']));
+            core.users[n].pin = p; core.users[n].data = {}; core.current = n;
+            persistir(); actualizarDrowdown(); actualizarUIEdicion(); dibujar();
+            document.getElementById('modalUser').classList.remove('active');
+        }
+
+        init();
     </script>
 </body>
 </html>
