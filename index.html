@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v15 - Full Control</title>
+    <title>Shifter Pro v16 - Full Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f3f4f6; color: #1f2937; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -23,6 +23,12 @@
         .bg-16hrs { background-color: #bef264 !important; }
         .bg-L { background-color: #ffffff !important; }
         .bg-Vacaciones { background-color: #fed7aa !important; }
+        .bg-blue { background-color: #93c5fd !important; }
+        .bg-red { background-color: #fca5a5 !important; }
+        .bg-green { background-color: #86efac !important; }
+        .bg-orange { background-color: #fdba74 !important; }
+        .bg-pink { background-color: #f9a8d4 !important; }
+        .bg-cyan { background-color: #67e8f9 !important; }
 
         .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; color: rgba(0,0,0,0.8); }
         
@@ -99,28 +105,31 @@
             </div>
         </div>
 
-        <!-- Selector de mes/año MEJORADO -->
+        <!-- Selector de mes/año MEJORADO - SIN DUPLICACIÓN -->
         <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-2 shadow-inner">
             <button onclick="changeMonth(-1)" class="p-3 hover:bg-white/10 rounded-full transition-colors">
                 <span class="text-xl font-bold">‹</span>
             </button>
             
             <div class="flex flex-col items-center">
-                <div class="flex gap-3 items-center">
+                <div id="currentMonthDisplay" class="text-xl font-bold text-white text-center mb-1">
+                    Febrero 2024
+                </div>
+                <div class="flex gap-3 items-center opacity-80">
                     <select id="selectMonth" onchange="jumpToDate()" 
-                            class="bg-transparent border-none p-0 text-lg font-bold text-white text-center appearance-none cursor-pointer">
+                            class="bg-transparent border-none p-0 text-sm font-medium text-white text-center appearance-none cursor-pointer">
                     </select>
-                    <span class="text-white font-bold text-lg">/</span>
+                    <span class="text-white font-medium">/</span>
                     <select id="selectYear" onchange="jumpToDate()" 
-                            class="bg-transparent border-none p-0 text-lg font-bold text-white text-center appearance-none cursor-pointer">
+                            class="bg-transparent border-none p-0 text-sm font-medium text-white text-center appearance-none cursor-pointer">
                     </select>
                 </div>
-                <div class="flex gap-2 mt-1">
+                <div class="flex gap-2 mt-2">
                     <button onclick="goToday()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-bold uppercase transition-colors">
                         Hoy
                     </button>
-                    <button onclick="copyMonth()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-bold uppercase transition-colors">
-                        📋 Copiar
+                    <button onclick="showExportModal()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-bold uppercase transition-colors">
+                        📋 Exportar
                     </button>
                 </div>
             </div>
@@ -128,11 +137,6 @@
             <button onclick="changeMonth(1)" class="p-3 hover:bg-white/10 rounded-full transition-colors">
                 <span class="text-xl font-bold">›</span>
             </button>
-        </div>
-        
-        <!-- Indicador del mes actual -->
-        <div class="text-center mt-2">
-            <p id="currentMonthInfo" class="text-[11px] font-bold text-blue-300 uppercase tracking-wide"></p>
         </div>
     </div>
 
@@ -157,53 +161,53 @@
         <div id="calendar" class="calendar-grid"></div>
     </div>
 
-    <!-- Vista Resumen MEJORADA -->
-    <div id="view-summary" class="view-section p-5 bg-gray-50 min-h-screen">
-        <div class="space-y-6">
+    <!-- Vista Resumen MEJORADA - RESPONSIVE -->
+    <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen">
+        <div class="space-y-4 md:space-y-6">
             <!-- Tarjetas de resumen -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-yellow-400 hover:shadow-md transition-shadow">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] md:border-l-[12px] border-yellow-400 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-2">
                         <p class="text-[11px] font-black text-gray-400 uppercase">Hospital</p>
                         <span class="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Horas</span>
                     </div>
-                    <h2 id="hrs-hosp" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
+                    <h2 id="hrs-hosp" class="text-3xl md:text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
                     <div class="mt-2 text-[10px] text-gray-500 font-bold" id="hosp-days">0 días</div>
                 </div>
-                <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-purple-400 hover:shadow-md transition-shadow">
+                <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px] md:border-l-[12px] border-purple-400 hover:shadow-md transition-shadow">
                     <div class="flex items-center justify-between mb-2">
                         <p class="text-[11px] font-black text-gray-400 uppercase">CENA</p>
                         <span class="text-[10px] font-bold bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Independiente</span>
                     </div>
-                    <h2 id="hrs-sena" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
+                    <h2 id="hrs-sena" class="text-3xl md:text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
                     <div class="mt-2 text-[10px] text-gray-500 font-bold" id="sena-days">0 días</div>
                 </div>
             </div>
             
             <!-- Estadísticas adicionales -->
-            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-8 rounded-[40px] text-white text-center shadow-xl">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 md:p-8 rounded-3xl md:rounded-[40px] text-white text-center shadow-xl">
                 <p class="text-xs font-black uppercase opacity-90 mb-2">Días de Descanso</p>
-                <h2 id="total-off" class="text-6xl font-black mb-2">0</h2>
+                <h2 id="total-off" class="text-5xl md:text-6xl font-black mb-3 md:mb-2">0</h2>
                 <div class="grid grid-cols-3 gap-2 text-[10px] font-bold">
                     <div class="bg-white/20 p-2 rounded-xl">
                         <div>Libres</div>
-                        <div id="free-days" class="text-lg font-black">0</div>
+                        <div id="free-days" class="text-base md:text-lg font-black">0</div>
                     </div>
                     <div class="bg-white/20 p-2 rounded-xl">
                         <div>Vacaciones</div>
-                        <div id="vac-days" class="text-lg font-black">0</div>
+                        <div id="vac-days" class="text-base md:text-lg font-black">0</div>
                     </div>
                     <div class="bg-white/20 p-2 rounded-xl">
                         <div>Fines</div>
-                        <div id="weekend-days" class="text-lg font-black">0</div>
+                        <div id="weekend-days" class="text-base md:text-lg font-black">0</div>
                     </div>
                 </div>
             </div>
             
             <!-- Resumen rápido -->
-            <div class="bg-white p-5 rounded-3xl shadow-sm">
-                <h3 class="text-[12px] font-black text-gray-600 uppercase mb-4">📈 Resumen del Mes</h3>
-                <div class="space-y-3">
+            <div class="bg-white p-4 md:p-5 rounded-3xl shadow-sm">
+                <h3 class="text-[12px] font-black text-gray-600 uppercase mb-3 md:mb-4">📈 Resumen del Mes</h3>
+                <div class="space-y-2 md:space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-[11px] font-bold text-gray-500">Días trabajados:</span>
                         <span id="worked-days" class="font-black text-gray-800">0</span>
@@ -216,25 +220,75 @@
                         <span class="text-[11px] font-bold text-gray-500">Total días mes:</span>
                         <span id="total-days" class="font-black text-gray-800">30</span>
                     </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-gray-500">Libres reales:</span>
+                        <span id="real-free-days" class="font-black text-blue-600">0</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Vista Ajustes -->
-    <div id="view-settings" class="view-section p-6 bg-white min-h-screen">
-        <h2 class="font-black text-xl mb-6 uppercase tracking-tight">⚙️ Configuración</h2>
+    <div id="view-settings" class="view-section p-4 md:p-6 bg-white min-h-screen">
+        <h2 class="font-black text-xl mb-4 md:mb-6 uppercase tracking-tight">⚙️ Configuración</h2>
         
-        <!-- Turnos -->
-        <div class="mb-8">
-            <h3 class="text-[12px] font-black text-gray-600 uppercase mb-4">🎨 Configurar Turnos</h3>
-            <div id="settings-container" class="space-y-4 mb-6"></div>
+        <!-- Agregar nuevo turno -->
+        <div class="mb-6 md:mb-8">
+            <h3 class="text-[12px] font-black text-gray-600 uppercase mb-4">➕ Agregar Nuevo Turno</h3>
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 md:p-5 rounded-3xl border border-amber-100 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Turno</label>
+                        <input type="text" id="newShiftName" placeholder="Ej: Noche, Especial, etc." 
+                               class="w-full bg-white border-amber-200 focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Color (sugerencias)</label>
+                        <select id="newShiftColor" class="w-full bg-white border-amber-200 focus:border-amber-400">
+                            <option value="blue">🔵 Azul</option>
+                            <option value="red">🔴 Rojo</option>
+                            <option value="green">🟢 Verde</option>
+                            <option value="orange">🟠 Naranja</option>
+                            <option value="pink">🩷 Rosa</option>
+                            <option value="cyan">💧 Cian</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Categoría</label>
+                        <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400">
+                            <option value="hosp">🏥 Hospital</option>
+                            <option value="sena">🌙 CENA</option>
+                            <option value="off">😴 Libre/Vac</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Entrada</label>
+                        <input type="time" id="newShiftIn" class="w-full bg-white border-amber-200 focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Salida</label>
+                        <input type="time" id="newShiftOut" class="w-full bg-white border-amber-200 focus:border-amber-400">
+                    </div>
+                </div>
+                <button onclick="addNewShift()" class="w-full p-3 md:p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-amber-600 hover:to-orange-600 transition-all">
+                    ➕ Agregar Turno
+                </button>
+            </div>
+        </div>
+        
+        <!-- Turnos existentes -->
+        <div class="mb-6 md:mb-8">
+            <h3 class="text-[12px] font-black text-gray-600 uppercase mb-4">🎨 Configurar Turnos Existentes</h3>
+            <div id="settings-container" class="space-y-3 md:space-y-4 mb-6"></div>
         </div>
         
         <!-- Seguridad -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-3xl border border-blue-100 mb-8">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 md:p-5 rounded-3xl border border-blue-100 mb-6 md:mb-8">
             <h4 class="text-[12px] font-black uppercase text-blue-600 mb-3">🔒 Seguridad</h4>
-            <div class="space-y-4">
+            <div class="space-y-3 md:space-y-4">
                 <div>
                     <label class="text-[11px] font-bold text-gray-600 block mb-2">Cambiar PIN (4 dígitos)</label>
                     <input type="password" id="changePinInput" placeholder="Nuevo PIN" maxlength="4" 
@@ -248,25 +302,12 @@
             </div>
         </div>
         
-        <!-- Exportar/Importar -->
-        <div class="bg-gradient-to-r from-emerald-50 to-green-50 p-5 rounded-3xl border border-emerald-100 mb-8">
-            <h4 class="text-[12px] font-black uppercase text-emerald-600 mb-3">💾 Datos</h4>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="exportData()" class="p-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black uppercase text-[11px] transition-colors">
-                    📥 Exportar
-                </button>
-                <button onclick="importData()" class="p-4 bg-white hover:bg-gray-50 text-emerald-600 border border-emerald-300 rounded-2xl font-black uppercase text-[11px] transition-colors">
-                    📤 Importar
-                </button>
-            </div>
-        </div>
-        
-        <button onclick="saveProfileSettings()" class="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200 hover:shadow-2xl transition-all">
+        <button onclick="saveProfileSettings()" class="w-full mt-6 md:mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 md:p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200 hover:shadow-2xl transition-all">
             💾 Guardar Cambios
         </button>
     </div>
 
-    <!-- Modal para editar día -->
+    <!-- Modal para editar día CORREGIDO -->
     <div id="modal" class="modal">
         <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-5 font-black text-sm uppercase tracking-widest">
@@ -292,7 +333,8 @@
                     </div>
                 </div>
 
-                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
+                <!-- Horario para modo SIMPLE -->
+                <div id="time-simple" class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100 mb-6">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-black uppercase text-blue-900">⏰ Horario:</span>
                         <div class="flex items-center gap-2">
@@ -306,6 +348,38 @@
                     <div class="flex items-center justify-between border-t border-blue-200 pt-3">
                         <span class="text-[11px] font-black uppercase text-blue-900">📊 Total Horas:</span>
                         <input type="number" id="tHrs" class="w-24 text-center text-blue-700 bg-white shadow-inner border-blue-200" step="0.5">
+                    </div>
+                </div>
+
+                <!-- Horarios para modo MIXTO -->
+                <div id="time-mixto" class="hidden space-y-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
+                        <p class="text-[11px] font-black uppercase text-blue-900 text-center">⏰ Horario Superior</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <input type="time" id="tInTop" onchange="autoCalcMixto()" 
+                                       class="bg-white border-blue-200 focus:border-blue-400">
+                                <span class="font-black text-blue-300">→</span>
+                                <input type="time" id="tOutTop" onchange="autoCalcMixto()" 
+                                       class="bg-white border-blue-200 focus:border-blue-400">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-[24px] space-y-4 border border-purple-100">
+                        <p class="text-[11px] font-black uppercase text-purple-900 text-center">⏰ Horario Inferior</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <input type="time" id="tInBottom" onchange="autoCalcMixto()" 
+                                       class="bg-white border-purple-200 focus:border-purple-400">
+                                <span class="font-black text-purple-300">→</span>
+                                <input type="time" id="tOutBottom" onchange="autoCalcMixto()" 
+                                       class="bg-white border-purple-200 focus:border-purple-400">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-[20px] border border-emerald-100">
+                        <span class="text-[11px] font-black uppercase text-emerald-900">📊 Total Horas:</span>
+                        <input type="number" id="tHrsMixto" class="w-24 text-center text-emerald-700 bg-white shadow-inner border-emerald-200" step="0.5" readonly>
                     </div>
                 </div>
 
@@ -345,9 +419,64 @@
         </div>
     </div>
 
+    <!-- Modal para exportar -->
+    <div id="exportModal" class="modal">
+        <div class="bg-white w-full max-w-md rounded-[40px] p-8 shadow-2xl">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 mx-auto mb-4 flex items-center justify-center">
+                <span class="text-white text-2xl font-black">📋</span>
+            </div>
+            <h3 class="font-black text-center uppercase text-lg mb-6">Exportar Mes</h3>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes a exportar</label>
+                    <div class="flex gap-3">
+                        <select id="exportMonth" class="flex-1 bg-gray-50 border-gray-200 focus:border-emerald-400">
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                        <select id="exportYear" class="flex-1 bg-gray-50 border-gray-200 focus:border-emerald-400">
+                            <option value="2023">2023</option>
+                            <option value="2024" selected>2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-[12px] font-bold text-gray-600 block mb-2">Formato de exportación</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="exportMonthAsText()" class="p-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-[11px] transition-colors">
+                            📝 Texto
+                        </button>
+                        <button onclick="exportMonthAsImage()" class="p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold text-[11px] transition-colors">
+                            🖼️ Imagen
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="closeExportModal()" class="w-full mt-2 p-4 text-gray-400 font-bold uppercase text-[10px] hover:text-gray-600 transition-colors">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
     <script>
         // Base de datos con múltiples usuarios
-        let db = JSON.parse(localStorage.getItem('shifter_v15')) || {
+        let db = JSON.parse(localStorage.getItem('shifter_v16')) || {
             users: {
                 'ADMIN': {
                     pin: '1234',
@@ -357,8 +486,8 @@
                         'Tarde': { label: 'Tarde', color: 'Tarde', cat: 'hosp', in: '14:00', out: '22:00' },
                         '16hrs': { label: '16hrs', color: '16hrs', cat: 'hosp', in: '06:00', out: '22:00' },
                         'CENA': { label: 'CENA', color: 'CENA', cat: 'sena', in: '05:00', out: '17:00' },
-                        'L': { label: 'L', color: 'L', cat: 'none', in: '00:00', out: '00:00' },
-                        'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'none', in: '00:00', out: '00:00' }
+                        'L': { label: 'L', color: 'L', cat: 'off', in: '00:00', out: '00:00' },
+                        'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'off', in: '00:00', out: '00:00' }
                     }
                 }
             },
@@ -377,84 +506,88 @@
             initDateSelectors();
             updateUserDropdown();
             updateUserInitial();
+            updateMonthDisplay();
             render();
-            updateMonthInfo();
         }
 
         function initDateSelectors() {
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             const mSel = document.getElementById('selectMonth');
             const ySel = document.getElementById('selectYear');
-            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             
             mSel.innerHTML = '';
             months.forEach((m, i) => {
-                mSel.innerHTML += `<option value="${i}" ${i === current.getMonth() ? 'selected' : ''}>${m}</option>`;
+                mSel.innerHTML += `<option value="${i}">${m}</option>`;
             });
             
             ySel.innerHTML = '';
-            for(let y = 2023; y <= 2030; y++) {
-                ySel.innerHTML += `<option value="${y}" ${y === current.getFullYear() ? 'selected' : ''}>${y}</option>`;
+            for(let y = 2023; y <= 2027; y++) {
+                ySel.innerHTML += `<option value="${y}">${y}</option>`;
             }
         }
 
-        function updateMonthInfo() {
+        function updateMonthDisplay() {
             const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             const monthName = months[current.getMonth()];
             const year = current.getFullYear();
-            const today = new Date();
             
-            let infoText = `${monthName} ${year}`;
-            if (current.getMonth() === today.getMonth() && current.getFullYear() === today.getFullYear()) {
-                infoText += ' • Mes Actual';
-            }
-            
-            document.getElementById('currentMonthInfo').textContent = infoText;
+            document.getElementById('currentMonthDisplay').textContent = `${monthName} ${year}`;
+            document.getElementById('selectMonth').value = current.getMonth();
+            document.getElementById('selectYear').value = current.getFullYear();
         }
 
         function goToday() {
             current = new Date();
+            updateMonthDisplay();
             render();
-            updateMonthInfo();
-            calcSummary();
         }
 
-        function copyMonth() {
+        function showExportModal() {
+            document.getElementById('exportMonth').value = current.getMonth();
+            document.getElementById('exportYear').value = current.getFullYear();
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function exportMonthAsText() {
+            const month = parseInt(document.getElementById('exportMonth').value);
+            const year = parseInt(document.getElementById('exportYear').value);
             const user = db.users[db.current];
-            const y = current.getFullYear();
-            const m = current.getMonth() + 1;
-            let text = `Resumen ${m}/${y} - ${db.current}\n\n`;
             
-            // Calcular resumen
-            let hosp = 0, sena = 0, free = 0, vac = 0;
-            Object.keys(user.data).forEach(k => {
-                if(k.startsWith(`${y}-${m}-`)) {
-                    const d = user.data[k];
-                    const SHIFTS = user.config;
-                    
-                    if(d.mode === 'mixto') {
-                        if(SHIFTS[d.t].cat === 'hosp') hosp += 8;
-                        if(SHIFTS[d.b].cat === 'hosp') hosp += 8;
-                        if(SHIFTS[d.t].cat === 'sena' || SHIFTS[d.b].cat === 'sena') sena += (d.h || 0);
-                    } else {
-                        if(SHIFTS[d.s].cat === 'hosp') hosp += (d.h || 0);
-                        if(SHIFTS[d.s].cat === 'sena') sena += (d.h || 0);
-                        if(SHIFTS[d.s].cat === 'none') {
-                            if(d.s === 'L') free++;
-                            if(d.s === 'Vacaciones') vac++;
-                        }
-                    }
+            let text = `Turnos de ${db.current} - ${month+1}/${year}\n`;
+            text += '='.repeat(40) + '\n\n';
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            
+            for(let d = 1; d <= daysInMonth; d++) {
+                const key = `${year}-${month+1}-${d}`;
+                const info = user.data[key] || { mode: 'simple', s: 'L' };
+                const SHIFTS = user.config;
+                
+                if(info.mode === 'mixto') {
+                    text += `${d.toString().padStart(2, '0')}: ${SHIFTS[info.t].label} + ${SHIFTS[info.b].label}`;
+                } else {
+                    text += `${d.toString().padStart(2, '0')}: ${info.s === 'L' ? 'Libre' : SHIFTS[info.s].label}`;
                 }
-            });
-            
-            text += `🏥 Hospital: ${hosp.toFixed(1)} horas\n`;
-            text += `🌙 CENA: ${sena.toFixed(1)} horas\n`;
-            text += `😴 Días libres: ${free}\n`;
-            text += `🏖️ Vacaciones: ${vac}\n`;
+                
+                if(info.n) text += ` (${info.n})`;
+                text += '\n';
+            }
             
             // Copiar al portapapeles
             navigator.clipboard.writeText(text).then(() => {
-                alert('Resumen copiado al portapapeles 📋');
+                alert('Calendario copiado al portapapeles 📋\nPuedes pegarlo en cualquier lugar.');
             });
+            closeExportModal();
+        }
+
+        async function exportMonthAsImage() {
+            alert('Exportar como imagen: Esta función se activará en una versión futura.\nPor ahora, usa la función de exportación de texto.');
+            closeExportModal();
         }
 
         function render() {
@@ -507,7 +640,6 @@
                 const SHIFTS = user.config;
                 const cell = document.createElement('div');
                 
-                // Aplicar clases adicionales
                 let cellClasses = 'day-cell';
                 const dayOfWeek = new Date(y, m, d).getDay();
                 if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -591,9 +723,28 @@
             
             const SHIFTS = db.users[db.current].config;
             
-            document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
-            document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
-            document.getElementById('tHrs').value = info.h || 0;
+            // Configurar campos según el modo
+            if(mode === 'simple') {
+                document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
+                document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
+                document.getElementById('tHrs').value = info.h || SHIFTS[selS].in === '00:00' ? 0 : 8;
+                
+                document.getElementById('time-simple').classList.remove('hidden');
+                document.getElementById('time-mixto').classList.add('hidden');
+            } else {
+                document.getElementById('tInTop').value = info.tInTop || SHIFTS[selT].in;
+                document.getElementById('tOutTop').value = info.tOutTop || SHIFTS[selT].out;
+                document.getElementById('tInBottom').value = info.tInBottom || SHIFTS[selB].in;
+                document.getElementById('tOutBottom').value = info.tOutBottom || SHIFTS[selB].out;
+                
+                const hrsTop = calculateHours(info.tInTop || SHIFTS[selT].in, info.tOutTop || SHIFTS[selT].out);
+                const hrsBottom = calculateHours(info.tInBottom || SHIFTS[selB].in, info.tOutBottom || SHIFTS[selB].out);
+                document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
+                
+                document.getElementById('time-simple').classList.add('hidden');
+                document.getElementById('time-mixto').classList.remove('hidden');
+            }
+            
             document.getElementById('nota').value = info.n || '';
             
             // Mostrar fecha en el modal
@@ -604,6 +755,15 @@
             setMode(mode);
             refreshBtns();
             document.getElementById('modal').classList.add('active');
+        }
+
+        function calculateHours(start, end) {
+            if(!start || !end) return 0;
+            let [h1, m1] = start.split(':').map(Number);
+            let [h2, m2] = end.split(':').map(Number);
+            let diff = (h2 + m2/60) - (h1 + m1/60);
+            if(diff < 0) diff += 24;
+            return diff;
         }
 
         function setMode(m) {
@@ -626,7 +786,13 @@
                     'CENA': '#d8b4fe',
                     '16hrs': '#bef264',
                     'L': '#ffffff',
-                    'Vacaciones': '#fed7aa'
+                    'Vacaciones': '#fed7aa',
+                    'blue': '#93c5fd',
+                    'red': '#fca5a5',
+                    'green': '#86efac',
+                    'orange': '#fdba74',
+                    'pink': '#f9a8d4',
+                    'cyan': '#67e8f9'
                 };
                 
                 const btn = document.createElement('div');
@@ -645,9 +811,11 @@
                 const btn = createBtn(k, selS === k);
                 btn.onclick = () => {
                     selS = k;
-                    document.getElementById('tIn').value = SHIFTS[k].in;
-                    document.getElementById('tOut').value = SHIFTS[k].out;
-                    autoCalc();
+                    if(SHIFTS[k].in !== '00:00') {
+                        document.getElementById('tIn').value = SHIFTS[k].in;
+                        document.getElementById('tOut').value = SHIFTS[k].out;
+                        autoCalc();
+                    }
                     refreshBtns();
                 };
                 simpleContainer.appendChild(btn);
@@ -660,6 +828,9 @@
                 const btn = createBtn(k, selT === k);
                 btn.onclick = () => {
                     selT = k;
+                    document.getElementById('tInTop').value = SHIFTS[k].in;
+                    document.getElementById('tOutTop').value = SHIFTS[k].out;
+                    autoCalcMixto();
                     refreshBtns();
                 };
                 mixTopContainer.appendChild(btn);
@@ -672,6 +843,9 @@
                 const btn = createBtn(k, selB === k);
                 btn.onclick = () => {
                     selB = k;
+                    document.getElementById('tInBottom').value = SHIFTS[k].in;
+                    document.getElementById('tOutBottom').value = SHIFTS[k].out;
+                    autoCalcMixto();
                     refreshBtns();
                 };
                 mixBottomContainer.appendChild(btn);
@@ -682,35 +856,53 @@
             const start = document.getElementById('tIn').value;
             const end = document.getElementById('tOut').value;
             if(!start || !end) return;
-            let [h1, m1] = start.split(':').map(Number);
-            let [h2, m2] = end.split(':').map(Number);
-            let diff = (h2 + m2/60) - (h1 + m1/60);
-            if(diff < 0) diff += 24;
-            document.getElementById('tHrs').value = diff.toFixed(1);
+            document.getElementById('tHrs').value = calculateHours(start, end).toFixed(1);
+        }
+
+        function autoCalcMixto() {
+            const startTop = document.getElementById('tInTop').value;
+            const endTop = document.getElementById('tOutTop').value;
+            const startBottom = document.getElementById('tInBottom').value;
+            const endBottom = document.getElementById('tOutBottom').value;
+            
+            const hrsTop = calculateHours(startTop, endTop);
+            const hrsBottom = calculateHours(startBottom, endBottom);
+            
+            document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
         }
 
         function save() {
             const user = db.users[db.current];
-            user.data[activeKey] = { 
+            const data = { 
                 mode, 
                 s: selS, 
                 t: selT, 
                 b: selB, 
-                tIn: document.getElementById('tIn').value,
-                tOut: document.getElementById('tOut').value,
-                h: parseFloat(document.getElementById('tHrs').value) || 0,
                 n: document.getElementById('nota').value 
             };
             
-            localStorage.setItem('shifter_v15', JSON.stringify(db));
+            if(mode === 'simple') {
+                data.tIn = document.getElementById('tIn').value;
+                data.tOut = document.getElementById('tOut').value;
+                data.h = parseFloat(document.getElementById('tHrs').value) || 0;
+            } else {
+                data.tInTop = document.getElementById('tInTop').value;
+                data.tOutTop = document.getElementById('tOutTop').value;
+                data.tInBottom = document.getElementById('tInBottom').value;
+                data.tOutBottom = document.getElementById('tOutBottom').value;
+                data.h = parseFloat(document.getElementById('tHrsMixto').value) || 0;
+            }
+            
+            user.data[activeKey] = data;
+            
+            localStorage.setItem('shifter_v16', JSON.stringify(db));
             render(); 
             closeModal();
-            calcSummary();
         }
 
         function calcSummary() {
             let h = 0, s = 0;
-            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0;
+            let hospDays = 0, senaDays = 0, freeDays = 0, vacDays = 0, workedDays = 0, weekendDays = 0, realFreeDays = 0;
             const y = current.getFullYear(), m = current.getMonth() + 1;
             const user = db.users[db.current];
             const SHIFTS = user.config;
@@ -725,13 +917,11 @@
                     }
                     
                     if(d.mode === 'mixto') {
+                        if(SHIFTS[d.t].cat === 'hosp') { h += (d.h || 8); hospDays++; }
+                        if(SHIFTS[d.b].cat === 'hosp') { h += (d.h || 8); hospDays++; }
+                        if(SHIFTS[d.t].cat === 'sena') { s += (d.h || 8); senaDays++; }
+                        if(SHIFTS[d.b].cat === 'sena') { s += (d.h || 8); senaDays++; }
                         workedDays++;
-                        if(SHIFTS[d.t].cat === 'hosp') { h += 8; hospDays++; }
-                        if(SHIFTS[d.b].cat === 'hosp') { h += 8; hospDays++; }
-                        if(SHIFTS[d.t].cat === 'sena' || SHIFTS[d.b].cat === 'sena') { 
-                            s += (d.h || 0); 
-                            senaDays++;
-                        }
                     } else {
                         if(SHIFTS[d.s].cat === 'hosp') { 
                             h += (d.h || 0); 
@@ -743,13 +933,28 @@
                             senaDays++;
                             workedDays++;
                         }
-                        if(SHIFTS[d.s].cat === 'none') {
-                            if(d.s === 'L') freeDays++;
-                            if(d.s === 'Vacaciones') vacDays++;
+                        if(SHIFTS[d.s].cat === 'off') {
+                            if(d.s === 'L') {
+                                freeDays++;
+                                realFreeDays++;
+                            }
+                            if(d.s === 'Vacaciones') {
+                                vacDays++;
+                                realFreeDays++;
+                            }
                         }
                     }
                 }
             });
+            
+            // Contar días libres del mes (sin turno asignado)
+            const daysInMonth = new Date(y, m, 0).getDate();
+            for(let d = 1; d <= daysInMonth; d++) {
+                const key = `${y}-${m}-${d}`;
+                if(!user.data[key]) {
+                    realFreeDays++;
+                }
+            }
             
             // Actualizar estadísticas
             document.getElementById('hrs-hosp').textContent = h.toFixed(1) + " HRS";
@@ -761,14 +966,46 @@
             document.getElementById('vac-days').textContent = vacDays;
             document.getElementById('weekend-days').textContent = weekendDays;
             document.getElementById('worked-days').textContent = workedDays;
+            document.getElementById('real-free-days').textContent = realFreeDays;
             
             // Calcular promedio diario
             const avgHours = workedDays > 0 ? (h + s) / workedDays : 0;
             document.getElementById('avg-hours').textContent = avgHours.toFixed(1) + 'h';
             
             // Total días del mes
-            const lastDate = new Date(y, m, 0).getDate();
-            document.getElementById('total-days').textContent = lastDate;
+            document.getElementById('total-days').textContent = daysInMonth;
+        }
+
+        function addNewShift() {
+            const name = document.getElementById('newShiftName').value.trim();
+            const color = document.getElementById('newShiftColor').value;
+            const cat = document.getElementById('newShiftCat').value;
+            const inTime = document.getElementById('newShiftIn').value || '00:00';
+            const outTime = document.getElementById('newShiftOut').value || '00:00';
+            
+            if(!name) {
+                alert("Por favor ingresa un nombre para el turno");
+                return;
+            }
+            
+            const user = db.users[db.current];
+            const shiftKey = name.replace(/\s+/g, '');
+            
+            user.config[shiftKey] = {
+                label: name,
+                color: color,
+                cat: cat,
+                in: inTime,
+                out: outTime
+            };
+            
+            // Limpiar campos
+            document.getElementById('newShiftName').value = '';
+            document.getElementById('newShiftIn').value = '';
+            document.getElementById('newShiftOut').value = '';
+            
+            renderSettings();
+            alert("Turno agregado correctamente");
         }
 
         function renderSettings() {
@@ -777,19 +1014,36 @@
             const SHIFTS = db.users[db.current].config;
             
             Object.keys(SHIFTS).forEach(id => {
-                if(id === 'L') return;
+                const conf = SHIFTS[id];
                 container.innerHTML += `
                     <div class="flex items-center gap-4 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200 hover:border-blue-300 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-${SHIFTS[id].color} border-2 border-white shadow-sm flex items-center justify-center">
-                            <span class="text-[10px] font-black">${id.charAt(0)}</span>
+                        <div class="w-10 h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center">
+                            <span class="text-[10px] font-black">${conf.label.charAt(0)}</span>
                         </div>
                         <div class="flex-1">
                             <p class="text-[9px] font-black text-gray-400 uppercase mb-1">${id}</p>
-                            <input id="set-${id}" type="text" value="${SHIFTS[id].label}" 
+                            <input id="set-${id}" type="text" value="${conf.label}" 
                                    class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
                         </div>
+                        <button onclick="deleteShift('${id}')" class="p-2 text-red-500 hover:text-red-700">
+                            🗑️
+                        </button>
                     </div>`;
             });
+        }
+
+        function deleteShift(shiftKey) {
+            if(shiftKey === 'L' || shiftKey === 'Vacaciones') {
+                alert("No se puede eliminar este turno básico");
+                return;
+            }
+            
+            if(confirm(`¿Eliminar el turno "${shiftKey}"?`)) {
+                const user = db.users[db.current];
+                delete user.config[shiftKey];
+                renderSettings();
+                alert("Turno eliminado");
+            }
         }
 
         function saveProfileSettings() {
@@ -821,53 +1075,9 @@
                 }
             }
             
-            localStorage.setItem('shifter_v15', JSON.stringify(db));
+            localStorage.setItem('shifter_v16', JSON.stringify(db));
             render(); 
             alert("Configuración guardada correctamente");
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(db, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `shifter_backup_${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            alert("Datos exportados correctamente");
-        }
-
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(event) {
-                    try {
-                        const importedData = JSON.parse(event.target.result);
-                        if(confirm("¿Importar datos? Esto sobrescribirá los datos actuales.")) {
-                            db = importedData;
-                            localStorage.setItem('shifter_v15', JSON.stringify(db));
-                            updateUserDropdown();
-                            render();
-                            alert("Datos importados correctamente");
-                        }
-                    } catch(error) {
-                        alert("Error al importar: Archivo inválido");
-                    }
-                };
-                
-                reader.readAsText(file);
-            };
-            
-            input.click();
         }
 
         function createNewUser() {
@@ -894,7 +1104,7 @@
             db.users[name].data = {}; 
             db.current = name;
             
-            localStorage.setItem('shifter_v15', JSON.stringify(db));
+            localStorage.setItem('shifter_v16', JSON.stringify(db));
             updateUserDropdown(); 
             updateUserInitial();
             render(); 
@@ -909,7 +1119,6 @@
             toggleEditMode(); 
             updateUserInitial();
             render(); 
-            calcSummary();
         }
         
         function updateUserDropdown() { 
@@ -935,17 +1144,15 @@
         
         function changeMonth(v) { 
             current.setMonth(current.getMonth() + v); 
-            render(); 
-            updateMonthInfo();
-            calcSummary();
+            updateMonthDisplay();
+            render();
         }
         
         function jumpToDate() { 
             current.setMonth(parseInt(document.getElementById('selectMonth').value)); 
             current.setFullYear(parseInt(document.getElementById('selectYear').value)); 
-            render(); 
-            updateMonthInfo();
-            calcSummary();
+            updateMonthDisplay();
+            render();
         }
         
         function showView(v) {
