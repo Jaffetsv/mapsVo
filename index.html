@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifter Pro v7 - Full Control</title>
+    <title>Shifter Multi-User Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f3f4f6; color: #1f2937; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f3f4f6; color: #1f2937; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #e5e7eb; border: 1px solid #e5e7eb; }
-        .day-cell { background-color: #ffffff; height: 130px; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
-        .day-number { font-size: 11px; font-weight: 800; padding: 2px 6px; position: absolute; top: 0; right: 0; z-index: 20; color: #374151; background: rgba(255,255,255,0.9); border-bottom-left-radius: 8px; }
-
-        /* Colores de Turnos */
+        .day-cell { background-color: #ffffff; height: 110px; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+        .day-off-month { background-color: #f9fafb !important; opacity: 0.4; pointer-events: none; }
+        .day-number { font-size: 10px; font-weight: 800; padding: 2px 5px; position: absolute; top: 0; right: 0; z-index: 10; color: #9ca3af; }
+        
+        /* Colores Dinámicos */
         .bg-Mañana { background-color: #ffff00 !important; }
         .bg-Tarde { background-color: #fbcfe8 !important; }
         .bg-CENA { background-color: #d8b4fe !important; }
@@ -19,200 +20,285 @@
         .bg-L { background-color: #ffffff !important; }
         .bg-Vacaciones { background-color: #fed7aa !important; }
 
-        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1.1; padding: 4px; color: rgba(0,0,0,0.8); }
-        
-        /* Comentarios Resaltados */
-        .note-text { font-size: 10px; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: #000; font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 4px; padding: 1px 2px; border: 0.5px solid rgba(0,0,0,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .shift-label { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; text-transform: uppercase; text-align: center; line-height: 1; padding: 2px; }
+        .note-text { font-size: 9px; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 90%; text-align: center; color: #000; font-weight: 700; background: rgba(255,255,255,0.7); border-radius: 4px; white-space: nowrap; overflow: hidden; }
 
         .view-section { display: none; }
         .view-active { display: block; }
-        .tab-btn { flex: 1; text-align: center; padding: 14px; font-weight: 800; font-size: 11px; border-bottom: 3px solid transparent; transition: 0.3s; }
-        .tab-active { border-bottom-color: #2563eb; color: #2563eb; background: #f8fafc; }
-        
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 15px; backdrop-filter: blur(4px); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 100; padding: 20px; backdrop-filter: blur(5px); }
         .modal.active { display: flex; }
         
-        select, input[type="time"], input[type="number"], input[type="text"] { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; font-weight: 800; font-size: 13px; outline: none; }
+        select, input { border-radius: 12px; padding: 10px; font-weight: 700; outline: none; border: 1px solid #e5e7eb; }
     </style>
 </head>
 <body>
 
-    <div class="bg-white shadow-md sticky top-0 z-50">
-        <div class="flex border-b">
-            <button onclick="showView('calendar')" id="btn-cal" class="tab-btn tab-active uppercase">Calendario</button>
-            <button onclick="showView('summary')" id="btn-sum" class="tab-btn uppercase">Resumen</button>
-            <button onclick="showView('settings')" id="btn-set" class="p-4 text-gray-400">⚙️</button>
-        </div>
-        
-        <div id="nav-cal" class="flex items-center justify-between p-3 bg-gray-50/50">
-            <button onclick="changeMonth(-1)" class="p-2 text-blue-600 font-bold text-xl">❮</button>
-            <div class="flex gap-2 items-center">
-                <select id="selectMonth" onchange="jumpToDate()" class="border-none bg-transparent font-black uppercase text-blue-900"></select>
-                <select id="selectYear" onchange="jumpToDate()" class="border-none bg-transparent font-black text-blue-900"></select>
+    <div class="bg-[#1e293b] text-white p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">📅</span>
+                <div>
+                    <select id="userSelect" onchange="switchUser()" class="bg-transparent border-none text-lg font-black p-0 focus:ring-0"></select>
+                    <p id="editStatus" class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Modo Vista</p>
+                </div>
             </div>
-            <button onclick="changeMonth(1)" class="p-2 text-blue-600 font-bold text-xl">❯</button>
+            <div class="flex gap-2">
+                <button onclick="openUserModal()" class="bg-blue-500 text-[10px] px-3 py-2 rounded-lg font-black uppercase">+ Usuario</button>
+                <button id="unlockBtn" onclick="askPIN()" class="bg-gray-700 text-[10px] px-3 py-2 rounded-lg font-black uppercase">🔓 Editar</button>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between bg-white/10 rounded-2xl p-2">
+            <button onclick="changeMonth(-1)" class="p-2">❮</button>
+            <div class="flex gap-2">
+                <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none text-xs uppercase font-bold"></select>
+                <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none text-xs font-bold"></select>
+            </div>
+            <button onclick="changeMonth(1)" class="p-2">❯</button>
         </div>
     </div>
 
+    <div class="flex bg-white border-b shadow-sm">
+        <button onclick="showView('calendar')" id="tab-cal" class="flex-1 py-4 text-[10px] font-black uppercase border-b-2 border-blue-600 text-blue-600">Calendario</button>
+        <button onclick="showView('summary')" id="tab-sum" class="flex-1 py-4 text-[10px] font-black uppercase text-gray-400">Resumen</button>
+        <button onclick="showView('settings')" id="tab-set" class="flex-1 py-4 text-[10px] font-black uppercase text-gray-400">Ajustes</button>
+    </div>
+
     <div id="calendar-view" class="view-section view-active">
-        <div class="grid grid-cols-7 text-center text-[10px] font-black py-3 bg-blue-100/30 text-blue-800/50 border-b">
+        <div class="grid grid-cols-7 text-center text-[10px] font-black py-2 bg-gray-200 text-gray-500">
             <div>DOM</div><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div>
         </div>
         <div id="calendar" class="calendar-grid"></div>
     </div>
 
-    <div id="summary-view" class="view-section p-5 bg-gray-100 min-h-screen">
-        <div class="space-y-4">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-yellow-400">
-                <p class="text-[11px] font-black text-gray-400 uppercase">Hospital</p>
-                <h2 id="hrs-hosp" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
+    <div id="summary-view" class="view-section p-4 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-4 rounded-3xl shadow-sm border-t-8 border-yellow-400 text-center">
+                <p class="text-[9px] font-black text-gray-400 uppercase">Hospital</p>
+                <h3 id="res-hosp" class="text-2xl font-black">0 HRS</h3>
             </div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border-l-[12px] border-purple-400">
-                <p class="text-[11px] font-black text-gray-400 uppercase">CENA (Independiente)</p>
-                <h2 id="hrs-sena" class="text-4xl font-black text-gray-800 tracking-tighter">0.0 HRS</h2>
+            <div class="bg-white p-4 rounded-3xl shadow-sm border-t-8 border-purple-400 text-center">
+                <p class="text-[9px] font-black text-gray-400 uppercase">CENA</p>
+                <h3 id="res-cena" class="text-2xl font-black">0 HRS</h3>
+            </div>
+        </div>
+        <div class="bg-emerald-500 p-6 rounded-3xl text-white shadow-lg text-center">
+            <p class="text-[10px] font-black uppercase opacity-80">Días de Descanso Totales</p>
+            <h2 id="res-off" class="text-5xl font-black">0</h2>
+            <p class="text-[9px] mt-1 font-bold">(Libres + Vacaciones)</p>
+        </div>
+    </div>
+
+    <div id="settings-view" class="view-section p-6">
+        <h2 class="font-black mb-4 uppercase">Configurar Turnos del Usuario</h2>
+        <div id="shiftsConfig" class="space-y-3"></div>
+        <button onclick="saveGlobalConfig()" class="w-full mt-6 bg-blue-600 text-white p-4 rounded-2xl font-black uppercase">Guardar Configuración</button>
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl">
+            <h3 class="font-black text-center mb-4 uppercase">Nuevo Usuario</h3>
+            <input type="text" id="newUserName" placeholder="Nombre (ej: Alex)" class="w-full mb-3">
+            <input type="password" id="newUserPIN" placeholder="PIN de 4 dígitos" class="w-full mb-6" maxlength="4">
+            <div class="flex gap-2">
+                <button onclick="closeUserModal()" class="flex-1 p-3 bg-gray-100 rounded-xl font-bold uppercase text-xs">Cerrar</button>
+                <button onclick="createUser()" class="flex-1 p-3 bg-blue-600 text-white rounded-xl font-bold uppercase text-xs">Crear</button>
             </div>
         </div>
     </div>
 
-    <div id="settings-view" class="view-section p-6 bg-white min-h-screen">
-        <h2 class="font-black text-xl mb-6 uppercase tracking-tight">Editar Nombres de Turnos</h2>
-        <div id="settings-container" class="space-y-4"></div>
-        <button onclick="saveShiftNames()" class="w-full mt-8 bg-blue-600 text-white p-5 rounded-3xl font-black uppercase shadow-xl shadow-blue-200">Guardar Cambios</button>
-    </div>
-
     <div id="modal" class="modal">
-        <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden shadow-2xl border border-gray-100">
-            <div class="bg-blue-600 text-white text-center py-5 font-black text-sm uppercase tracking-widest">Configurar Día</div>
-            <div class="p-6 overflow-y-auto max-h-[80vh]">
-                
-                <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-6">
-                    <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
-                    <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
+        <div class="bg-white w-full max-w-md rounded-[40px] overflow-hidden">
+            <div id="modalHeader" class="bg-blue-600 p-4 text-white text-center font-black text-xs uppercase"></div>
+            <div class="p-6">
+                <div id="shiftGrid" class="grid grid-cols-3 gap-2 mb-6"></div>
+                <div class="bg-gray-50 p-4 rounded-2xl mb-4 flex justify-between items-center">
+                    <input type="time" id="tIn" onchange="autoCalc()" class="w-24">
+                    <span class="font-black">→</span>
+                    <input type="time" id="tOut" onchange="autoCalc()" class="w-24">
                 </div>
-
-                <div id="sec-simple" class="grid grid-cols-3 gap-2 mb-6"></div>
-                <div id="sec-mixto" class="hidden space-y-4 mb-6">
-                    <div class="p-4 bg-gray-50 rounded-[24px]">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Superior</p>
-                        <div id="mix-t" class="grid grid-cols-3 gap-2"></div>
-                    </div>
-                    <div class="p-4 bg-gray-50 rounded-[24px]">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Parte Inferior</p>
-                        <div id="mix-b" class="grid grid-cols-3 gap-2"></div>
-                    </div>
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <span class="text-[10px] font-black uppercase text-gray-400">Total Horas</span>
+                    <input type="number" id="tHrs" class="w-20 text-center font-black text-blue-600 border-none bg-transparent text-xl">
                 </div>
-
-                <div class="bg-blue-50 p-5 rounded-[24px] space-y-4 border border-blue-100">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black uppercase text-blue-900">Horario:</span>
-                        <div class="flex items-center gap-2">
-                            <input type="time" id="tIn" onchange="autoCalc()">
-                            <span class="font-black text-blue-300">/</span>
-                            <input type="time" id="tOut" onchange="autoCalc()">
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between border-t border-blue-200 pt-3">
-                        <span class="text-[11px] font-black uppercase text-blue-900">Total Horas:</span>
-                        <input type="number" id="tHrs" class="w-24 text-center text-blue-700 bg-white shadow-inner" step="0.5">
-                    </div>
-                </div>
-
-                <div class="mt-6">
-                    <p class="text-[10px] font-black text-gray-400 uppercase mb-2 ml-2">Comentario Personalizado</p>
-                    <textarea id="nota" placeholder="Escribe aquí (ej: Cita médica, Doble turno...)" class="w-full p-4 bg-gray-100 border-none rounded-[24px] text-sm font-bold h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-                
-                <div class="flex gap-4 mt-8">
-                    <button onclick="closeModal()" class="flex-1 p-5 bg-gray-100 text-gray-400 rounded-3xl font-black text-[11px] uppercase">Cancelar</button>
-                    <button onclick="save()" class="flex-1 p-5 bg-emerald-500 text-white rounded-3xl font-black text-[11px] uppercase shadow-lg shadow-emerald-100">Aceptar</button>
+                <textarea id="nota" placeholder="Notas..." class="w-full p-4 bg-gray-100 border-none rounded-2xl h-20 mb-4 font-bold"></textarea>
+                <div class="flex gap-2">
+                    <button onclick="closeModal()" class="flex-1 p-4 bg-gray-100 rounded-2xl font-black uppercase text-[10px]">Cancelar</button>
+                    <button onclick="saveDay()" class="flex-1 p-4 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px]">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let SHIFTS = JSON.parse(localStorage.getItem('sh_conf_v7')) || {
-            'Mañana': { label: 'Mañana', color: 'Mañana', cat: 'hosp', in: '06:00', out: '14:00' },
-            'Tarde': { label: 'Tarde', color: 'Tarde', cat: 'hosp', in: '14:00', out: '22:00' },
-            '16hrs': { label: '16hrs', color: '16hrs', cat: 'hosp', in: '06:00', out: '22:00' },
-            'CENA': { label: 'CENA', color: 'CENA', cat: 'sena', in: '05:00', out: '17:00' },
-            'L': { label: 'L', color: 'L', cat: 'none', in: '00:00', out: '00:00' },
-            'Vacaciones': { label: 'Vacaciones', color: 'Vacaciones', cat: 'none', in: '00:00', out: '00:00' }
+        // --- MOTOR DE DATOS ---
+        let state = JSON.parse(localStorage.getItem('shifter_v8')) || {
+            users: {
+                'Admin': { pin: '1234', data: {}, config: {
+                    'Mañana': { label: 'Mañana', cat: 'hosp', color: 'Mañana', in: '08:00', out: '14:00' },
+                    'Tarde': { label: 'Tarde', cat: 'hosp', color: 'Tarde', in: '14:00', out: '21:00' },
+                    'CENA': { label: 'CENA', cat: 'sena', color: 'CENA', in: '21:00', out: '07:00' },
+                    '16hrs': { label: '16hrs', cat: 'hosp', color: '16hrs', in: '07:00', out: '23:00' },
+                    'L': { label: 'L', cat: 'off', color: 'L', in: '00:00', out: '00:00' },
+                    'Vacaciones': { label: 'Vacaciones', cat: 'off', color: 'Vacaciones', in: '00:00', out: '00:00' }
+                }}
+            },
+            currentUser: 'Admin'
         };
 
-        let db = JSON.parse(localStorage.getItem('sh_data_v7')) || {};
-        let current = new Date();
-        let activeKey = "", mode = "simple", selS = "Mañana", selT = "Mañana", selB = "Tarde";
+        let currentMode = 'view'; // view | edit
+        let activeDate = new Date();
+        let selectedShift = 'L';
 
-        function initDateSelectors() {
+        // --- INICIALIZACIÓN ---
+        function init() {
+            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
             const mSel = document.getElementById('selectMonth');
             const ySel = document.getElementById('selectYear');
-            const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-            mSel.innerHTML = ''; ySel.innerHTML = '';
-            months.forEach((m, i) => mSel.innerHTML += `<option value="${i}">${m}</option>`);
-            for(let y=2024; y<=2030; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
-            updateSelectors();
-        }
-
-        function updateSelectors() {
-            document.getElementById('selectMonth').value = current.getMonth();
-            document.getElementById('selectYear').value = current.getFullYear();
-        }
-
-        function jumpToDate() {
-            current.setMonth(document.getElementById('selectMonth').value);
-            current.setFullYear(document.getElementById('selectYear').value);
+            
+            mSel.innerHTML = months.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+            for(let y=2024; y<=2035; y++) ySel.innerHTML += `<option value="${y}">${y}</option>`;
+            
+            updateUserList();
             render();
         }
 
+        function updateUserList() {
+            const sel = document.getElementById('userSelect');
+            sel.innerHTML = Object.keys(state.users).map(u => `<option value="${u}" ${u===state.currentUser?'selected':''}>${u.toUpperCase()}</option>`).join('');
+        }
+
+        function switchUser() {
+            state.currentUser = document.getElementById('userSelect').value;
+            currentMode = 'view';
+            updateUIState();
+            render();
+        }
+
+        function updateUIState() {
+            const status = document.getElementById('editStatus');
+            const unlock = document.getElementById('unlockBtn');
+            if(currentMode === 'edit') {
+                status.innerText = "Modo Edición";
+                status.className = "text-[10px] text-emerald-400 font-bold uppercase tracking-widest";
+                unlock.innerText = "🔒 Bloquear";
+            } else {
+                status.innerText = "Modo Vista";
+                status.className = "text-[10px] text-gray-400 font-bold uppercase tracking-widest";
+                unlock.innerText = "🔓 Editar";
+            }
+        }
+
+        function askPIN() {
+            if(currentMode === 'edit') {
+                currentMode = 'view';
+                updateUIState();
+                return;
+            }
+            const pin = prompt("Introduce el PIN de " + state.currentUser);
+            if(pin === state.users[state.currentUser].pin) {
+                currentMode = 'edit';
+                updateUIState();
+            } else {
+                alert("PIN Incorrecto");
+            }
+        }
+
+        // --- CALENDARIO ---
         function render() {
-            const grid = document.getElementById('calendar'); grid.innerHTML = '';
-            const y = current.getFullYear(), m = current.getMonth();
-            updateSelectors();
+            const grid = document.getElementById('calendar');
+            grid.innerHTML = '';
+            const y = activeDate.getFullYear(), m = activeDate.getMonth();
+            
+            document.getElementById('selectMonth').value = m;
+            document.getElementById('selectYear').value = y;
 
-            const start = new Date(y, m, 1).getDay();
-            const days = new Date(y, m + 1, 0).getDate();
+            const firstDay = new Date(y, m, 1).getDay();
+            const lastDate = new Date(y, m + 1, 0).getDate();
+            const prevLastDate = new Date(y, m, 0).getDate();
 
-            for(let i=0; i<start; i++) grid.innerHTML += `<div class="day-cell bg-gray-50/50"></div>`;
+            // Días mes anterior (Sombreados)
+            for(let i = firstDay; i > 0; i--) {
+                grid.innerHTML += `<div class="day-cell day-off-month">
+                    <span class="day-number">${prevLastDate - i + 1}</span>
+                </div>`;
+            }
 
-            for(let d=1; d<=days; d++) {
+            // Días mes actual
+            const userData = state.users[state.currentUser].data;
+            const config = state.users[state.currentUser].config;
+
+            for(let d = 1; d <= lastDate; d++) {
                 const key = `${y}-${m+1}-${d}`;
-                const info = db[key] || { mode: 'simple', s: 'L' };
+                const dayData = userData[key] || { s: 'L' };
                 const cell = document.createElement('div');
-                cell.className = 'day-cell';
+                cell.className = `day-cell bg-${config[dayData.s].color}`;
+                cell.innerHTML = `<span class="day-number" style="color:#000">${d}</span>
+                                 <div class="shift-label">${dayData.s === 'L' ? 'L' : config[dayData.s].label}</div>`;
                 
-                if(info.mode === 'mixto') {
-                    cell.innerHTML = `
-                        <div class="shift-label bg-${SHIFTS[info.t].color}">${SHIFTS[info.t].label}</div>
-                        <div class="shift-label bg-${SHIFTS[info.b].color}">${SHIFTS[info.b].label}</div>`;
-                } else {
-                    const label = info.s === 'L' ? 'L' : SHIFTS[info.s].label;
-                    cell.innerHTML = `<div class="shift-label bg-${SHIFTS[info.s].color}">${label}</div>`;
-                }
-                cell.innerHTML += `<span class="day-number">${d}</span>`;
-                if(info.n) cell.innerHTML += `<div class="note-text">${info.n}</div>`;
-                cell.onclick = () => open(key, info);
+                if(dayData.n) cell.innerHTML += `<div class="note-text">${dayData.n}</div>`;
+                
+                cell.onclick = () => openDay(key, dayData);
                 grid.appendChild(cell);
             }
+
+            // Días mes siguiente (Relleno)
+            const totalCells = firstDay + lastDate;
+            const extra = 42 - totalCells;
+            for(let i = 1; i <= extra; i++) {
+                grid.innerHTML += `<div class="day-cell day-off-month">
+                    <span class="day-number">${i}</span>
+                </div>`;
+            }
+
             calcSummary();
         }
 
-        function open(key, info) {
+        function openDay(key, data) {
+            if(currentMode !== 'edit') {
+                alert("Debes desbloquear la edición con el PIN.");
+                return;
+            }
             activeKey = key;
-            setMode(info.mode || 'simple');
-            selS = info.s || 'Mañana'; selT = info.t || 'Mañana'; selB = info.b || 'Tarde';
-            document.getElementById('tIn').value = info.tIn || SHIFTS[selS].in;
-            document.getElementById('tOut').value = info.tOut || SHIFTS[selS].out;
-            document.getElementById('tHrs').value = info.h || 0;
-            document.getElementById('nota').value = info.n || '';
-            refreshBtns();
+            const config = state.users[state.currentUser].config;
+            const grid = document.getElementById('shiftGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(config).forEach(k => {
+                const b = document.createElement('div');
+                b.className = `p-3 rounded-xl text-[9px] font-black text-center cursor-pointer border-2 bg-${config[k].color} ${data.s===k?'border-blue-600':'border-transparent'}`;
+                b.innerText = config[k].label;
+                b.onclick = () => selectShift(k);
+                grid.appendChild(b);
+            });
+
+            document.getElementById('modalHeader').innerText = "EDITAR " + key;
+            document.getElementById('tIn').value = data.in || config[data.s].in;
+            document.getElementById('tOut').value = data.out || config[data.s].out;
+            document.getElementById('tHrs').value = data.h || 0;
+            document.getElementById('nota').value = data.n || '';
+            selectedShift = data.s;
             document.getElementById('modal').classList.add('active');
+        }
+
+        function selectShift(k) {
+            selectedShift = k;
+            const conf = state.users[state.currentUser].config[k];
+            document.getElementById('tIn').value = conf.in;
+            document.getElementById('tOut').value = conf.out;
+            autoCalc();
+            // Refrescar bordes
+            const btns = document.getElementById('shiftGrid').children;
+            const keys = Object.keys(state.users[state.currentUser].config);
+            keys.forEach((key, i) => {
+                btns[i].classList.toggle('border-blue-600', key === k);
+                btns[i].classList.toggle('border-transparent', key !== k);
+            });
         }
 
         function autoCalc() {
             const start = document.getElementById('tIn').value;
             const end = document.getElementById('tOut').value;
-            if(!start || !end) return;
             let [h1, m1] = start.split(':').map(Number);
             let [h2, m2] = end.split(':').map(Number);
             let diff = (h2 + m2/60) - (h1 + m1/60);
@@ -220,109 +306,80 @@
             document.getElementById('tHrs').value = diff.toFixed(1);
         }
 
-        function setMode(m) {
-            mode = m;
-            document.getElementById('m-s').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='simple'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
-            document.getElementById('m-m').className = `flex-1 py-3 rounded-xl font-black text-[11px] uppercase ${m==='mixto'?'bg-white shadow-md text-blue-600':'text-gray-400'}`;
-            document.getElementById('sec-simple').classList.toggle('hidden', m!=='simple');
-            document.getElementById('sec-mixto').classList.toggle('hidden', m!=='mixto');
-        }
-
-        function refreshBtns() {
-            const btn = (id, cur, setter) => {
-                const el = document.getElementById(id); el.innerHTML = '';
-                Object.keys(SHIFTS).forEach(k => {
-                    const b = document.createElement('div');
-                    b.className = `p-3 rounded-xl text-[10px] font-black text-center cursor-pointer border-2 bg-${SHIFTS[k].color} ${cur===k?'border-blue-600 scale-105 shadow-sm':'border-transparent opacity-80'}`;
-                    b.innerText = SHIFTS[k].label;
-                    b.onclick = () => { 
-                        setter(k); 
-                        document.getElementById('tIn').value = SHIFTS[k].in; 
-                        document.getElementById('tOut').value = SHIFTS[k].out;
-                        autoCalc(); refreshBtns(); 
-                    };
-                    el.appendChild(b);
-                });
-            };
-            btn('sec-simple', selS, (v) => selS = v);
-            btn('mix-t', selT, (v) => selT = v);
-            btn('mix-b', selB, (v) => selB = v);
-        }
-
-        function renderSettings() {
-            const container = document.getElementById('settings-container');
-            container.innerHTML = '';
-            Object.keys(SHIFTS).forEach(id => {
-                if(id === 'L') return;
-                container.innerHTML += `
-                    <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                        <div class="w-10 h-10 rounded-full bg-${SHIFTS[id].color} border-2 border-white shadow-sm"></div>
-                        <div class="flex-1">
-                            <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre del Turno</p>
-                            <input id="set-${id}" type="text" value="${SHIFTS[id].label}" class="w-full bg-white border-gray-200">
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function saveShiftNames() {
-            Object.keys(SHIFTS).forEach(id => {
-                const input = document.getElementById('set-' + id);
-                if(input) SHIFTS[id].label = input.value;
-            });
-            localStorage.setItem('sh_conf_v7', JSON.stringify(SHIFTS));
-            render();
-            showView('calendar');
-        }
-
-        function save() {
-            db[activeKey] = { 
-                mode, s: selS, t: selT, b: selB, 
-                tIn: document.getElementById('tIn').value,
-                tOut: document.getElementById('tOut').value,
+        function saveDay() {
+            state.users[state.currentUser].data[activeKey] = {
+                s: selectedShift,
+                in: document.getElementById('tIn').value,
+                out: document.getElementById('tOut').value,
                 h: parseFloat(document.getElementById('tHrs').value),
-                n: document.getElementById('nota').value 
+                n: document.getElementById('nota').value
             };
-            localStorage.setItem('sh_data_v7', JSON.stringify(db));
-            render(); closeModal();
+            saveToStorage();
+            render();
+            closeModal();
         }
 
         function calcSummary() {
-            let h = 0, s = 0;
-            const y = current.getFullYear(), m = current.getMonth();
-            Object.keys(db).forEach(k => {
-                if(k.startsWith(`${y}-${m+1}-`)) {
-                    const d = db[k];
-                    if(d.mode === 'mixto') {
-                        if(SHIFTS[d.t].cat === 'hosp') h += 8;
-                        if(SHIFTS[d.b].cat === 'hosp') h += 8;
-                        if(SHIFTS[d.t].cat === 'sena' || SHIFTS[d.b].cat === 'sena') s += d.h;
-                    } else {
-                        if(SHIFTS[d.s].cat === 'hosp') h += d.h;
-                        if(SHIFTS[d.s].cat === 'sena') s += d.h;
-                    }
+            let hosp = 0, cena = 0, off = 0;
+            const y = activeDate.getFullYear(), m = activeDate.getMonth() + 1;
+            const data = state.users[state.currentUser].data;
+            const config = state.users[state.currentUser].config;
+
+            Object.keys(data).forEach(k => {
+                if(k.startsWith(`${y}-${m}-`)) {
+                    const d = data[k];
+                    const cat = config[d.s].cat;
+                    if(cat === 'hosp') hosp += d.h;
+                    if(cat === 'sena') cena += d.h;
+                    if(cat === 'off') off += 1;
                 }
             });
-            document.getElementById('hrs-hosp').innerText = h.toFixed(1) + " HRS";
-            document.getElementById('hrs-sena').innerText = s.toFixed(1) + " HRS";
+            document.getElementById('res-hosp').innerText = hosp.toFixed(1) + " HRS";
+            document.getElementById('res-cena').innerText = cena.toFixed(1) + " HRS";
+            document.getElementById('res-off').innerText = off;
         }
 
+        // --- USUARIOS ---
+        function openUserModal() { document.getElementById('userModal').classList.add('active'); }
+        function closeUserModal() { document.getElementById('userModal').classList.remove('active'); }
+
+        function createUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            const pin = document.getElementById('newUserPIN').value;
+            if(!name || pin.length < 4) return alert("Datos incompletos");
+            
+            state.users[name] = {
+                pin: pin,
+                data: {},
+                config: JSON.parse(JSON.stringify(state.users['Admin'].config)) // Copia base
+            };
+            state.currentUser = name;
+            currentMode = 'edit';
+            saveToStorage();
+            updateUserList();
+            updateUIState();
+            render();
+            closeUserModal();
+        }
+
+        // --- UTILIDADES ---
+        function saveToStorage() { localStorage.setItem('shifter_v8', JSON.stringify(state)); }
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+        function changeMonth(v) { activeDate.setMonth(activeDate.getMonth() + v); render(); }
+        function jumpToDate() {
+            activeDate.setMonth(document.getElementById('selectMonth').value);
+            activeDate.setFullYear(document.getElementById('selectYear').value);
+            render();
+        }
         function showView(v) {
             ['calendar','summary','settings'].forEach(id => {
                 document.getElementById(id+'-view').classList.toggle('view-active', id===v);
+                document.getElementById('tab-'+id.slice(0,3)).classList.toggle('text-blue-600', id===v);
+                document.getElementById('tab-'+id.slice(0,3)).classList.toggle('border-blue-600', id===v);
             });
-            document.getElementById('nav-cal').classList.toggle('hidden', v!=='calendar');
-            document.getElementById('btn-cal').classList.toggle('tab-active', v==='calendar');
-            document.getElementById('btn-sum').classList.toggle('tab-active', v==='summary');
-            document.getElementById('btn-set').classList.toggle('text-blue-600', v==='settings');
-            if(v === 'settings') renderSettings();
         }
 
-        function closeModal() { document.getElementById('modal').classList.remove('active'); }
-        function changeMonth(v) { current.setMonth(current.getMonth() + v); render(); }
-        
-        initDateSelectors();
-        render();
+        init();
     </script>
 </body>
 </html>
