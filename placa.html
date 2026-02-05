@@ -276,7 +276,7 @@
     .tab-btn {
       flex: 1;
       text-align: center;
-      padding: 14px 8px;
+      padding: 12px 8px;
       font-weight: 900;
       font-size: 11px;
       border-bottom: 3px solid transparent;
@@ -289,7 +289,7 @@
     
     @media (max-width: 640px) {
       .tab-btn {
-        padding: 12px 5px;
+        padding: 10px 5px;
         font-size: 10px;
       }
     }
@@ -390,7 +390,7 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       position: sticky;
-      top: 144px; /* Altura del header */
+      top: 124px; /* REDUCIDO de 144px a 124px */
       z-index: 30;
       scrollbar-width: none; /* Firefox */
     }
@@ -401,7 +401,7 @@
     
     @media (max-width: 768px) {
       .config-tabs-container {
-        top: 144px;
+        top: 124px; /* REDUCIDO de 144px a 124px */
       }
     }
     
@@ -506,7 +506,7 @@
       }
       
       .config-tabs-container {
-        top: 144px;
+        top: 124px; /* REDUCIDO de 144px a 124px */
       }
     }
     
@@ -574,43 +574,158 @@
       max-height: 20px;
     }
     
-    /* Mejoras para web app */
-    .mobile-action-buttons {
+    /* Menú hamburguesa para botones */
+    .hamburger-menu {
       display: none;
     }
     
     @media (max-width: 768px) {
-      .mobile-action-buttons {
-        display: flex;
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 100;
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .mobile-action-button {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
+      .hamburger-menu {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      
+      .hamburger-menu span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: white;
+        position: relative;
+        transition: all 0.3s;
+      }
+      
+      .hamburger-menu span::before,
+      .hamburger-menu span::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 2px;
+        background: white;
+        left: 0;
+        transition: all 0.3s;
+      }
+      
+      .hamburger-menu span::before {
+        top: -6px;
+      }
+      
+      .hamburger-menu span::after {
+        top: 6px;
+      }
+      
+      .hamburger-menu.active span {
+        background: transparent;
+      }
+      
+      .hamburger-menu.active span::before {
+        transform: rotate(45deg);
+        top: 0;
+      }
+      
+      .hamburger-menu.active span::after {
+        transform: rotate(-45deg);
+        top: 0;
+      }
+      
+      /* Panel de botones desplegable */
+      .mobile-buttons-panel {
+        position: fixed;
+        top: 0;
+        right: -300px;
+        width: 280px;
+        height: 100vh;
+        background: #1e293b;
+        z-index: 2000;
+        transition: right 0.3s ease;
+        padding: 80px 20px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
+      }
+      
+      .mobile-buttons-panel.active {
+        right: 0;
+      }
+      
+      .mobile-buttons-panel button {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 16px;
+        border-radius: 12px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      
+      .mobile-buttons-panel .panel-header {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .mobile-buttons-panel .panel-header h3 {
+        color: white;
+        font-size: 18px;
+        font-weight: 900;
+      }
+      
+      .mobile-buttons-panel .close-panel {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: white;
+        font-size: 24px;
         cursor: pointer;
       }
       
-      .mobile-action-button.primary {
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        color: white;
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1999;
+        backdrop-filter: blur(3px);
       }
       
-      .mobile-action-button.secondary {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+      .overlay.active {
+        display: block;
+      }
+      
+      /* Ocultar botones normales en móviles */
+      .top-bar-buttons {
+        display: none;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .mobile-buttons-panel,
+      .hamburger-menu,
+      .overlay {
+        display: none !important;
+      }
+      
+      .top-bar-buttons {
+        display: flex;
       }
     }
     
@@ -634,55 +749,109 @@
 </head>
 
 <body class="bg-gray-100">
-<!-- Top bar - Mejorado para móviles -->
+<!-- Overlay para menú móvil -->
+<div class="overlay" onclick="closeMobilePanel()"></div>
+
+<!-- Panel de botones móvil -->
+<div class="mobile-buttons-panel" id="mobileButtonsPanel">
+  <div class="panel-header">
+    <h3>Acciones</h3>
+    <div class="close-panel" onclick="closeMobilePanel()">×</div>
+  </div>
+  
+  <button onclick="openProfilesModal(); closeMobilePanel()" class="bg-white/15 hover:bg-white/25 text-white">
+    👤 Perfiles
+  </button>
+  
+  <button onclick="openImportModal(); closeMobilePanel()" class="bg-sky-600 hover:bg-sky-700 text-white">
+    📥 Importar
+  </button>
+  
+  <button onclick="showExportModal(); closeMobilePanel()" class="bg-white/15 hover:bg-white/25 text-white">
+    📋 Exportar
+  </button>
+  
+  <button id="mobileUnlockBtn" onclick="toggleEditMode(); closeMobilePanel()" class="bg-emerald-600 hover:bg-emerald-700 text-white">
+    🔒 Bloquear
+  </button>
+  
+  <button onclick="showView('summary'); closeMobilePanel()" class="bg-white/10 hover:bg-white/20 text-white">
+    📊 Resumen
+  </button>
+  
+  <button onclick="showView('calendar'); closeMobilePanel()" class="bg-white/10 hover:bg-white/20 text-white">
+    📅 Calendario
+  </button>
+  
+  <button onclick="showView('settings'); closeMobilePanel()" class="bg-white/10 hover:bg-white/20 text-white">
+    ⚙️ Ajustes
+  </button>
+  
+  <button onclick="goToday(); closeMobilePanel()" class="bg-white/20 hover:bg-white/30 text-white">
+    🏠 Hoy
+  </button>
+</div>
+
+<!-- Top bar - COMPACTADO -->
 <div class="bg-[#1e293b] text-white p-3 md:p-4 sticky top-0 z-50 shadow-lg">
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3 md:mb-4">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-2 md:mb-3"> <!-- REDUCIDO mb-3 a mb-2 -->
     <div class="flex items-center gap-3 w-full md:w-auto">
-      <div class="w-10 h-10 md:w-8 md:h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0">
-        <span id="userInitial" class="text-lg md:text-sm">A</span>
+      <div class="w-8 h-8 md:w-8 md:h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0">
+        <span id="userInitial" class="text-sm">A</span>
       </div>
       <div class="flex-1 min-w-0">
         <div class="flex flex-col md:flex-row md:items-center gap-2">
-          <select id="userSelect" onchange="switchUser()" class="w-full md:w-auto bg-white/15 text-white border-white/25 rounded-xl px-4 py-3 md:px-3 md:py-2 text-[14px] md:text-[11px] font-bold"></select>
-          <button onclick="openProfilesModal()" class="bg-white/15 hover:bg-white/25 px-4 py-3 md:px-3 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors whitespace-nowrap">👤 Perfiles</button>
+          <select id="userSelect" onchange="switchUser()" class="w-full md:w-auto bg-white/15 text-white border-white/25 rounded-xl px-3 py-2 text-[11px] font-bold"></select>
+          <!-- Menú hamburguesa para móviles -->
+          <div class="hamburger-menu" onclick="toggleMobilePanel()">
+            <span></span>
+          </div>
         </div>
-        <p id="editStatus" class="text-[12px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Modo Vista</p>
+        <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Modo Vista</p>
       </div>
     </div>
-    <div class="flex gap-2 w-full md:w-auto justify-end">
-      <button onclick="openImportModal()" class="bg-sky-600 hover:bg-sky-700 px-4 py-3 md:px-3 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">📥 Importar</button>
-      <button onclick="showExportModal()" class="bg-white/15 hover:bg-white/25 px-4 py-3 md:px-3 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">📋 Exportar</button>
-      <button id="unlockBtn" onclick="toggleEditMode()" class="bg-emerald-600 hover:bg-emerald-700 px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">🔒 Bloquear</button>
+    
+    <!-- Botones para desktop - ocultos en móviles -->
+    <div class="top-bar-buttons flex gap-2 w-full md:w-auto justify-end">
+      <button onclick="openImportModal()" class="bg-sky-600 hover:bg-sky-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">📥 Importar</button>
+      <button onclick="showExportModal()" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">📋 Exportar</button>
+      <button id="unlockBtn" onclick="toggleEditMode()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors whitespace-nowrap flex-1 md:flex-none">🔒 Bloquear</button>
     </div>
   </div>
 
-  <!-- Month/year - Mejorado para móviles -->
-  <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-3 md:p-4 shadow-inner">
-    <button onclick="changeMonth(-1)" class="p-3 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-      <span class="text-2xl md:text-xl font-bold">‹</span>
+  <!-- Month/year - COMPACTADO -->
+  <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-xl p-2 md:p-3 shadow-inner"> <!-- REDUCIDO rounded-2xl a rounded-xl, p-3 a p-2 -->
+    <button onclick="changeMonth(-1)" class="p-2 md:p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"> <!-- REDUCIDO p-3 a p-2 -->
+      <span class="text-xl md:text-xl font-bold">‹</span>
     </button>
 
-    <div class="flex flex-col items-center flex-1 mx-3 md:mx-4">
-      <div id="currentMonthDisplay" class="text-xl md:text-xl font-black text-white text-center mb-2 md:mb-1">Febrero 2026</div>
-      <div class="flex gap-3 md:gap-3 items-center opacity-90">
-        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-base md:text-sm font-bold text-white text-center appearance-none cursor-pointer w-32 md:w-24"></select>
-        <span class="text-white font-bold">/</span>
-        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-base md:text-sm font-bold text-white text-center appearance-none cursor-pointer w-24 md:w-20"></select>
+    <div class="flex flex-col items-center flex-1 mx-2 md:mx-3">
+      <div id="currentMonthDisplay" class="text-base md:text-lg font-black text-white text-center mb-1"> <!-- REDUCIDO text-lg a text-base -->
+        Febrero 2026
       </div>
-      <div class="flex gap-3 md:gap-2 mt-3 md:mt-2">
-        <button onclick="goToday()" class="px-4 py-2 md:px-3 md:py-1 bg-white/20 hover:bg-white/30 rounded-full text-[12px] md:text-[10px] font-black uppercase transition-colors">Hoy</button>
-        <button onclick="showView('summary')" class="px-4 py-2 md:px-3 md:py-1 bg-white/10 hover:bg-white/20 rounded-full text-[12px] md:text-[10px] font-black uppercase transition-colors hidden md:block">Resumen</button>
+      <div class="flex gap-2 md:gap-2 items-center opacity-90">
+        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-xs md:text-sm font-bold text-white text-center appearance-none cursor-pointer w-20 md:w-24"></select> <!-- REDUCIDO w-24 a w-20 -->
+        <span class="text-white font-bold">/</span>
+        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-xs md:text-sm font-bold text-white text-center appearance-none cursor-pointer w-16 md:w-20"></select> <!-- REDUCIDO w-20 a w-16 -->
+      </div>
+      <div class="flex gap-1 mt-2"> <!-- REDUCIDO mt-3 a mt-2 -->
+        <button onclick="goToday()" class="px-2 py-1 md:px-3 md:py-1 bg-white/20 hover:bg-white/30 rounded-full text-[9px] md:text-[10px] font-black uppercase transition-colors"> <!-- REDUCIDO px-3 a px-2 -->
+          Hoy
+        </button>
+        <button onclick="showView('summary')" class="px-2 py-1 md:px-3 md:py-1 bg-white/10 hover:bg-white/20 rounded-full text-[9px] md:text-[10px] font-black uppercase transition-colors hidden md:block"> <!-- REDUCIDO px-3 a px-2 -->
+          Resumen
+        </button>
       </div>
     </div>
 
-    <button onclick="changeMonth(1)" class="p-3 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-      <span class="text-2xl md:text-xl font-bold">›</span>
+    <button onclick="changeMonth(1)" class="p-2 md:p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"> <!-- REDUCIDO p-3 a p-2 -->
+      <span class="text-xl md:text-xl font-bold">›</span>
     </button>
   </div>
 </div>
 
-<!-- Tabs - Mejorados para móviles -->
-<div class="flex bg-white shadow-sm sticky top-[160px] md:top-[144px] z-40 border-b">
+<!-- Tabs - POSICIÓN AJUSTADA (top más bajo debido a header más compacto) -->
+<div class="flex bg-white shadow-sm sticky top-[116px] md:top-[124px] z-40 border-b"> <!-- AJUSTADO top de [144px] a [116px] -->
   <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn tab-active">📅 Calendario</button>
   <button onclick="showView('summary')" id="tab-summary" class="tab-btn">📊 Resumen</button>
   <button onclick="showView('settings')" id="tab-settings" class="tab-btn">⚙️ Ajustes</button>
@@ -690,7 +859,7 @@
 
 <!-- Calendar -->
 <div id="view-calendar" class="view-section view-active">
-  <div class="grid grid-cols-7 text-center text-[12px] md:text-[11px] font-black py-3 md:py-3 bg-gradient-to-r from-blue-50 to-gray-50 text-gray-600 border-b">
+  <div class="grid grid-cols-7 text-center text-[11px] font-black py-2 md:py-3 bg-gradient-to-r from-blue-50 to-gray-50 text-gray-600 border-b"> <!-- REDUCIDO py-3 a py-2 -->
     <div class="text-blue-600 font-black">LUN</div>
     <div>MAR</div>
     <div>MIÉ</div>
@@ -702,41 +871,41 @@
   <div id="calendar" class="calendar-grid"></div>
 </div>
 
-<!-- Summary - Mejorado para móviles -->
+<!-- Summary - COMPACTADO -->
 <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen scrollable-content">
   <div class="space-y-4 md:space-y-6">
-    <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4">
+    <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"> <!-- REDUCIDO gap-4 a gap-3 -->
       <!-- Las categorías se generarán dinámicamente aquí -->
     </div>
 
-    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-5 md:p-6 rounded-3xl text-white text-center shadow-xl">
-      <p class="text-[13px] md:text-xs font-black uppercase opacity-90 mb-3 md:mb-2">Días de Descanso</p>
-      <h2 id="total-off" class="text-5xl md:text-4xl font-black mb-4 md:mb-3">0</h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2 text-[12px] md:text-[10px] font-black">
-        <div class="bg-white/20 p-3 md:p-2 rounded-xl"><div>Libres</div><div id="free-days" class="text-xl md:text-lg font-black">0</div></div>
-        <div class="bg-white/20 p-3 md:p-2 rounded-xl"><div>Vacaciones</div><div id="vac-days" class="text-xl md:text-lg font-black">0</div></div>
-        <div class="bg-white/20 p-3 md:p-2 rounded-xl"><div>Fines</div><div id="weekend-days" class="text-xl md:text-lg font-black">0</div></div>
-        <div class="bg-white/20 p-3 md:p-2 rounded-xl"><div>Asuetos Trab.</div><div id="holiday-worked" class="text-xl md:text-lg font-black">0</div></div>
+    <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 md:p-5 rounded-3xl text-white text-center shadow-xl"> <!-- REDUCIDO p-5 a p-4 -->
+      <p class="text-xs font-black uppercase opacity-90 mb-2">Días de Descanso</p>
+      <h2 id="total-off" class="text-4xl md:text-4xl font-black mb-3">0</h2> <!-- REDUCIDO text-5xl a text-4xl -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] font-black">
+        <div class="bg-white/20 p-2 rounded-xl"><div>Libres</div><div id="free-days" class="text-lg font-black">0</div></div> <!-- REDUCIDO p-3 a p-2 -->
+        <div class="bg-white/20 p-2 rounded-xl"><div>Vacaciones</div><div id="vac-days" class="text-lg font-black">0</div></div>
+        <div class="bg-white/20 p-2 rounded-xl"><div>Fines</div><div id="weekend-days" class="text-lg font-black">0</div></div>
+        <div class="bg-white/20 p-2 rounded-xl"><div>Asuetos Trab.</div><div id="holiday-worked" class="text-lg font-black">0</div></div>
       </div>
-      <p class="text-[12px] md:text-[10px] mt-4 md:mt-3 font-bold opacity-90">
+      <p class="text-[10px] mt-3 font-bold opacity-90">
         * Asueto laborado solo cuenta si aplica a la localidad del perfil.
       </p>
     </div>
 
-    <div class="bg-white p-5 md:p-4 rounded-3xl shadow-sm">
-      <h3 class="text-[14px] md:text-[12px] font-black text-gray-600 uppercase mb-4 md:mb-3">📈 Resumen del Mes</h3>
-      <div class="space-y-3 md:space-y-2">
-        <div class="flex justify-between"><span class="text-[13px] md:text-[11px] font-bold text-gray-500">Localidad perfil:</span><span id="profile-loc" class="font-black text-gray-900">San Salvador</span></div>
-        <div class="flex justify-between"><span class="text-[13px] md:text-[11px] font-bold text-gray-500">Días trabajados:</span><span id="worked-days" class="font-black text-gray-900">0</span></div>
-        <div class="flex justify-between"><span class="text-[13px] md:text-[11px] font-bold text-gray-500">Promedio diario:</span><span id="avg-hours" class="font-black text-gray-900">0.0h</span></div>
-        <div class="flex justify-between"><span class="text-[13px] md:text-[11px] font-bold text-gray-500">Total días mes:</span><span id="total-days" class="font-black text-gray-900">30</span></div>
-        <div class="flex justify-between"><span class="text-[13px] md:text-[11px] font-bold text-gray-500">Asuetos en mes:</span><span id="total-holidays" class="font-black text-red-600">0</span></div>
+    <div class="bg-white p-4 rounded-3xl shadow-sm"> <!-- REDUCIDO p-5 a p-4 -->
+      <h3 class="text-[12px] font-black text-gray-600 uppercase mb-3">📈 Resumen del Mes</h3>
+      <div class="space-y-2">
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Localidad perfil:</span><span id="profile-loc" class="font-black text-gray-900">San Salvador</span></div>
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Días trabajados:</span><span id="worked-days" class="font-black text-gray-900">0</span></div>
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Promedio diario:</span><span id="avg-hours" class="font-black text-gray-900">0.0h</span></div>
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Total días mes:</span><span id="total-days" class="font-black text-gray-900">30</span></div>
+        <div class="flex justify-between"><span class="text-[11px] font-bold text-gray-500">Asuetos en mes:</span><span id="total-holidays" class="font-black text-red-600">0</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Settings - Mejorado para móviles -->
+<!-- Settings - AJUSTADO para nueva altura de header -->
 <div id="view-settings" class="view-section bg-white min-h-screen">
   <div class="config-tabs-container">
     <button onclick="showConfigTab('turnos')" id="config-turnos" class="config-tab active whitespace-nowrap">🎨 Turnos</button>
@@ -748,44 +917,45 @@
   </div>
 
   <div id="config-content" class="p-4 md:p-6 scrollable-content">
+    <!-- Contenido de configuración (igual que antes) -->
     <!-- Turnos -->
     <div id="tab-turnos" class="config-tab-content block">
-      <div class="flex items-center justify-between mb-4 md:mb-3">
-        <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase">🎨 Configurar Turnos</h3>
-        <button onclick="saveShiftSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase">
-          💾 Guardar
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-[14px] font-black text-gray-600 uppercase">🎨 Configurar Turnos</h3>
+        <button onclick="saveShiftSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+          💾 Guardar cambios
         </button>
       </div>
 
-      <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 md:p-3 text-[13px] md:text-[11px] font-bold text-blue-900 mb-5 md:mb-4">
+      <div class="bg-blue-50 border border-blue-100 rounded-2xl p-3 text-[11px] font-bold text-blue-900 mb-4">
         Al guardar: actualiza turnos y puede propagar horas/comentarios en el calendario del perfil.
-        <div class="mt-3 md:mt-2 flex items-center gap-2">
-          <input type="checkbox" id="propagateShiftEdits" checked class="w-5 h-5">
-          <label for="propagateShiftEdits" class="font-black text-[12px] md:text-[10px] uppercase text-blue-900">Propagar a calendario (este perfil)</label>
+        <div class="mt-2 flex items-center gap-2">
+          <input type="checkbox" id="propagateShiftEdits" checked>
+          <label for="propagateShiftEdits" class="font-black text-[10px] uppercase text-blue-900">Propagar a calendario (este perfil)</label>
         </div>
       </div>
 
-      <div id="settings-container" class="space-y-4 md:space-y-3"></div>
+      <div id="settings-container" class="space-y-3"></div>
     </div>
 
     <!-- Nuevo turno -->
     <div id="tab-nuevo" class="config-tab-content hidden">
-      <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase mb-5 md:mb-4">➕ Agregar Nuevo Turno</h3>
-      <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-5 md:p-4 rounded-3xl border border-amber-100 mb-5 md:mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 mb-4 md:mb-3">
+      <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">➕ Agregar Nuevo Turno</h3>
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-3xl border border-amber-100 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Nombre del Turno</label>
-            <input type="text" id="newShiftName" placeholder="Ej: Noche" class="w-full bg-white border-amber-200 focus:border-amber-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre del Turno</label>
+            <input type="text" id="newShiftName" placeholder="Ej: Noche" class="w-full bg-white border-amber-200 focus:border-amber-400">
           </div>
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Categoría</label>
-            <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400 p-3 md:p-3"></select>
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Categoría</label>
+            <select id="newShiftCat" class="w-full bg-white border-amber-200 focus:border-amber-400"></select>
           </div>
         </div>
 
-        <div class="mb-5 md:mb-4">
-          <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-3 md:mb-2">Color</label>
-          <div class="grid grid-cols-5 md:grid-cols-6 gap-3 md:gap-2 p-4 md:p-3 bg-white rounded-xl">
+        <div class="mb-4">
+          <label class="text-[11px] font-bold text-gray-600 block mb-2">Color</label>
+          <div class="grid grid-cols-5 md:grid-cols-6 gap-2 p-3 bg-white rounded-xl">
             <div class="color-option bg-Mañana" onclick="selectColor('Mañana', event)"></div>
             <div class="color-option bg-Tarde" onclick="selectColor('Tarde', event)"></div>
             <div class="color-option bg-CENA" onclick="selectColor('CENA', event)"></div>
@@ -800,18 +970,18 @@
           <input type="hidden" id="newShiftColor" value="Mañana">
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 mb-4 md:mb-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Hora Entrada</label>
-            <input type="time" id="newShiftIn" class="w-full bg-white border-amber-200 focus:border-amber-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Entrada</label>
+            <input type="time" id="newShiftIn" class="w-full bg-white border-amber-200 focus:border-amber-400">
           </div>
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Hora Salida</label>
-            <input type="time" id="newShiftOut" class="w-full bg-white border-amber-200 focus:border-amber-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Hora Salida</label>
+            <input type="time" id="newShiftOut" class="w-full bg-white border-amber-200 focus:border-amber-400">
           </div>
         </div>
 
-        <button onclick="addNewShift()" class="w-full p-5 md:p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-black uppercase text-[13px] md:text-[11px] hover:from-amber-600 hover:to-orange-600">
+        <button onclick="addNewShift()" class="w-full p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-amber-600 hover:to-orange-600">
           ➕ Agregar Turno
         </button>
       </div>
@@ -819,23 +989,23 @@
 
     <!-- Categorías -->
     <div id="tab-categorias" class="config-tab-content hidden">
-      <div class="flex items-center justify-between mb-4 md:mb-3">
-        <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase">🏷️ Categorías</h3>
-        <button onclick="saveCategories()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase">
-          💾 Guardar
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-[14px] font-black text-gray-600 uppercase">🏷️ Categorías</h3>
+        <button onclick="saveCategories()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+          💾 Guardar cambios
         </button>
       </div>
 
-      <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-5 md:p-4 rounded-3xl border border-green-100 mb-6 md:mb-5">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 mb-4 md:mb-3">Agregar Nueva Categoría</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 mb-4 md:mb-3">
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-3xl border border-green-100 mb-5">
+        <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nueva Categoría</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Nombre</label>
-            <input type="text" id="newCategoryName" placeholder="Ej: Guardia" class="w-full bg-white border-green-200 focus:border-green-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre</label>
+            <input type="text" id="newCategoryName" placeholder="Ej: Guardia" class="w-full bg-white border-green-200 focus:border-green-400">
           </div>
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Icono</label>
-            <select id="newCategoryIcon" class="w-full bg-white border-green-200 focus:border-green-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Icono</label>
+            <select id="newCategoryIcon" class="w-full bg-white border-green-200 focus:border-green-400">
               <option value="🏥">🏥</option><option value="🌙">🌙</option><option value="😴">😴</option><option value="📋">📋</option>
               <option value="🛡️">🛡️</option><option value="⭐">⭐</option><option value="🔧">🔧</option><option value="🚑">🚑</option>
               <option value="💊">💊</option><option value="🩺">🩺</option><option value="🏨">🏨</option><option value="📌">📌</option>
@@ -843,98 +1013,98 @@
             </select>
           </div>
         </div>
-        <button onclick="addNewCategory()" class="w-full p-5 md:p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black uppercase text-[13px] md:text-[11px] hover:from-green-600 hover:to-emerald-600">
+        <button onclick="addNewCategory()" class="w-full p-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-green-600 hover:to-emerald-600">
           ➕ Agregar Categoría
         </button>
       </div>
 
       <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 p-5 md:p-4 border-b">Categorías Existentes (editables)</h4>
+        <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Categorías Existentes (editables)</h4>
         <div id="categories-container" class="max-h-[420px] overflow-y-auto"></div>
       </div>
     </div>
 
     <!-- Localidades -->
     <div id="tab-localidades" class="config-tab-content hidden">
-      <div class="flex items-center justify-between mb-4 md:mb-3">
-        <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase">📍 Localidades</h3>
-        <button onclick="saveLocalities()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase">
-          💾 Guardar
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-[14px] font-black text-gray-600 uppercase">📍 Localidades</h3>
+        <button onclick="saveLocalities()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+          💾 Guardar cambios
         </button>
       </div>
 
-      <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-5 md:p-4 rounded-3xl border border-sky-100 mb-6 md:mb-5">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 mb-4 md:mb-3">Agregar Localidad</h4>
-        <div class="flex flex-col md:flex-row gap-4 md:gap-3">
-          <input type="text" id="newLocalityName" placeholder="Ej: Santa Ana" class="flex-1 bg-white border-sky-200 focus:border-sky-400 p-3 md:p-3">
-          <button onclick="addLocality()" class="px-6 py-4 md:px-5 md:py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black uppercase text-[13px] md:text-[11px] whitespace-nowrap">➕ Agregar</button>
+      <div class="bg-gradient-to-r from-sky-50 to-blue-50 p-4 rounded-3xl border border-sky-100 mb-5">
+        <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Localidad</h4>
+        <div class="flex flex-col md:flex-row gap-3">
+          <input type="text" id="newLocalityName" placeholder="Ej: Santa Ana" class="flex-1 bg-white border-sky-200 focus:border-sky-400">
+          <button onclick="addLocality()" class="px-5 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black uppercase text-[11px] whitespace-nowrap">➕ Agregar</button>
         </div>
-        <p class="text-[12px] md:text-[10px] mt-3 md:mt-2 font-bold text-gray-500">* "General" se reserva para asuetos válidos para todos.</p>
+        <p class="text-[10px] mt-2 font-bold text-gray-500">* "General" se reserva para asuetos válidos para todos.</p>
       </div>
 
       <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 p-5 md:p-4 border-b">Lista de Localidades (editables)</h4>
+        <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Lista de Localidades (editables)</h4>
         <div id="localities-container" class="max-h-[420px] overflow-y-auto"></div>
       </div>
     </div>
 
     <!-- Asuetos -->
     <div id="tab-asuetos" class="config-tab-content hidden">
-      <div class="flex items-center justify-between mb-4 md:mb-3">
-        <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase">🎉 Asuetos</h3>
-        <button onclick="saveHolidays()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase">
-          💾 Guardar
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-[14px] font-black text-gray-600 uppercase">🎉 Asuetos</h3>
+        <button onclick="saveHolidays()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
+          💾 Guardar cambios
         </button>
       </div>
 
-      <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-5 md:p-4 rounded-3xl border border-pink-100 mb-7 md:mb-6">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 mb-4 md:mb-3">Agregar Nuevo Asueto</h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-3 mb-4 md:mb-3">
+      <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-3xl border border-pink-100 mb-6">
+        <h4 class="text-[12px] font-black text-gray-600 mb-3">Agregar Nuevo Asueto</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
-            <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Fecha</label>
+            <input type="date" id="newHolidayDate" class="w-full bg-white border-pink-200 focus:border-pink-400">
           </div>
           <div class="md:col-span-2">
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Nombre</label>
-            <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" class="w-full bg-white border-pink-200 focus:border-pink-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Nombre</label>
+            <input type="text" id="newHolidayName" placeholder="Ej: Día de la Independencia" class="w-full bg-white border-pink-200 focus:border-pink-400">
           </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3 mb-4 md:mb-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
-            <select id="newHolidayLocation" class="w-full bg-white border-pink-200 focus:border-pink-400 p-3 md:p-3"></select>
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
+            <select id="newHolidayLocation" class="w-full bg-white border-pink-200 focus:border-pink-400"></select>
           </div>
-          <div class="bg-white rounded-2xl border border-pink-200 p-4 md:p-3 text-[12px] md:text-[10px] font-bold text-gray-600 flex items-center">
+          <div class="bg-white rounded-2xl border border-pink-200 p-3 text-[10px] font-bold text-gray-600 flex items-center">
             Si quieres asueto para todos: selecciona <span class="mx-1 font-black text-red-600">General</span>.
           </div>
         </div>
 
-        <button onclick="addNewHoliday()" class="w-full p-5 md:p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[13px] md:text-[11px] hover:from-pink-600 hover:to-rose-600">
+        <button onclick="addNewHoliday()" class="w-full p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black uppercase text-[11px] hover:from-pink-600 hover:to-rose-600">
           ➕ Agregar Asueto
         </button>
       </div>
 
       <div class="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-        <h4 class="text-[14px] md:text-[12px] font-black text-gray-600 p-5 md:p-4 border-b">Asuetos (editables)</h4>
+        <h4 class="text-[12px] font-black text-gray-600 p-4 border-b">Asuetos (editables)</h4>
         <div id="holidays-container" class="max-h-[420px] overflow-y-auto"></div>
       </div>
     </div>
 
     <!-- Seguridad -->
     <div id="tab-seguridad" class="config-tab-content hidden">
-      <h3 class="text-[16px] md:text-[14px] font-black text-gray-600 uppercase mb-5 md:mb-4">🔒 Seguridad (PIN del perfil actual)</h3>
-      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 md:p-4 rounded-3xl border border-blue-100">
-        <div class="space-y-4 md:space-y-3">
+      <h3 class="text-[14px] font-black text-gray-600 uppercase mb-4">🔒 Seguridad (PIN del perfil actual)</h3>
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-3xl border border-blue-100">
+        <div class="space-y-3">
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Cambiar PIN (4 dígitos)</label>
-            <input type="password" id="changePinInput" placeholder="Nuevo PIN" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Cambiar PIN (4 dígitos)</label>
+            <input type="password" id="changePinInput" placeholder="Nuevo PIN" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400">
           </div>
           <div>
-            <label class="text-[13px] md:text-[11px] font-bold text-gray-600 block mb-2">Confirmar PIN</label>
-            <input type="password" id="confirmPinInput" placeholder="Confirmar PIN" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400 p-3 md:p-3">
+            <label class="text-[11px] font-bold text-gray-600 block mb-2">Confirmar PIN</label>
+            <input type="password" id="confirmPinInput" placeholder="Confirmar PIN" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400">
           </div>
 
-          <button onclick="savePinOnly()" class="w-full mt-3 md:mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 md:p-4 rounded-3xl font-black uppercase shadow-xl hover:from-blue-700 hover:to-indigo-700">
+          <button onclick="savePinOnly()" class="w-full mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-3xl font-black uppercase shadow-xl hover:from-blue-700 hover:to-indigo-700">
             💾 Guardar PIN
           </button>
         </div>
@@ -942,17 +1112,17 @@
     </div>
   </div>
 
-  <div id="settings-locked" class="p-8 md:p-6 text-center hidden">
-    <div class="w-20 h-20 md:w-16 md:h-16 rounded-full bg-gray-100 mx-auto mb-6 md:mb-4 flex items-center justify-center">
-      <span class="text-3xl md:text-2xl">🔒</span>
+  <div id="settings-locked" class="p-6 md:p-8 text-center hidden">
+    <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-100 mx-auto mb-4 flex items-center justify-center">
+      <span class="text-2xl md:text-3xl">🔒</span>
     </div>
-    <h3 class="text-xl md:text-base font-black text-gray-600 mb-3 md:mb-2">Configuración Bloqueada</h3>
-    <p class="text-base md:text-sm text-gray-500 mb-8 md:mb-6">Activa el modo edición para acceder</p>
-    <button onclick="toggleEditMode()" class="px-8 py-4 md:px-6 md:py-3 bg-blue-600 text-white rounded-xl font-black text-lg md:text-base">🔓 Activar Edición</button>
+    <h3 class="text-base md:text-lg font-black text-gray-600 mb-2">Configuración Bloqueada</h3>
+    <p class="text-sm text-gray-500 mb-6">Activa el modo edición para acceder</p>
+    <button onclick="toggleEditMode()" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-black">🔓 Activar Edición</button>
   </div>
 </div>
 
-<!-- Modal día - Mejorado para móviles -->
+<!-- Modal día -->
 <div id="modal" class="modal">
   <div class="bg-white w-full max-w-md md:max-w-lg rounded-3xl md:rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 mx-2 max-h-[90vh] overflow-y-auto">
     <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-5 md:py-5 font-black text-base md:text-sm uppercase tracking-widest sticky top-0 z-10">
@@ -1063,7 +1233,7 @@
   </div>
 </div>
 
-<!-- Modal Import - Mejorado para móviles -->
+<!-- Modal Import -->
 <div id="importModal" class="modal">
   <div class="bg-white w-full max-w-2xl rounded-3xl md:rounded-[40px] p-5 md:p-6 lg:p-8 shadow-2xl mx-2 max-h-[90vh] overflow-y-auto">
     <div class="w-16 h-16 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 mx-auto mb-5 md:mb-4 flex items-center justify-center">
@@ -1137,7 +1307,7 @@
   </div>
 </div>
 
-<!-- Modal Export - Mejorado para móviles -->
+<!-- Modal Export -->
 <div id="exportModal" class="modal">
   <div class="bg-white w-full max-w-xl rounded-3xl md:rounded-[40px] p-5 md:p-6 lg:p-8 shadow-2xl mx-2 max-h-[90vh] overflow-y-auto">
     <div class="w-16 h-16 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 mx-auto mb-5 md:mb-4 flex items-center justify-center">
@@ -1191,7 +1361,7 @@
   </div>
 </div>
 
-<!-- Modal Profiles - Mejorado para móviles -->
+<!-- Modal Profiles -->
 <div id="profilesModal" class="modal">
   <div class="bg-white w-full max-w-3xl rounded-3xl md:rounded-[40px] p-5 md:p-6 lg:p-8 shadow-2xl mx-2 max-h-[90vh] overflow-y-auto">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-5 md:mb-4 gap-4 md:gap-3">
@@ -1229,17 +1399,46 @@
   </div>
 </div>
 
-<!-- Botones flotantes para móviles -->
-<div class="mobile-action-buttons">
-  <button onclick="toggleEditMode()" class="mobile-action-button primary" title="Alternar Edición">
-    🔓
-  </button>
-  <button onclick="showExportModal()" class="mobile-action-button secondary" title="Exportar">
-    📋
-  </button>
-</div>
-
 <script>
+// =========================================================
+// Funciones para el menú hamburguesa móvil
+// =========================================================
+
+function toggleMobilePanel() {
+  const panel = document.getElementById('mobileButtonsPanel');
+  const hamburger = document.querySelector('.hamburger-menu');
+  const overlay = document.querySelector('.overlay');
+  
+  panel.classList.toggle('active');
+  hamburger.classList.toggle('active');
+  overlay.classList.toggle('active');
+  
+  // Prevenir scroll del body cuando el panel está abierto
+  document.body.style.overflow = panel.classList.contains('active') ? 'hidden' : '';
+}
+
+function closeMobilePanel() {
+  const panel = document.getElementById('mobileButtonsPanel');
+  const hamburger = document.querySelector('.hamburger-menu');
+  const overlay = document.querySelector('.overlay');
+  
+  panel.classList.remove('active');
+  hamburger.classList.remove('active');
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Actualizar botón de bloqueo en el panel móvil
+function updateMobileEditButton() {
+  const mobileUnlockBtn = document.getElementById('mobileUnlockBtn');
+  const unlockBtn = document.getElementById('unlockBtn');
+  
+  if (mobileUnlockBtn && unlockBtn) {
+    mobileUnlockBtn.textContent = unlockBtn.textContent;
+    mobileUnlockBtn.className = unlockBtn.className.replace('top-bar-buttons ', '') + ' text-white';
+  }
+}
+
 // =========================================================
 // DB v23 - Versión completa y corregida
 // CON MODIFICACIÓN: Quitar leyenda de turnos en exportación
@@ -1522,12 +1721,25 @@ function init(){
   renderSummaryCategories();
   calcSummary();
   updateUIEditMode();
+  updateMobileEditButton(); // Actualizar botón móvil
   
   // Mostrar primera pestaña de configuración
   showConfigTab('turnos');
   
   // Configurar eventos táctiles mejorados
   setupTouchEvents();
+  
+  // Cerrar panel móvil al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('mobileButtonsPanel');
+    const hamburger = document.querySelector('.hamburger-menu');
+    
+    if (panel && panel.classList.contains('active') && 
+        !panel.contains(e.target) && 
+        !hamburger.contains(e.target)) {
+      closeMobilePanel();
+    }
+  });
 }
 
 function loadDefaultHolidays(){
@@ -1691,6 +1903,7 @@ function goToday(){
   render();
   renderSummaryCategories();
   calcSummary();
+  closeMobilePanel(); // Cerrar panel si está abierto
 }
 
 // =========================================================
@@ -1727,6 +1940,8 @@ function showView(v){
   if(window.innerWidth < 768) {
     window.scrollTo(0, 0);
   }
+  
+  closeMobilePanel(); // Cerrar panel móvil al cambiar vista
 }
 
 function showConfigTab(tab){
@@ -1787,17 +2002,20 @@ function updateUIEditMode(){
     configContent.classList.remove('hidden');
     lockedMessage.classList.add('hidden');
     editStatus.textContent = "MODO EDICIÓN ACTIVADO";
-    editStatus.className = "text-[12px] md:text-[10px] font-black uppercase text-emerald-400";
+    editStatus.className = "text-[10px] font-black uppercase text-emerald-400";
     unlockBtn.textContent = "🔒 Bloquear";
-    unlockBtn.className = "bg-emerald-600 hover:bg-emerald-700 px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors";
+    unlockBtn.className = "bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
   } else {
     configContent.classList.add('hidden');
     lockedMessage.classList.remove('hidden');
     editStatus.textContent = "MODO VISTA";
-    editStatus.className = "text-[12px] md:text-[10px] font-black uppercase text-gray-400";
+    editStatus.className = "text-[10px] font-black uppercase text-gray-400";
     unlockBtn.textContent = "🔓 Editar";
-    unlockBtn.className = "bg-slate-700 hover:bg-slate-600 px-5 py-3 md:px-4 md:py-2 rounded-xl text-[12px] md:text-[10px] font-black uppercase transition-colors";
+    unlockBtn.className = "bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-colors";
   }
+  
+  // Actualizar también el botón móvil
+  updateMobileEditButton();
 }
 
 function toggleEditMode(){
@@ -1825,6 +2043,8 @@ function toggleEditMode(){
       alert("PIN incorrecto");
     }
   }
+  
+  closeMobilePanel(); // Cerrar panel móvil
 }
 
 // =========================================================
@@ -1992,13 +2212,13 @@ function renderSummaryCategories(){
   Object.entries(categories).forEach(([catId, cat]) => {
     const color = cat.color || '#3b82f6';
     html += `
-      <div class="bg-white p-5 md:p-4 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
-        <div class="flex items-center justify-between mb-3 md:mb-2">
-          <p class="text-[13px] md:text-[11px] font-black text-gray-400 uppercase">${escapeHTML(cat.name)}</p>
-          <span class="text-[12px] md:text-[10px] font-black px-3 py-2 md:px-2 md:py-1 rounded-full" style="background: ${color}20; color: ${color};">${escapeHTML(cat.icon)}</span>
+      <div class="bg-white p-4 md:p-4 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[11px] font-black text-gray-400 uppercase">${escapeHTML(cat.name)}</p>
+          <span class="text-[10px] font-black px-2 py-1 rounded-full" style="background: ${color}20; color: ${color};">${escapeHTML(cat.icon)}</span>
         </div>
-        <h2 id="hrs-${cssSafe(catId)}" class="text-3xl md:text-2xl font-black text-gray-900 tracking-tighter">0.0 HRS</h2>
-        <div class="mt-3 md:mt-2 text-[12px] md:text-[10px] text-gray-500 font-bold" id="days-${cssSafe(catId)}">0 días</div>
+        <h2 id="hrs-${cssSafe(catId)}" class="text-2xl md:text-2xl font-black text-gray-900 tracking-tighter">0.0 HRS</h2>
+        <div class="mt-2 text-[10px] text-gray-500 font-bold" id="days-${cssSafe(catId)}">0 días</div>
       </div>
     `;
   });
@@ -2113,1435 +2333,7 @@ function calcSummary(){
 }
 
 // =========================================================
-// Day Modal Functions
-// =========================================================
-function openDay(key, info){
-  activeKey = key;
-  mode = info.mode || 'simple';
-  selS = info.s || 'Mañana';
-  selT = info.t || 'Mañana';
-  selB = info.b || 'Tarde';
-  
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  const SHIFTS = user.config;
-  
-  const [yy, mm, dd] = key.split('-');
-  const modalDate = document.getElementById('modalDate');
-  if (modalDate) {
-    modalDate.textContent = `${dd} de ${MONTHS[parseInt(mm) - 1]} de ${yy}`;
-  }
-  
-  // Información de asueto
-  const holiday = db.holidays[key];
-  const holidayInfo = document.getElementById('holidayInfo');
-  if (holidayInfo) {
-    if (holiday && holidayApplies(holiday.location, user.locality)) {
-      holidayInfo.classList.remove('hidden');
-      document.getElementById('holidayName').textContent = holiday.name;
-      document.getElementById('holidayLocation').textContent = `Localidad: ${holiday.location}`;
-    } else {
-      holidayInfo.classList.add('hidden');
-    }
-  }
-  
-  // Configurar campos según modo
-  if (mode === 'simple') {
-    const shift = SHIFTS[selS] || {in: '00:00', out: '00:00'};
-    document.getElementById('tIn').value = info.tIn || shift.in;
-    document.getElementById('tOut').value = info.tOut || shift.out;
-    
-    const hrs = info.h || calculateHours(document.getElementById('tIn').value, document.getElementById('tOut').value);
-    document.getElementById('tHrs').value = hrs.toFixed(1);
-    
-    document.getElementById('time-simple').classList.remove('hidden');
-    document.getElementById('time-mixto').classList.add('hidden');
-    document.getElementById('note-simple').classList.remove('hidden');
-    
-    document.getElementById('nota').value = info.n || defaultNoteForShift(selS);
-  } else {
-    const topShift = SHIFTS[selT] || {in: '00:00', out: '00:00'};
-    const bottomShift = SHIFTS[selB] || {in: '00:00', out: '00:00'};
-    
-    document.getElementById('tInTop').value = info.tInTop || topShift.in;
-    document.getElementById('tOutTop').value = info.tOutTop || topShift.out;
-    document.getElementById('tInBottom').value = info.tInBottom || bottomShift.in;
-    document.getElementById('tOutBottom').value = info.tOutBottom || bottomShift.out;
-    
-    const hrsTop = info.hrsTop || calculateHours(document.getElementById('tInTop').value, document.getElementById('tOutTop').value);
-    const hrsBottom = info.hrsBottom || calculateHours(document.getElementById('tInBottom').value, document.getElementById('tOutBottom').value);
-    
-    document.getElementById('tHrsTop').value = hrsTop.toFixed(1);
-    document.getElementById('tHrsBottom').value = hrsBottom.toFixed(1);
-    document.getElementById('tHrsMixto').value = (hrsTop + hrsBottom).toFixed(1);
-    
-    document.getElementById('time-simple').classList.add('hidden');
-    document.getElementById('time-mixto').classList.remove('hidden');
-    document.getElementById('note-simple').classList.add('hidden');
-    
-    document.getElementById('notaTop').value = info.noteTop || defaultNoteForShift(selT);
-    document.getElementById('notaBottom').value = info.noteBottom || defaultNoteForShift(selB);
-  }
-  
-  setMode(mode);
-  refreshShiftButtons();
-  
-  const modal = document.getElementById('modal');
-  if (modal) modal.classList.add('active');
-  
-  // Enfocar el primer campo relevante
-  setTimeout(() => {
-    if(mode === 'simple') {
-      document.getElementById('tIn')?.focus();
-    } else {
-      document.getElementById('tInTop')?.focus();
-    }
-  }, 300);
-}
-
-function closeModal(){ 
-  const modal = document.getElementById('modal');
-  if (modal) modal.classList.remove('active');
-}
-
-function setMode(m){
-  mode = m;
-  
-  const simpleBtn = document.getElementById('m-s');
-  const mixtoBtn = document.getElementById('m-m');
-  
-  if (simpleBtn && mixtoBtn) {
-    simpleBtn.className = `flex-1 py-4 md:py-3 rounded-xl font-black text-[13px] md:text-[11px] uppercase ${m === 'simple' ? 'bg-white shadow-md text-blue-600' : 'text-gray-400'}`;
-    mixtoBtn.className = `flex-1 py-4 md:py-3 rounded-xl font-black text-[13px] md:text-[11px] uppercase ${m === 'mixto' ? 'bg-white shadow-md text-blue-600' : 'text-gray-400'}`;
-  }
-  
-  // Mostrar/ocultar secciones
-  const sections = ['sec-simple', 'sec-mixto', 'time-simple', 'time-mixto', 'note-simple'];
-  sections.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      if (id.includes('simple')) {
-        el.classList.toggle('hidden', m !== 'simple');
-      } else if (id.includes('mixto')) {
-        el.classList.toggle('hidden', m !== 'mixto');
-      }
-    }
-  });
-}
-
-function refreshShiftButtons(){
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  const SHIFTS = user.config;
-  
-  const createButton = (key, selected, onClick) => {
-    const shift = SHIFTS[key] || {color: 'L', label: key};
-    const btn = document.createElement('div');
-    btn.className = `shift-option ${selected ? 'selected' : ''} bg-${shift.color}`;
-    btn.textContent = shift.label || key;
-    btn.onclick = onClick;
-    return btn;
-  };
-  
-  // Simple mode buttons
-  const simpleContainer = document.getElementById('sec-simple');
-  if (simpleContainer) {
-    simpleContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
-      const btn = createButton(key, selS === key, () => {
-        selS = key;
-        const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
-        document.getElementById('tIn').value = shift.in;
-        document.getElementById('tOut').value = shift.out;
-        autoCalc();
-        document.getElementById('nota').value = defaultNoteForShift(selS);
-        refreshShiftButtons();
-      });
-      simpleContainer.appendChild(btn);
-    });
-  }
-  
-  // Mixto top buttons
-  const topContainer = document.getElementById('mix-t');
-  if (topContainer) {
-    topContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
-      const btn = createButton(key, selT === key, () => {
-        selT = key;
-        const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
-        document.getElementById('tInTop').value = shift.in;
-        document.getElementById('tOutTop').value = shift.out;
-        autoCalcMixtoTop();
-        document.getElementById('notaTop').value = defaultNoteForShift(selT);
-        refreshShiftButtons();
-      });
-      topContainer.appendChild(btn);
-    });
-  }
-  
-  // Mixto bottom buttons
-  const bottomContainer = document.getElementById('mix-b');
-  if (bottomContainer) {
-    bottomContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
-      const btn = createButton(key, selB === key, () => {
-        selB = key;
-        const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
-        document.getElementById('tInBottom').value = shift.in;
-        document.getElementById('tOutBottom').value = shift.out;
-        autoCalcMixtoBottom();
-        document.getElementById('notaBottom').value = defaultNoteForShift(selB);
-        refreshShiftButtons();
-      });
-      bottomContainer.appendChild(btn);
-    });
-  }
-}
-
-function autoCalc(){
-  const tIn = document.getElementById('tIn');
-  const tOut = document.getElementById('tOut');
-  const tHrs = document.getElementById('tHrs');
-  if (tIn && tOut && tHrs) {
-    const hrs = calculateHours(tIn.value, tOut.value);
-    tHrs.value = hrs.toFixed(1);
-  }
-}
-
-function autoCalcMixtoTop(){
-  const tInTop = document.getElementById('tInTop');
-  const tOutTop = document.getElementById('tOutTop');
-  const tHrsTop = document.getElementById('tHrsTop');
-  if (tInTop && tOutTop && tHrsTop) {
-    const hrs = calculateHours(tInTop.value, tOutTop.value);
-    tHrsTop.value = hrs.toFixed(1);
-    updateMixtoTotal();
-  }
-}
-
-function autoCalcMixtoBottom(){
-  const tInBottom = document.getElementById('tInBottom');
-  const tOutBottom = document.getElementById('tOutBottom');
-  const tHrsBottom = document.getElementById('tHrsBottom');
-  if (tInBottom && tOutBottom && tHrsBottom) {
-    const hrs = calculateHours(tInBottom.value, tOutBottom.value);
-    tHrsBottom.value = hrs.toFixed(1);
-    updateMixtoTotal();
-  }
-}
-
-function updateMixtoTotal(){
-  const tHrsTop = document.getElementById('tHrsTop');
-  const tHrsBottom = document.getElementById('tHrsBottom');
-  const tHrsMixto = document.getElementById('tHrsMixto');
-  if (tHrsTop && tHrsBottom && tHrsMixto) {
-    const total = (parseFloat(tHrsTop.value) || 0) + (parseFloat(tHrsBottom.value) || 0);
-    tHrsMixto.value = total.toFixed(1);
-  }
-}
-
-function maybeAutoNoteSimple(){
-  const nota = document.getElementById('nota');
-  if (nota && !nota.value.trim()) {
-    nota.value = defaultNoteForShift(selS);
-  }
-}
-
-function maybeAutoNoteMixto(){
-  const notaTop = document.getElementById('notaTop');
-  const notaBottom = document.getElementById('notaBottom');
-  if (notaTop && !notaTop.value.trim()) {
-    notaTop.value = defaultNoteForShift(selT);
-  }
-  if (notaBottom && !notaBottom.value.trim()) {
-    notaBottom.value = defaultNoteForShift(selB);
-  }
-}
-
-function saveDay(){
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  let data;
-  
-  if (mode === 'simple') {
-    data = {
-      mode: 'simple',
-      s: selS,
-      tIn: document.getElementById('tIn').value,
-      tOut: document.getElementById('tOut').value,
-      h: parseFloat(document.getElementById('tHrs').value) || 0,
-      n: document.getElementById('nota').value.trim() || defaultNoteForShift(selS)
-    };
-  } else {
-    data = {
-      mode: 'mixto',
-      t: selT,
-      b: selB,
-      tInTop: document.getElementById('tInTop').value,
-      tOutTop: document.getElementById('tOutTop').value,
-      tInBottom: document.getElementById('tInBottom').value,
-      tOutBottom: document.getElementById('tOutBottom').value,
-      hrsTop: parseFloat(document.getElementById('tHrsTop').value) || 0,
-      hrsBottom: parseFloat(document.getElementById('tHrsBottom').value) || 0,
-      h: parseFloat(document.getElementById('tHrsMixto').value) || 0,
-      noteTop: document.getElementById('notaTop').value.trim() || defaultNoteForShift(selT),
-      noteBottom: document.getElementById('notaBottom').value.trim() || defaultNoteForShift(selB),
-      n: `${document.getElementById('notaTop').value.trim() || defaultNoteForShift(selT)} | ${document.getElementById('notaBottom').value.trim() || defaultNoteForShift(selB)}`
-    };
-  }
-  
-  user.data[activeKey] = data;
-  saveDB();
-  render();
-  renderSummaryCategories();
-  calcSummary();
-  closeModal();
-}
-
-// =========================================================
-// Shift Settings Functions
-// =========================================================
-function renderSettings(){
-  const container = document.getElementById('settings-container');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  const SHIFTS = user.config;
-  
-  // Ordenar: turnos por defecto primero, luego los demás
-  const defaultShifts = ['Mañana','Tarde','16hrs','CENA','Cumpleaños','L','Vacaciones','Ausencia'];
-  const otherShifts = Object.keys(SHIFTS).filter(s => !defaultShifts.includes(s)).sort();
-  const sortedShifts = [...defaultShifts.filter(s => SHIFTS[s]), ...otherShifts];
-  
-  sortedShifts.forEach(id => {
-    const conf = SHIFTS[id];
-    container.innerHTML += `
-      <div class="flex items-start gap-4 md:gap-3 bg-gradient-to-r from-gray-50 to-white p-5 md:p-4 rounded-2xl border border-gray-200">
-        <div class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
-          <span class="text-[12px] md:text-[10px] font-black text-gray-800">${(conf.label||id).charAt(0)}</span>
-        </div>
-        <div class="flex-1">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-2">
-            <div>
-              <p class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
-              <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-            </div>
-            <div>
-              <p class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
-              <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3">
-                ${Object.keys(db.categories).map(cid => {
-                  const c = db.categories[cid];
-                  return `<option value="${cid}" ${conf.cat === cid ? 'selected' : ''}>${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
-                }).join('')}
-              </select>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-2 mt-3 md:mt-2">
-            <div>
-              <p class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
-              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3">
-                ${['Mañana','Tarde','CENA','16hrs','L','Vacaciones','Cumpleaños','Ausencia','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x =>
-                  `<option value="${x}" ${conf.color === x ? 'selected' : ''}>${x}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div>
-              <p class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Entrada</p>
-              <input type="time" id="set-in-${cssSafe(id)}" value="${conf.in || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-            </div>
-            <div>
-              <p class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Salida</p>
-              <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-            </div>
-          </div>
-          
-          <div class="mt-3 md:mt-2 text-[12px] md:text-[10px] font-bold text-gray-600">
-            Nota sugerida: <span class="text-gray-900 font-black">${(conf.in && conf.out && !(conf.in === '00:00' && conf.out === '00:00')) ? `${conf.in}-${conf.out}` : (conf.label||id).toUpperCase()}</span>
-          </div>
-        </div>
-        
-        <button onclick="deleteShift('${id}')" class="p-3 md:p-2 text-red-600 hover:text-red-800 font-black" title="Eliminar turno">🗑️</button>
-      </div>
-    `;
-  });
-  
-  loadCategoriesSelect();
-}
-
-function saveShiftSettings(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  const SHIFTS = user.config;
-  
-  const propagate = document.getElementById('propagateShiftEdits').checked;
-  const oldConfig = JSON.parse(JSON.stringify(SHIFTS));
-  
-  Object.keys(SHIFTS).forEach(id => {
-    const safeId = cssSafe(id);
-    const label = document.getElementById(`set-label-${safeId}`)?.value?.trim() || id;
-    const cat = document.getElementById(`set-cat-${safeId}`)?.value || SHIFTS[id].cat;
-    const color = document.getElementById(`set-color-${safeId}`)?.value || SHIFTS[id].color;
-    const inTime = document.getElementById(`set-in-${safeId}`)?.value || SHIFTS[id].in || '00:00';
-    const outTime = document.getElementById(`set-out-${safeId}`)?.value || SHIFTS[id].out || '00:00';
-    
-    SHIFTS[id].label = label;
-    SHIFTS[id].cat = cat;
-    SHIFTS[id].color = color;
-    SHIFTS[id].in = inTime;
-    SHIFTS[id].out = outTime;
-  });
-  
-  if(propagate){
-    const y = current.getFullYear();
-    const m1 = current.getMonth() + 1;
-    
-    Object.keys(user.data).forEach(k => {
-      if(!k.startsWith(`${y}-${m1}-`)) return;
-      const d = user.data[k];
-      
-      if(d.mode === 'simple'){
-        const sid = d.s;
-        if(!sid || !SHIFTS[sid]) return;
-        const was = oldConfig[sid];
-        const now = SHIFTS[sid];
-        
-        if(was && (was.in !== now.in || was.out !== now.out)){
-          d.tIn = now.in;
-          d.tOut = now.out;
-          d.h = calculateHours(now.in, now.out);
-          
-          const wasNote = String(d.n || '').trim();
-          const oldStd = (was.in && was.out && !(was.in === '00:00' && was.out === '00:00')) ? 
-            `${was.in}-${was.out}` : (was.label || sid).toUpperCase();
-          const newStd = (now.in && now.out && !(now.in === '00:00' && now.out === '00:00')) ? 
-            `${now.in}-${now.out}` : (now.label || sid).toUpperCase();
-          
-          if(!wasNote || wasNote === oldStd) d.n = newStd;
-        }
-      } else if(d.mode === 'mixto'){
-        const applyPart = (partKey, inField, outField, hrsField, noteField) => {
-          const sid = d[partKey];
-          if(!sid || !SHIFTS[sid]) return;
-          const was = oldConfig[sid];
-          const now = SHIFTS[sid];
-          
-          if(was && (was.in !== now.in || was.out !== now.out)){
-            d[inField] = now.in;
-            d[outField] = now.out;
-            d[hrsField] = calculateHours(now.in, now.out);
-            
-            const oldStd = (was.in && was.out && !(was.in === '00:00' && was.out === '00:00')) ? 
-              `${was.in}-${was.out}` : (was.label || sid).toUpperCase();
-            const newStd = (now.in && now.out && !(now.in === '00:00' && now.out === '00:00')) ? 
-              `${now.in}-${now.out}` : (now.label || sid).toUpperCase();
-            
-            if(!d[noteField] || d[noteField] === oldStd) d[noteField] = newStd;
-          }
-        };
-        
-        applyPart('t', 'tInTop', 'tOutTop', 'hrsTop', 'noteTop');
-        applyPart('b', 'tInBottom', 'tOutBottom', 'hrsBottom', 'noteBottom');
-        
-        d.h = (parseFloat(d.hrsTop) || 0) + (parseFloat(d.hrsBottom) || 0);
-        d.n = `${d.noteTop || ''} | ${d.noteBottom || ''}`.trim();
-      }
-    });
-  }
-  
-  saveDB();
-  render();
-  renderSummaryCategories();
-  calcSummary();
-  alert("Turnos actualizados.");
-}
-
-function deleteShift(id){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  // No permitir eliminar turnos base importantes
-  const protectedShifts = ['L','Vacaciones','Ausencia','Cumpleaños'];
-  if(protectedShifts.includes(id)) return alert("No se puede eliminar este turno base.");
-  
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  // Verificar si el turno está en uso
-  const used = Object.values(user.data).some(d => {
-    if(d.mode === 'mixto') return d.t === id || d.b === id;
-    return d.s === id;
-  });
-  
-  if(used) return alert("No se puede eliminar: el turno está usado en el calendario del perfil.");
-  
-  if(!confirm(`¿Eliminar turno "${id}"?`)) return;
-  
-  delete user.config[id];
-  saveDB();
-  renderSettings();
-  render();
-  renderSummaryCategories();
-  calcSummary();
-}
-
-// =========================================================
-// New Shift Functions
-// =========================================================
-function selectColor(color, ev){
-  selectedColor = color;
-  document.getElementById('newShiftColor').value = color;
-  document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-  if(ev && ev.target) ev.target.classList.add('selected');
-}
-
-function loadCategoriesSelect(){
-  const select = document.getElementById('newShiftCat');
-  if (!select) return;
-  
-  select.innerHTML = Object.keys(db.categories).map(cid => {
-    const c = db.categories[cid];
-    return `<option value="${cid}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
-  }).join('');
-}
-
-function addNewShift(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const name = document.getElementById('newShiftName').value.trim();
-  const color = document.getElementById('newShiftColor').value;
-  const cat = document.getElementById('newShiftCat').value;
-  const inTime = document.getElementById('newShiftIn').value || '00:00';
-  const outTime = document.getElementById('newShiftOut').value || '00:00';
-  
-  if(!name) return alert("Nombre requerido.");
-  
-  const key = name.replace(/\s+/g, '_').toUpperCase();
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  if(user.config[key]) return alert("Ya existe un turno con ese nombre (ID).");
-  
-  user.config[key] = {
-    label: name,
-    color: color,
-    cat: cat,
-    in: inTime,
-    out: outTime
-  };
-  
-  saveDB();
-  renderSettings();
-  render();
-  
-  // Limpiar formulario
-  document.getElementById('newShiftName').value = '';
-  document.getElementById('newShiftIn').value = '';
-  document.getElementById('newShiftOut').value = '';
-  
-  alert("Turno agregado.");
-}
-
-// =========================================================
-// Categories Functions
-// =========================================================
-function renderCategories(){
-  const container = document.getElementById('categories-container');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  const ids = Object.keys(db.categories).sort((a, b) => 
-    db.categories[a].name.localeCompare(db.categories[b].name)
-  );
-  
-  ids.forEach(cid => {
-    const c = db.categories[cid];
-    container.innerHTML += `
-      <div class="flex items-center gap-4 md:gap-3 p-5 md:p-4 border-b border-gray-100">
-        <div class="w-12 h-12 md:w-10 md:h-10 rounded-full flex items-center justify-center text-xl md:text-lg" style="background: ${c.color || '#3b82f6'}20; color: ${c.color || '#3b82f6'};">
-          ${escapeHTML(c.icon)}
-        </div>
-        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-2">
-          <div>
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-          </div>
-          <div>
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Icono</div>
-            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-          </div>
-          <div class="md:col-span-2">
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Color</div>
-            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-12 md:h-10 bg-white border-gray-200 focus:border-blue-400 rounded-xl p-1"/>
-          </div>
-          <div class="md:col-span-2 text-[12px] md:text-[10px] font-bold text-gray-500">
-            ID: <span class="font-black text-gray-800">${cid}</span>
-          </div>
-        </div>
-        <button onclick="deleteCategory('${cid}')" class="p-3 md:p-2 text-red-600 hover:text-red-800 font-black">🗑️</button>
-      </div>
-    `;
-  });
-}
-
-function addNewCategory(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const name = document.getElementById('newCategoryName').value.trim();
-  const icon = document.getElementById('newCategoryIcon').value;
-  
-  if(!name) return alert("Nombre requerido.");
-  
-  const cid = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-  if(db.categories[cid]) return alert("Ya existe una categoría con ese ID.");
-  
-  db.categories[cid] = {
-    name: name,
-    icon: icon,
-    color: '#6b7280'
-  };
-  
-  saveDB();
-  document.getElementById('newCategoryName').value = '';
-  renderCategories();
-  renderSummaryCategories();
-  loadCategoriesSelect();
-  alert("Categoría agregada.");
-}
-
-function deleteCategory(cid){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  // Verificar si la categoría está en uso
-  const used = Object.values(db.users).some(u => 
-    Object.values(u.config).some(s => s.cat === cid)
-  );
-  
-  if(used) return alert("No se puede eliminar: hay turnos usando esta categoría.");
-  
-  if(!confirm(`¿Eliminar categoría "${db.categories[cid].name}"?`)) return;
-  
-  delete db.categories[cid];
-  saveDB();
-  renderCategories();
-  renderSummaryCategories();
-  loadCategoriesSelect();
-  alert("Categoría eliminada.");
-}
-
-function saveCategories(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  Object.keys(db.categories).forEach(cid => {
-    const name = document.getElementById(`cat-name-${cid}`)?.value?.trim();
-    const icon = document.getElementById(`cat-icon-${cid}`)?.value?.trim();
-    const color = document.getElementById(`cat-color-${cid}`)?.value;
-    
-    if(name) db.categories[cid].name = name;
-    if(icon) db.categories[cid].icon = icon;
-    if(color) db.categories[cid].color = color;
-  });
-  
-  saveDB();
-  renderCategories();
-  renderSummaryCategories();
-  loadCategoriesSelect();
-  renderSettings();
-  render();
-  alert("Categorías actualizadas.");
-}
-
-// =========================================================
-// Localities Functions
-// =========================================================
-function renderLocalities(){
-  const container = document.getElementById('localities-container');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  // Asegurar que "General" existe y es único
-  db.localities = Array.from(new Set(db.localities.map(x => String(x).trim()).filter(Boolean)));
-  if(!db.localities.some(x => x.toUpperCase() === 'GENERAL')) {
-    db.localities.unshift('General');
-  }
-  
-  db.localities.forEach((loc, idx) => {
-    const isGeneral = loc.trim().toUpperCase() === 'GENERAL';
-    container.innerHTML += `
-      <div class="flex items-center gap-4 md:gap-3 p-5 md:p-4 border-b border-gray-100">
-        <div class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-sky-100 flex items-center justify-center font-black text-sky-700 flex-shrink-0">
-          📍
-        </div>
-        <div class="flex-1">
-          <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-          <input id="loc-${idx}" value="${escapeHTML(loc)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3" ${isGeneral ? 'disabled' : ''}/>
-          <div class="text-[12px] md:text-[10px] font-bold text-gray-500 mt-1">${isGeneral ? 'Reservado para asuetos generales.' : ''}</div>
-        </div>
-        ${isGeneral ? 
-          `<span class="text-[11px] md:text-[9px] font-black text-gray-400">Bloqueado</span>` : 
-          `<button onclick="deleteLocality(${idx})" class="p-3 md:p-2 text-red-600 hover:text-red-800 font-black">🗑️</button>`
-        }
-      </div>
-    `;
-  });
-  
-  refreshHolidayLocationSelects();
-  refreshProfileLocationSelects();
-}
-
-function addLocality(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const name = document.getElementById('newLocalityName').value.trim();
-  if(!name) return alert("Nombre requerido.");
-  if(name.toUpperCase() === 'GENERAL') return alert('"General" es reservado.');
-  
-  if(db.localities.some(x => x.trim().toUpperCase() === name.trim().toUpperCase())) {
-    return alert("Ya existe esa localidad.");
-  }
-  
-  db.localities.push(name);
-  document.getElementById('newLocalityName').value = '';
-  saveDB();
-  renderLocalities();
-  alert("Localidad agregada.");
-}
-
-function deleteLocality(idx){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const loc = db.localities[idx];
-  if(!loc || loc.toUpperCase() === 'GENERAL') return;
-  
-  // Verificar si la localidad está en uso
-  const usedUser = Object.values(db.users).some(u => 
-    (u.locality || '').trim().toUpperCase() === loc.trim().toUpperCase()
-  );
-  
-  const usedHoliday = Object.values(db.holidays).some(h => 
-    (h.location || '').trim().toUpperCase() === loc.trim().toUpperCase()
-  );
-  
-  if(usedUser || usedHoliday) {
-    return alert("No se puede eliminar: está en uso por perfiles o asuetos. Cambia primero esas referencias.");
-  }
-  
-  if(!confirm(`¿Eliminar localidad "${loc}"?`)) return;
-  
-  db.localities.splice(idx, 1);
-  saveDB();
-  renderLocalities();
-}
-
-function saveLocalities(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const oldList = [...db.localities];
-  const newList = [];
-  
-  for(let i = 0; i < oldList.length; i++){
-    const oldLoc = oldList[i];
-    const isGeneral = oldLoc.trim().toUpperCase() === 'GENERAL';
-    if(isGeneral){
-      newList.push('General');
-      continue;
-    }
-    
-    const v = document.getElementById(`loc-${i}`)?.value?.trim();
-    if(!v) continue;
-    if(v.toUpperCase() === 'GENERAL') continue;
-    newList.push(v);
-  }
-  
-  // Asegurar que "General" está primero
-  if(!newList.some(x => x.toUpperCase() === 'GENERAL')) {
-    newList.unshift('General');
-  }
-  
-  // Encontrar cambios de nombre
-  const renamePairs = [];
-  for(let i = 0; i < oldList.length; i++){
-    const a = String(oldList[i] || '').trim();
-    const b = (document.getElementById(`loc-${i}`)?.value || a).trim();
-    if(a && b && a.toUpperCase() !== 'GENERAL' && a.toUpperCase() !== b.toUpperCase()){
-      renamePairs.push([a, b]);
-    }
-  }
-  
-  db.localities = Array.from(new Set(newList.map(x => String(x).trim()).filter(Boolean)));
-  
-  // Aplicar cambios de nombre
-  renamePairs.forEach(([from, to]) => {
-    // Actualizar usuarios
-    Object.values(db.users).forEach(u => {
-      if((u.locality || '').trim().toUpperCase() === from.trim().toUpperCase()) {
-        u.locality = to;
-      }
-    });
-    
-    // Actualizar asuetos
-    Object.keys(db.holidays).forEach(k => {
-      const h = db.holidays[k];
-      if((h.location || '').trim().toUpperCase() === from.trim().toUpperCase()) {
-        h.location = to;
-      }
-    });
-  });
-  
-  saveDB();
-  renderLocalities();
-  renderHolidays();
-  renderProfilesList();
-  render();
-  alert("Localidades actualizadas.");
-}
-
-function refreshHolidayLocationSelects(){
-  const select = document.getElementById('newHolidayLocation');
-  if (select) {
-    select.innerHTML = db.localities.map(l => 
-      `<option value="${escapeHTML(l)}" ${l.toUpperCase() === 'GENERAL' ? 'selected' : ''}>${escapeHTML(l)}</option>`
-    ).join('');
-  }
-}
-
-function refreshProfileLocationSelects(){
-  const createLoc = document.getElementById('createLoc');
-  if (createLoc) {
-    createLoc.innerHTML = db.localities
-      .filter(l => l.toUpperCase() !== 'GENERAL')
-      .map(l => `<option value="${escapeHTML(l)}" ${l === 'San Salvador' ? 'selected' : ''}>${escapeHTML(l)}</option>`)
-      .join('');
-  }
-}
-
-// =========================================================
-// Holidays Functions
-// =========================================================
-function renderHolidays(){
-  const container = document.getElementById('holidays-container');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  const keys = Object.keys(db.holidays).sort((a, b) => new Date(a) - new Date(b));
-  
-  if(keys.length === 0){
-    container.innerHTML = `
-      <div class="p-8 md:p-8 text-center text-gray-400 font-bold">
-        No hay asuetos configurados.
-      </div>
-    `;
-    return;
-  }
-  
-  keys.forEach(k => {
-    const h = db.holidays[k];
-    const [y, m, d] = k.split('-');
-    
-    container.innerHTML += `
-      <div class="p-5 md:p-4 border-b border-gray-100">
-        <div class="flex items-center justify-between gap-3 md:gap-2">
-          <div class="font-black text-gray-900 text-[14px] md:text-[12px]">${escapeHTML(h.name || 'Asueto')}</div>
-          <button onclick="deleteHoliday('${k}')" class="p-3 md:p-2 text-red-600 hover:text-red-800 font-black">🗑️</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-2 mt-3 md:mt-2">
-          <div>
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Fecha</div>
-            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y, m, d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-          </div>
-          <div class="md:col-span-2">
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name || '')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-          </div>
-          <div class="md:col-span-3">
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3">
-              ${db.localities.map(l => 
-                `<option value="${escapeHTML(l)}" ${(h.location || 'General') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`
-              ).join('')}
-            </select>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function addNewHoliday(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const dateInput = document.getElementById('newHolidayDate').value;
-  const name = document.getElementById('newHolidayName').value.trim();
-  const loc = document.getElementById('newHolidayLocation').value || 'General';
-  
-  if(!dateInput || !name) return alert("Fecha y nombre requeridos.");
-  
-  const dt = new Date(dateInput + 'T00:00:00');
-  const key = dayKey(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-  
-  db.holidays[key] = {
-    name: name,
-    location: loc
-  };
-  
-  document.getElementById('newHolidayDate').value = '';
-  document.getElementById('newHolidayName').value = '';
-  saveDB();
-  renderHolidays();
-  render();
-  alert("Asueto agregado.");
-}
-
-function deleteHoliday(k){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  if(!confirm(`¿Eliminar asueto del ${k}?`)) return;
-  
-  delete db.holidays[k];
-  saveDB();
-  renderHolidays();
-  render();
-  alert("Asueto eliminado.");
-}
-
-function saveHolidays(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const newHolidays = {};
-  const keys = Object.keys(db.holidays);
-  
-  keys.forEach(oldKey => {
-    const safeKey = cssSafe(oldKey);
-    const dateVal = document.getElementById(`h-date-${safeKey}`)?.value;
-    const nameVal = document.getElementById(`h-name-${safeKey}`)?.value?.trim();
-    const locVal = document.getElementById(`h-loc-${safeKey}`)?.value || 'General';
-    
-    if(!dateVal || !nameVal) return;
-    
-    const dt = new Date(dateVal + 'T00:00:00');
-    const newKey = dayKey(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
-    
-    newHolidays[newKey] = {
-      name: nameVal,
-      location: locVal
-    };
-  });
-  
-  db.holidays = newHolidays;
-  saveDB();
-  renderHolidays();
-  render();
-  alert("Asuetos actualizados.");
-}
-
-// =========================================================
-// PIN Functions
-// =========================================================
-function savePinOnly(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const user = db.users[db.current];
-  if (!user) return;
-  
-  const p = document.getElementById('changePinInput').value;
-  const c = document.getElementById('confirmPinInput').value;
-  
-  if(!p || p.length !== 4 || isNaN(p)) return alert("PIN inválido (debe ser 4 dígitos).");
-  if(p !== c) return alert("PIN no coincide.");
-  
-  user.pin = p;
-  document.getElementById('changePinInput').value = '';
-  document.getElementById('confirmPinInput').value = '';
-  saveDB();
-  alert("PIN actualizado.");
-}
-
-// =========================================================
-// Profiles Modal Functions
-// =========================================================
-function openProfilesModal(){
-  refreshProfileLocationSelects();
-  renderProfilesList();
-  
-  const modal = document.getElementById('profilesModal');
-  if (modal) modal.classList.add('active');
-}
-
-function closeProfilesModal(){
-  const modal = document.getElementById('profilesModal');
-  if (modal) modal.classList.remove('active');
-}
-
-function createProfile(){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const name = document.getElementById('createName').value.trim().toUpperCase();
-  const pin = document.getElementById('createPin').value.trim();
-  const loc = document.getElementById('createLoc').value || 'San Salvador';
-  
-  if(!name || name.length < 2) return alert("Nombre inválido.");
-  if(!pin || pin.length !== 4 || isNaN(pin)) return alert("PIN inválido (debe ser 4 dígitos).");
-  if(db.users[name]) return alert("Ya existe ese perfil.");
-  
-  db.users[name] = {
-    pin: pin,
-    editLocked: false,
-    locality: loc,
-    data: {},
-    config: JSON.parse(JSON.stringify(db.users.ADMIN.config))
-  };
-  
-  ensureImportBaseShiftsForUser(name);
-  
-  db.current = name;
-  saveDB();
-  updateUserDropdown();
-  updateUserInitial();
-  render();
-  renderProfilesList();
-  
-  document.getElementById('createName').value = '';
-  document.getElementById('createPin').value = '';
-  
-  alert("Perfil creado.");
-}
-
-function renderProfilesList(){
-  const container = document.getElementById('profilesList');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  const keys = Object.keys(db.users).sort();
-  
-  keys.forEach(u => {
-    const user = db.users[u];
-    const isCurrent = (u === db.current);
-    
-    container.innerHTML += `
-      <div class="border border-gray-200 rounded-2xl p-4 md:p-3 ${isCurrent ? 'bg-blue-50 border-blue-200' : ''}">
-        <div class="flex items-center justify-between gap-3 md:gap-2">
-          <div>
-            <div class="font-black text-gray-900 text-[14px] md:text-[12px]">
-              ${escapeHTML(u)} ${isCurrent ? '<span class="ml-2 text-[11px] md:text-[9px] font-black text-blue-600">(Actual)</span>' : ''}
-            </div>
-            <div class="text-[12px] md:text-[10px] font-bold text-gray-500">
-              Localidad: <span class="font-black text-gray-800">${escapeHTML(user.locality || 'San Salvador')}</span>
-            </div>
-          </div>
-          <div class="flex gap-3 md:gap-2">
-            <button onclick="setCurrentProfile('${u}')" class="px-4 py-3 md:px-3 md:py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[12px] md:text-[10px] font-black uppercase">
-              Usar
-            </button>
-            ${u === 'ADMIN' ? '' : `
-              <button onclick="deleteProfile('${u}')" class="px-4 py-3 md:px-3 md:py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[12px] md:text-[10px] font-black uppercase">
-                Eliminar
-              </button>
-            `}
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-2 mt-4 md:mt-3">
-          <div class="md:col-span-2">
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Renombrar perfil</div>
-            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3" ${u === 'ADMIN' ? 'disabled' : ''}/>
-          </div>
-          <div>
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">PIN</div>
-            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3"/>
-          </div>
-          <div class="md:col-span-3">
-            <div class="text-[11px] md:text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl p-3 md:p-3">
-              ${db.localities
-                .filter(l => l.toUpperCase() !== 'GENERAL')
-                .map(l => `<option value="${escapeHTML(l)}" ${(user.locality || 'San Salvador') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`)
-                .join('')}
-            </select>
-          </div>
-          <div class="md:col-span-3">
-            <button onclick="saveProfileEdits('${u}')" class="w-full p-4 md:p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase text-[13px] md:text-[11px]">
-              💾 Guardar cambios de este perfil
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-}
-
-function setCurrentProfile(u){
-  db.current = u;
-  saveDB();
-  updateUserDropdown();
-  updateUserInitial();
-  render();
-  renderProfilesList();
-  closeProfilesModal();
-}
-
-function deleteProfile(u){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  if(u === 'ADMIN') return alert("No se puede eliminar el perfil ADMIN.");
-  
-  if(!confirm(`¿Eliminar perfil "${u}"? Se perderá su calendario.`)) return;
-  
-  delete db.users[u];
-  if(db.current === u) db.current = 'ADMIN';
-  
-  saveDB();
-  updateUserDropdown();
-  updateUserInitial();
-  render();
-  renderProfilesList();
-  alert("Perfil eliminado.");
-}
-
-function saveProfileEdits(u){
-  if(!isEditMode()) return alert("Activa modo edición.");
-  
-  const user = db.users[u];
-  if (!user) return;
-  
-  const pin = document.getElementById(`p-pin-${cssSafe(u)}`)?.value?.trim();
-  const loc = document.getElementById(`p-loc-${cssSafe(u)}`)?.value || 'San Salvador';
-  
-  if(!pin || pin.length !== 4 || isNaN(pin)) return alert("PIN inválido (4 dígitos).");
-  
-  user.pin = pin;
-  user.locality = loc;
-  
-  if(u !== 'ADMIN'){
-    const newName = document.getElementById(`p-name-${cssSafe(u)}`)?.value?.trim()?.toUpperCase();
-    if(newName && newName !== u){
-      if(db.users[newName]) return alert("No se puede renombrar: ya existe ese nombre.");
-      
-      db.users[newName] = user;
-      delete db.users[u];
-      
-      if(db.current === u) db.current = newName;
-    }
-  }
-  
-  saveDB();
-  updateUserDropdown();
-  updateUserInitial();
-  renderProfilesList();
-  render();
-  alert("Perfil actualizado.");
-}
-
-// =========================================================
-// Import Functions
-// =========================================================
-function openImportModal(){
-  document.getElementById('importFile').value = '';
-  document.getElementById('importInfo').innerText = '';
-  document.getElementById('importUsersList').innerHTML = `
-    <div class="text-gray-400 font-bold">Adjunta un Excel y presiona "Analizar".</div>
-  `;
-  
-  importContext = null;
-  
-  const importMonth = document.getElementById('importMonth');
-  const importYear = document.getElementById('importYear');
-  if (importMonth) importMonth.value = current.getMonth();
-  if (importYear) importYear.value = current.getFullYear();
-  
-  const modal = document.getElementById('importModal');
-  if (modal) modal.classList.add('active');
-}
-
-function closeImportModal(){
-  const modal = document.getElementById('importModal');
-  if (modal) modal.classList.remove('active');
-}
-
-function closeImportModalAndRefresh(){
-  closeImportModal();
-  render();
-  renderSummaryCategories();
-  calcSummary();
-}
-
-function selectAllImportUsers(flag){
-  document.querySelectorAll('.impUserChk').forEach(ch => {
-    ch.checked = flag;
-  });
-}
-
-async function analyzeImportFile(){
-  const fileInput = document.getElementById('importFile');
-  if(!fileInput.files || !fileInput.files[0]) {
-    return alert("Selecciona un archivo Excel.");
-  }
-  
-  try {
-    const data = await fileInput.files[0].arrayBuffer();
-    const wb = XLSX.read(data, { type: 'array' });
-    const sheetName = wb.SheetNames[0];
-    const ws = wb.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
-    
-    // Detectar mes y año
-    const detected = detectMonthYearFromRows(rows);
-    const fallbackMonth = parseInt(document.getElementById('importMonth').value);
-    const fallbackYear = parseInt(document.getElementById('importYear').value);
-    const monthIndex0 = (detected.month ?? fallbackMonth);
-    const year = (detected.year ?? fallbackYear);
-    
-    // Encontrar fila de encabezado
-    const headerIdx = findHeaderRow(rows);
-    if(headerIdx < 0) return alert("No se pudo detectar la estructura del Excel.");
-    
-    const headerRow = rows[headerIdx] || [];
-    const dayCols = buildDayColumnMap(headerRow);
-    
-    // Encontrar columnas de nombre y número de empleado
-    let nameCol = -1, empCol = -1;
-    for(let c = 0; c < headerRow.length; c++){
-      const s = String(headerRow[c] || '').toUpperCase().trim();
-      if(s.includes('PERSONAL') || s.includes('NOMBRE')) nameCol = c;
-      if(s.includes('EMP') || s.includes('NÚMERO')) empCol = c;
-    }
-    
-    if(nameCol < 0 || empCol < 0 || Object.keys(dayCols).length < 10) {
-      return alert("Encabezado incompleto o formato no reconocido.");
-    }
-    
-    // Extraer usuarios
-    const usersSet = new Set();
-    for(let r = headerIdx + 1; r < rows.length; r++){
-      const row = rows[r] || [];
-      if(!isLikelyDataRow(row, nameCol, empCol, dayCols)) continue;
-      
-      const name = safeNameCell(row[nameCol]).toUpperCase();
-      if(name) usersSet.add(name);
-    }
-    
-    importContext = {
-      wb, sheetName, rows, headerIdx, nameCol, empCol, dayCols, monthIndex0, year,
-      users: Array.from(usersSet).sort()
-    };
-    
-    // Mostrar lista de usuarios
-    const list = document.getElementById('importUsersList');
-    if(importContext.users.length === 0){
-      list.innerHTML = `<div class="text-gray-400 font-bold">No se detectaron usuarios.</div>`;
-    } else {
-      list.innerHTML = importContext.users.map(u => `
-        <label class="flex items-center gap-3 md:gap-2 p-3 md:p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
-          <input class="impUserChk" type="checkbox" value="${escapeHTML(u)}" checked class="w-5 h-5">
-          <span class="font-black text-gray-800">${escapeHTML(u)}</span>
-        </label>
-      `).join('');
-    }
-    
-    document.getElementById('importInfo').innerText = 
-      `Detectado: ${MONTHS[monthIndex0]} ${year}. Usuarios: ${importContext.users.length}.`;
-      
-  } catch (error) {
-    console.error('Error analizando archivo:', error);
-    alert(`Error al analizar el archivo: ${error.message}`);
-  }
-}
-
-function detectMonthYearFromRows(rows){
-  const monthsMap = {
-    'ENERO':0,'FEBRERO':1,'MARZO':2,'ABRIL':3,'MAYO':4,'JUNIO':5,
-    'JULIO':6,'AGOSTO':7,'SEPTIEMBRE':8,'OCTUBRE':9,'NOVIEMBRE':10,'DICIEMBRE':11
-  };
-  
-  let foundMonth = null, foundYear = null;
-  
-  for(let r = 0; r < Math.min(rows.length, 50); r++){
-    const row = rows[r] || [];
-    for(let c = 0; c < row.length; c++){
-      const v = row[c];
-      if(!v) continue;
-      
-      const s = String(v).toUpperCase();
-      
-      // Buscar mes
-      Object.keys(monthsMap).forEach(mn => {
-        if(s.includes(mn) && foundMonth === null) foundMonth = monthsMap[mn];
-      });
-      
-      // Buscar año
-      const yMatch = s.match(/AÑO\s*([0-9]{4})/);
-      if(yMatch) foundYear = parseInt(yMatch[1]);
-      
-      const yMatch2 = s.match(/(20\d{2})/);
-      if(yMatch2 && !foundYear) foundYear = parseInt(yMatch2[1]);
-    }
-  }
-  
-  return { month: foundMonth, year: foundYear };
-}
-
-function findHeaderRow(rows){
-  for(let r = 0; r < rows.length; r++){
-    const row = rows[r] || [];
-    const joined = row.map(x => String(x || '').trim()).join(' | ').toUpperCase();
-    
-    if(joined.includes('PERSONAL') && (joined.includes('NO. EMP') || joined.includes('NO EMP') || joined.includes('NO.EMP'))){
-      if(row.some(v => String(v).trim() === '1') && row.some(v => String(v).trim() === '2')) {
-        return r;
-      }
-    }
-  }
-  return -1;
-}
-
-function buildDayColumnMap(headerRow){
-  const map = {};
-  for(let c = 0; c < headerRow.length; c++){
-    const s = String(headerRow[c] || '').trim();
-    if(/^\d+$/.test(s)){
-      const d = parseInt(s);
-      if(d >= 1 && d <= 31) map[d] = c;
-    }
-  }
-  return map;
-}
-
-function safeNameCell(v){
-  return String(v || '').replace(/\s+/g, ' ').trim();
-}
-
-function isLikelyDataRow(row, nameCol, empCol, dayCols){
-  const name = safeNameCell(row[nameCol]).toUpperCase();
-  const emp = safeNameCell(row[empCol]);
-  
-  if(!name || !emp) return false;
-  if(name.includes('TOTAL') || name.includes('PERSONAL')) return false;
-  
-  // Verificar si tiene algún código en las columnas de día
-  for(const d of Object.keys(dayCols)){
-    const code = normalizeCode(row[dayCols[d]]);
-    if(code && code !== 'X') return true;
-  }
-  
-  return false;
-}
-
-function runImportSelected(){
-  if(!importContext) return alert("Primero analiza el archivo.");
-  
-  const importMode = document.querySelector('input[name="importMode"]:checked')?.value || 'replace';
-  const selected = Array.from(document.querySelectorAll('.impUserChk'))
-    .filter(x => x.checked)
-    .map(x => x.value);
-  
-  if(selected.length === 0) return alert("Selecciona al menos un usuario.");
-  
-  const { rows, headerIdx, nameCol, empCol, dayCols, monthIndex0, year } = importContext;
-  
-  // Asegurar que los usuarios existen
-  selected.forEach(u => ensureUserExists(u));
-  
-  // Limpiar mes si es modo reemplazar
-  if(importMode === 'replace'){
-    selected.forEach(u => {
-      const user = db.users[u];
-      if (!user) return;
-      
-      const prefix = `${year}-${monthIndex0 + 1}-`;
-      Object.keys(user.data).forEach(k => {
-        if(k.startsWith(prefix)) delete user.data[k];
-      });
-    });
-  }
-  
-  let written = 0;
-  
-  // Procesar filas
-  for(let r = headerIdx + 1; r < rows.length; r++){
-    const row = rows[r] || [];
-    if(!isLikelyDataRow(row, nameCol, empCol, dayCols)) continue;
-    
-    const name = safeNameCell(row[nameCol]).toUpperCase();
-    if(!selected.includes(name)) continue;
-    
-    const userKey = ensureUserExists(name);
-    const user = db.users[userKey];
-    if (!user) continue;
-    
-    ensureImportBaseShiftsForUser(userKey);
-    
-  // Procesar cada día
-    for(const dStr of Object.keys(dayCols)){
-      const day = parseInt(dStr);
-      const code = normalizeCode(row[dayCols[dStr]]);
-      if(!code || code === 'X') continue;
-      
-      const def = codeToShiftDef(code);
-      if(!def) continue;
-      
-      const key = dayKey(year, monthIndex0 + 1, day);
-      
-      // Saltar si es modo merge y ya existe
-      if(importMode === 'merge' && user.data[key]) continue;
-      
-      // Crear entrada
-      const tIn = def.in || '00:00';
-      const tOut = def.out || '00:00';
-      const hrs = calculateHours(tIn, tOut);
-      const note = def.note || ((tIn !== '00:00' || tOut !== '00:00') ? `${tIn}-${tOut}` : (def.label || def.key).toUpperCase());
-      
-      user.data[key] = {
-        mode: 'simple',
-        s: def.key,
-        tIn: tIn,
-        tOut: tOut,
-        h: hrs,
-        n: note
-      };
-      
-      written++;
-    }
-  }
-  
-  saveDB();
-  
-  // Cambiar al primer usuario importado
-  db.current = selected[0];
-  current = new Date(year, monthIndex0, 1);
-  saveDB();
-  
-  updateUserDropdown();
-  updateUserInitial();
-  updateMonthDisplay();
-  render();
-  renderSummaryCategories();
-  calcSummary();
-  
-  document.getElementById('importInfo').innerHTML = `
-    <div class="text-green-600 font-bold">
-      Importación completada!<br>
-      Perfiles: ${selected.length} | Celdas: ${written}<br>
-      Mes: ${MONTHS[monthIndex0]} ${year}<br>
-      <button onclick="closeImportModalAndRefresh()" class="mt-3 md:mt-2 px-5 py-3 md:px-4 md:py-2 bg-emerald-600 text-white rounded-xl font-black text-[12px] md:text-[10px]">
-        ✅ Cerrar y ver calendario
-      </button>
-    </div>
-  `;
-}
-
-// =========================================================
-// Export Functions - MODIFICADO: SIN LEYENDA DE TURNOS
+// Export Functions - SIN LEYENDA DE TURNOS
 // =========================================================
 function showExportModal(){
   const exportMonth = document.getElementById('exportMonth');
@@ -3562,6 +2354,8 @@ function showExportModal(){
   
   const modal = document.getElementById('exportModal');
   if (modal) modal.classList.add('active');
+  
+  closeMobilePanel(); // Cerrar panel móvil
 }
 
 function closeExportModal(){
@@ -3575,381 +2369,11 @@ function buildExportUserList(){
   
   const users = Object.keys(db.users).sort();
   list.innerHTML = users.map(u => `
-    <label class="flex items-center gap-3 md:gap-2 p-3 md:p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
-      <input class="expUserChk" type="checkbox" value="${escapeHTML(u)}" class="w-5 h-5">
+    <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
+      <input class="expUserChk" type="checkbox" value="${escapeHTML(u)}">
       <span class="font-black text-gray-800">${escapeHTML(u)}</span>
     </label>
   `).join('');
-}
-
-function selectAllExportUsers(flag){
-  document.querySelectorAll('.expUserChk').forEach(ch => {
-    ch.checked = flag;
-  });
-}
-
-async function exportImages(){
-  const monthIndex0 = parseInt(document.getElementById('exportMonth').value);
-  const year = parseInt(document.getElementById('exportYear').value);
-  const scope = document.querySelector('input[name="exportScope"]:checked')?.value || 'current';
-  
-  let targets = [];
-  
-  if(scope === 'current') targets = [db.current];
-  else if(scope === 'all') targets = Object.keys(db.users).sort();
-  else if(scope === 'select'){
-    targets = Array.from(document.querySelectorAll('.expUserChk'))
-      .filter(x => x.checked)
-      .map(x => x.value);
-    
-    if(targets.length === 0) return alert("Selecciona al menos un perfil.");
-  }
-  
-  closeExportModal();
-  
-  const originalCurrent = db.current;
-  let exported = 0;
-  
-  for(const u of targets){
-    try {
-      db.current = u;
-      updateUserInitial();
-      
-      const img = await buildExportImageForUser(u, year, monthIndex0);
-      downloadDataUrl(img, `Turnos_${u}_${MONTHS[monthIndex0]}_${year}.png`);
-      exported++;
-      
-      // Pequeña pausa para evitar sobrecarga
-      await new Promise(resolve => setTimeout(resolve, 100));
-    } catch (error) {
-      console.error(`Error exportando ${u}:`, error);
-    }
-  }
-  
-  // Restaurar usuario original
-  db.current = originalCurrent;
-  updateUserDropdown();
-  updateUserInitial();
-  render();
-  
-  if(exported > 0){
-    alert(`Exportación completada: ${exported} imagen(es) descargada(s).`);
-  }
-}
-
-function downloadDataUrl(dataUrl, filename){
-  const a = document.createElement('a');
-  a.download = filename;
-  a.href = dataUrl;
-  a.click();
-}
-
-async function buildExportImageForUser(userKey, year, monthIndex0){
-  const user = db.users[userKey];
-  if (!user) throw new Error(`Usuario ${userKey} no encontrado`);
-  
-  const SHIFTS = user.config;
-  const categories = db.categories;
-  
-  // Calcular estadísticas
-  const catHours = {};
-  const catDays = {};
-  Object.keys(categories).forEach(catId => {
-    catHours[catId] = 0;
-    catDays[catId] = 0;
-  });
-  
-  let freeDays = 0, vacDays = 0, weekendDays = 0, holidayWorked = 0;
-  const daysInMonth = new Date(year, monthIndex0 + 1, 0).getDate();
-  freeDays = daysInMonth;
-  
-  const m1 = monthIndex0 + 1;
-  const todayStr = new Date().toLocaleDateString('es-ES');
-  
-  Object.keys(user.data).forEach(k => {
-    if(!k.startsWith(`${year}-${m1}-`)) return;
-    
-    const d = user.data[k];
-    const dayNum = parseInt(k.split('-')[2]);
-    const date = new Date(year, monthIndex0, dayNum);
-    const dow = date.getDay();
-    const isHoliday = db.holidays[k] && holidayApplies(db.holidays[k].location, user.locality);
-    
-    if(dow === 0 || dow === 6) weekendDays++;
-    freeDays--;
-    
-    if(d.mode === 'mixto'){
-      const topCat = SHIFTS[d.t]?.cat;
-      const botCat = SHIFTS[d.b]?.cat;
-      
-      if(isHoliday && (topCat || botCat)) holidayWorked++;
-      
-      if(topCat && categories[topCat]){
-        catHours[topCat] += (d.hrsTop || 0);
-        catDays[topCat]++;
-      }
-      
-      if(botCat && categories[botCat]){
-        catHours[botCat] += (d.hrsBottom || 0);
-        catDays[botCat]++;
-      }
-    } else {
-      const cat = SHIFTS[d.s]?.cat;
-      if(cat && categories[cat]){
-        catHours[cat] += (d.h || 0);
-        catDays[cat]++;
-        
-        if(cat !== 'off'){
-          if(isHoliday) holidayWorked++;
-        } else {
-          freeDays++;
-          if(d.s === 'Vacaciones') vacDays++;
-        }
-      }
-    }
-  });
-  
-  freeDays = Math.max(0, freeDays);
-  
-  // Crear elemento temporal para html2canvas
-  const temp = document.createElement('div');
-  temp.style.position = 'fixed';
-  temp.style.left = '-9999px';
-  temp.style.top = '-9999px';
-  temp.style.width = '1000px';
-  temp.style.background = '#ffffff';
-  temp.style.padding = '25px';
-  temp.style.borderRadius = '12px';
-  temp.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-  
-  // Construir HTML de exportación - SIN LEYENDA DE TURNOS
-  temp.innerHTML = buildExportHTML(userKey, user.locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, SHIFTS, user, categories);
-  
-  document.body.appendChild(temp);
-  
-  try {
-    const canvas = await html2canvas(temp, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      useCORS: true,
-      logging: false,
-      allowTaint: true
-    });
-    
-    const url = canvas.toDataURL('image/png', 1.0);
-    document.body.removeChild(temp);
-    return url;
-  } catch (error) {
-    document.body.removeChild(temp);
-    throw error;
-  }
-}
-
-function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, SHIFTS, user, categories){
-  const monthName = MONTHS[monthIndex0];
-  
-  // Calcular total de horas
-  const totalHours = Object.values(catHours).reduce((a, b) => a + b, 0);
-  
-  // Filtrar categorías con datos
-  const categoriesWithData = Object.keys(categories).filter(catId => 
-    catDays[catId] > 0 || catHours[catId] > 0
-  );
-  
-  let categoriesHTML = '';
-  if(categoriesWithData.length > 0) {
-    categoriesHTML = `
-      <div style="margin-bottom:20px;border:1px solid #e5e7eb;border-radius:12px;padding:15px;">
-        <div style="font-size:14px;font-weight:900;color:#334155;margin-bottom:12px;text-align:center;">
-          RESUMEN POR CATEGORÍA
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(${Math.min(categoriesWithData.length, 4)},1fr);gap:15px;">
-          ${categoriesWithData.map(catId => {
-            const cat = categories[catId];
-            return `
-              <div style="text-align:center;padding:10px;border:1px solid #f1f5f9;border-radius:10px;background:#f8fafc;">
-                <div style="font-size:11px;font-weight:900;color:#64748b;margin-bottom:6px;">
-                  ${escapeHTML(cat.icon)} ${escapeHTML(cat.name)}
-                </div>
-                <div style="font-size:18px;font-weight:900;color:#0f172a;margin-bottom:4px;">
-                  ${catHours[catId].toFixed(1)} HRS
-                </div>
-                <div style="font-size:10px;color:#64748b;font-weight:800;">
-                  ${catDays[catId]} día${catDays[catId] !== 1 ? 's' : ''}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
-  }
-  
-  // Construir calendario para exportación
-  let calendarHTML = '';
-  const firstDay = new Date(year, monthIndex0, 1).getDay();
-  const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
-  const lastDate = new Date(year, monthIndex0 + 1, 0).getDate();
-  
-  // Días del mes anterior
-  for(let i = 0; i < firstDayMonday; i++){
-    calendarHTML += `<div style="height:100px;background:#f9fafb;opacity:0.3;"></div>`;
-  }
-  
-  // Días del mes actual
-  for(let d = 1; d <= lastDate; d++){
-    const key = dayKey(year, monthIndex0 + 1, d);
-    const info = user.data[key] || {mode: 'simple', s: 'L'};
-    const holiday = db.holidays[key];
-    const isHoliday = holiday && holidayApplies(holiday.location, user.locality);
-    
-    let dayHTML = '';
-    if(info.mode === 'mixto'){
-      const topShift = SHIFTS[info.t] || {color: 'L', label: 'L'};
-      const bottomShift = SHIFTS[info.b] || {color: 'L', label: 'L'};
-      
-      dayHTML = `
-        <div style="height:100px;position:relative;border:1px solid #e5e7eb;">
-          <div style="height:50%;background:${getColorValue(topShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;border-bottom:1px solid rgba(0,0,0,0.1);">
-            ${escapeHTML(topShift.label)}
-          </div>
-          <div style="height:50%;background:${getColorValue(bottomShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">
-            ${escapeHTML(bottomShift.label)}
-          </div>
-          <div style="position:absolute;top:2px;right:2px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:4px;">
-            ${d}
-          </div>
-          ${isHoliday ? `<div style="position:absolute;top:2px;left:2px;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,0.9);padding:1px 4px;border-radius:4px;">A</div>` : ''}
-          ${info.noteTop ? `<div style="position:absolute;top:25%;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;background:rgba(255,255,255,0.95);padding:2px 5px;border-radius:3px;white-space:nowrap;max-width:90%;overflow:visible;">
-            ${escapeHTML(info.noteTop)}
-          </div>` : ''}
-          ${info.noteBottom ? `<div style="position:absolute;bottom:10%;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;background:rgba(255,255,255,0.95);padding:2px 5px;border-radius:3px;white-space:nowrap;max-width:90%;overflow:visible;">
-            ${escapeHTML(info.noteBottom)}
-          </div>` : ''}
-        </div>
-      `;
-    } else {
-      const shift = SHIFTS[info.s] || {color: 'L', label: 'L'};
-      dayHTML = `
-        <div style="height:100px;background:${getColorValue(shift.color)};position:relative;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;border:1px solid #e5e7eb;">
-          ${escapeHTML(shift.label)}
-          <div style="position:absolute;top:2px;right:2px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:4px;">
-            ${d}
-          </div>
-          ${isHoliday ? `<div style="position:absolute;top:2px;left:2px;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,0.9);padding:1px 4px;border-radius:4px;">A</div>` : ''}
-          ${info.n ? `<div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;background:rgba(255,255,255,0.95);padding:3px 6px;border-radius:4px;white-space:nowrap;max-width:90%;overflow:visible;border:1px solid rgba(0,0,0,0.1);">
-            ${escapeHTML(info.n)}
-          </div>` : ''}
-        </div>
-      `;
-    }
-    
-    calendarHTML += dayHTML;
-  }
-  
-  // CALCULAR TURNOS USADOS PERO NO MOSTRAR LA LEYENDA - COMENTADO
-  /*
-  const usedShifts = Object.keys(SHIFTS)
-    .filter(k => {
-      const prefix = `${year}-${monthIndex0 + 1}-`;
-      return Object.keys(user.data).some(key => 
-        key.startsWith(prefix) && 
-        (user.data[key].s === k || user.data[key].t === k || user.data[key].b === k)
-      );
-    });
-  */
-  
-  // NOTA: Se ha eliminado completamente la sección de leyenda
-  
-  return `
-    <div style="font-family:system-ui,-apple-system,sans-serif;color:#0f172a;">
-      <!-- Encabezado -->
-      <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e5e7eb;">
-        <div style="font-size:32px;font-weight:900;color:#0f172a;margin-bottom:5px;">
-          ${escapeHTML(userKey)} - ${monthName} ${year}
-        </div>
-        <div style="font-size:13px;color:#64748b;font-weight:800;margin-bottom:8px;">
-          Localidad: ${escapeHTML(locality || 'San Salvador')} • Generado: ${todayStr}
-        </div>
-        <div style="font-size:11px;color:#3b82f6;font-weight:900;background:#f0f9ff;padding:8px 15px;border-radius:20px;display:inline-block;">
-          Total horas: ${totalHours.toFixed(1)} HRS
-        </div>
-      </div>
-      
-      <!-- Calendario -->
-      <div style="margin-bottom:25px;">
-        <div style="font-size:16px;font-weight:900;color:#334155;margin-bottom:12px;text-align:center;">
-          CALENDARIO - ${monthName} ${year}
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e5e7eb;border:1px solid #e5e7eb;">
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#3b82f6;">LUN</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#64748b;">MAR</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#64748b;">MIÉ</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#64748b;">JUE</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#64748b;">VIE</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#3b82f6;">SÁB</div>
-          <div style="background:#f8fafc;padding:10px;text-align:center;font-weight:900;font-size:12px;color:#ef4444;">DOM</div>
-          ${calendarHTML}
-        </div>
-      </div>
-      
-      <!-- Estadísticas -->
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:20px;">
-        <div style="background:#f0f9ff;padding:15px;border-radius:12px;border:1px solid #bae6fd;">
-          <div style="font-size:12px;font-weight:900;color:#0369a1;margin-bottom:10px;">📊 ESTADÍSTICAS</div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Días trabajados</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${(lastDate - freeDays - vacDays - weekendDays)}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Días libres</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${freeDays}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Vacaciones</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${vacDays}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Fines de semana</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${weekendDays}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Asuetos trabajados</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${holidayWorked}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#64748b;font-weight:800;">Total días mes</div>
-              <div style="font-size:16px;font-weight:900;color:#0f172a;">${lastDate}</div>
-            </div>
-          </div>
-        </div>
-        
-        <div style="background:#f0f9ff;padding:15px;border-radius:12px;border:1px solid #bae6fd;">
-          <div style="font-size:12px;font-weight:900;color:#0369a1;margin-bottom:10px;">📈 RESUMEN</div>
-          <div style="font-size:11px;color:#64748b;font-weight:800;margin-bottom:8px;">
-            Total horas trabajadas: <span style="font-weight:900;color:#0f172a;font-size:14px;">${totalHours.toFixed(1)} HRS</span>
-          </div>
-          <div style="font-size:11px;color:#64748b;font-weight:800;margin-bottom:8px;">
-            Promedio diario: <span style="font-weight:900;color:#0f172a;font-size:14px;">${(lastDate - freeDays - vacDays - weekendDays) > 0 ? (totalHours / (lastDate - freeDays - vacDays - weekendDays)).toFixed(1) : '0.0'} HRS/día</span>
-          </div>
-          <div style="font-size:11px;color:#64748b;font-weight:800;">
-            Localidad perfil: <span style="font-weight:900;color:#0f172a;font-size:14px;">${escapeHTML(locality || 'San Salvador')}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Categorías (SOLO SI HAY DATOS) -->
-      ${categoriesHTML}
-      
-      <!-- Pie de página -->
-      <div style="margin-top:25px;border-top:1px solid #e5e7eb;padding-top:15px;text-align:center;">
-        <div style="font-size:10px;color:#94a3b8;font-weight:800;">
-          Generado con Shifter Pro v23 • ${escapeHTML(userKey)} • ${monthName} ${year}
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 // =========================================================
@@ -3979,6 +2403,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', function(e) {
     if(e.target.tagName === 'A' && e.target.getAttribute('href') === '#') {
       e.preventDefault();
+    }
+  });
+  
+  // Cerrar panel móvil con tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') {
+      closeMobilePanel();
     }
   });
 });
