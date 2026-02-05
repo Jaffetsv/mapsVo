@@ -520,7 +520,27 @@
     .drawer.active{ transform: translateX(0); }
     .drawer a, .drawer button{ text-align:left; }
 
-  </style>
+  
+    /* ===== Anti selección (long-press / menú Acciones) ===== */
+    .no-select, .no-select *{
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      -webkit-touch-callout: none;
+    }
+    #actionsMenu, #actionsMenu *{
+      -webkit-user-select:none !important;
+      user-select:none !important;
+      -webkit-touch-callout:none;
+    }
+
+
+    #dayActionsMenu, #dayActionsMenu *{
+      -webkit-user-select:none !important;
+      user-select:none !important;
+      -webkit-touch-callout:none;
+    }
+
+</style>
 </head>
 
 <body class="bg-gray-100">
@@ -4153,10 +4173,57 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
   const firstDay = new Date(year, monthIndex0, 1).getDay();
   const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
   const lastDate = new Date(year, monthIndex0 + 1, 0).getDate();
+  const prevLastDate = new Date(year, monthIndex0, 0).getDate();
+  const prevMonth = monthIndex0 === 0 ? 12 : monthIndex0;
+  const prevYear  = monthIndex0 === 0 ? year - 1 : year;
+  const nextMonth = monthIndex0 === 11 ? 1 : (monthIndex0 + 2);
+  const nextYear  = monthIndex0 === 11 ? year + 1 : year;
+
+  const buildExportDayCell = (dNum, info, isHoliday, isOtherMonth) => {
+    const opacity = isOtherMonth ? 0.35 : 1;
+    const border = '1px solid #e5e7eb';
+    const numBadge = `<div style="position:absolute;top:2px;right:2px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:4px;">${dNum}</div>`;
+    const holidayBadge = isHoliday ? `<div style="position:absolute;top:2px;left:2px;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,0.9);padding:1px 4px;border-radius:4px;">A</div>` : '';
+    // Sin turno registrado: celda tenue pero con número
+    if(!info){
+      return `<div style="height:100px;position:relative;border:${border};background:#f9fafb;opacity:${opacity};">${numBadge}${holidayBadge}</div>`;
+    }
+    if(info.mode === 'mixto'){
+      const topShift = SHIFTS[info.t] || {color:'L', label:'L'};
+      const bottomShift = SHIFTS[info.b] || {color:'L', label:'L'};
+      return `
+        <div style="height:100px;position:relative;border:${border};opacity:${opacity};">
+          <div style="height:50%;background:${getColorValue(topShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;border-bottom:1px solid rgba(0,0,0,0.1);">
+            ${escapeHTML(topShift.label)}
+          </div>
+          <div style="height:50%;background:${getColorValue(bottomShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">
+            ${escapeHTML(bottomShift.label)}
+          </div>
+          ${numBadge}
+          ${holidayBadge}
+        </div>
+      `;
+    }else{
+      const sh = SHIFTS[info.s] || {color:'L', label:'L'};
+      return `
+        <div style="height:100px;position:relative;border:${border};background:${getColorValue(sh.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;opacity:${opacity};">
+          ${escapeHTML(sh.label)}
+          ${numBadge}
+          ${holidayBadge}
+        </div>
+      `;
+    }
+  };
+
   
-  // Días del mes anterior
-  for(let i = 0; i < firstDayMonday; i++){
-    calendarHTML += `<div style="height:100px;background:#f9fafb;opacity:0.3;"></div>`;
+  // Días del mes anterior (visibles con número)
+  for(let i = firstDayMonday; i > 0; i--){
+    const dPrev = prevLastDate - i + 1;
+    const keyPrev = dayKey(prevYear, prevMonth, dPrev);
+    const infoPrev = user.data[keyPrev] || null;
+    const holidayPrev = db.holidays[keyPrev];
+    const isHolidayPrev = holidayPrev && holidayApplies(holidayPrev.location, user.locality);
+    calendarHTML += buildExportDayCell(dPrev, infoPrev, isHolidayPrev, true);
   }
   
   // Días del mes actual
@@ -4210,6 +4277,17 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
     calendarHTML += dayHTML;
   }
   
+  // Días del mes siguiente (visibles con número)
+  const totalCells = firstDayMonday + lastDate;
+  const trailing = (7 - (totalCells % 7)) % 7;
+  for(let dNext = 1; dNext <= trailing; dNext++){
+    const keyNext = dayKey(nextYear, nextMonth, dNext);
+    const infoNext = user.data[keyNext] || null;
+    const holidayNext = db.holidays[keyNext];
+    const isHolidayNext = holidayNext && holidayApplies(holidayNext.location, user.locality);
+    calendarHTML += buildExportDayCell(dNext, infoNext, isHolidayNext, true);
+  }
+
   // Turnos usados en el mes
   const usedShifts = Object.keys(SHIFTS)
     .filter(k => {
@@ -4370,7 +4448,7 @@ function showToast(msg){
 
 
 <!-- Menú acciones de día (copiar/pegar) -->
-<div id="dayActionsMenu" class="fixed z-[9999] hidden">
+<div id="dayActionsMenu" class="fixed z-[9999] hidden no-select">
   <div class="bg-white/95 backdrop-blur-md border border-black/10 rounded-2xl shadow-2xl overflow-hidden min-w-[220px]">
     <div class="px-4 py-3 font-black text-[12px] uppercase tracking-widest text-gray-700 bg-gray-50 border-b border-black/5">Acciones</div>
     <button id="actCopyDay" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">📋 Copiar día</button>
