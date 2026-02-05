@@ -17,18 +17,7 @@
         '.grid { display: grid; }' +
         '.flex { display: flex; }' +
         '.block { display: block !important; }' +
-        '
-    /* --- FIX: prioridad de hidden sobre cualquier display --- */
-    .hidden { display:none !important; }
-    .cfg-visible { display:block; }
-
-    /* --- FIX: dropdown de perfiles legible (iOS/Safari) --- */
-    #userSelect option { color:#111827; background:#ffffff; }
-
-    /* --- FIX: tabs sticky con altura real del topbar --- */
-    #mainTabs { position: sticky; top: var(--topbar-h, 160px); z-index: 40; }
-
-  </style>');
+        '</style>');
     }
   </script>
   
@@ -223,10 +212,10 @@
       text-align: center;
       color: #000;
       font-weight: 900;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255,255,255,0.9);
       border-radius: 4px;
       padding: 1px 3px;
-      border: 1px solid rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0,0,0,0.12);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -241,7 +230,7 @@
       font-size: 8px;
       font-weight: 900;
       color: #dc2626;
-      background: rgba(254, 226, 226, 0.9);
+      background: rgba(254,226,226,0.9);
       padding: 1px 4px;
       border-bottom-right-radius: 8px;
       z-index: 20;
@@ -307,7 +296,7 @@
     
     select:focus, input:focus, textarea:focus {
       border-color: var(--blue-600);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
     }
     
     /* Opciones de turno */
@@ -326,20 +315,25 @@
     
     .shift-option.selected {
       border-color: var(--blue-600) !important;
-      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      box-shadow: 0 6px 14px rgba(37,99,235,0.22);
       transform: translateY(-1px);
     }
     
-    /* Config tabs - FIXED: Ahora se desplazarán */
+    /* Config tabs - CORREGIDO: Mejor scroll y sticky */
     .config-tabs-container {
       display: flex;
       background: #f8fafc;
       border-bottom: 1px solid #e5e7eb;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
       position: sticky;
       top: 144px; /* Altura del header */
       z-index: 30;
+    }
+    
+    .config-tabs-container::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
     }
     
     @media (max-width: 768px) {
@@ -386,24 +380,13 @@
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.18);
     }
     
-    /* Utilitarios */
-    .hidden {
-      display: none !important;
-    }
-    
-    .block {
-      display: block !important;
-    }
-    
-    .flex {
-      display: flex !important;
-    }
-    
-    .grid {
-      display: grid !important;
-    }
-    
-    /* Clases para colores de fondo Tailwind-ish */
+    /* Utilitarios (evitar conflicto hidden vs block) */
+    .block { display: block; }
+    .flex { display: flex; }
+    .grid { display: grid; }
+    .hidden { display: none !important; }
+
+/* Clases para colores de fondo Tailwind-ish */
     .bg-white { background: var(--white) !important; }
     .bg-gray-50 { background: #f9fafb !important; }
     .bg-gray-100 { background: #f3f4f6 !important; }
@@ -473,86 +456,125 @@
       text-align: center;
       color: #000;
       font-weight: 900;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255,255,255,0.95);
       border-radius: 4px;
       padding: 2px 4px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0,0,0,0.1);
       white-space: nowrap;
       overflow: visible;
       text-overflow: unset;
       z-index: 10;
       max-height: 20px;
     }
+
+    /* Arreglo para mostrar texto en selects */
+    select option {
+      color: #111827;
+      font-weight: 800;
+      font-size: 13px;
+      background: #f9fafb;
+    }
+
+    /* Menú hamburguesa (drawer) */
+    .drawer-overlay{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none;
+      z-index: 900;
+    }
+    .drawer-overlay.active{ display:block; }
+    .drawer{
+      position: fixed; top: 0; right: 0; height: 100vh; width: min(320px, 88vw);
+      background: #0f172a;
+      color: #fff;
+      transform: translateX(100%);
+      transition: transform .18s ease-out;
+      z-index: 950;
+      box-shadow: -10px 0 30px rgba(0,0,0,.25);
+      display: flex;
+      flex-direction: column;
+    }
+    .drawer.active{ transform: translateX(0); }
+    .drawer a, .drawer button{ text-align:left; }
+
   </style>
 </head>
 
 <body class="bg-gray-100">
+
 <!-- Top bar -->
-<div id="topbar" class="bg-[#1e293b] text-white p-3 md:p-4 sticky top-0 z-50 shadow-lg">
-  <div class="flex items-center gap-3">
-    <!-- Izquierda: perfil -->
-    <div class="flex items-center gap-3 flex-1 min-w-0">
-      <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0">
+<div class="bg-[#1e293b] text-white p-3 md:p-4 sticky top-0 z-50 shadow-lg">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0">
         <span id="userInitial">A</span>
       </div>
-      <div class="flex-1 min-w-0">
-        <select id="userSelect" onchange="switchUser()" class="w-full bg-white/15 text-white border-white/25 rounded-xl px-3 py-2 text-[12px] font-black"></select>
-        <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Modo Vista</p>
+
+      <div class="min-w-0">
+        <div class="text-[10px] font-black uppercase tracking-widest text-gray-300">Perfil</div>
+        <!-- CORREGIDO: select claro para que en móvil (iOS/Android) NO se vea en blanco -->
+        <select id="userSelect" onchange="switchUser()"
+          class="mt-1 w-[220px] max-w-[70vw] bg-white text-gray-900 border border-white/20 rounded-xl px-3 py-2 text-[11px] font-black">
+        </select>
       </div>
     </div>
 
-    <!-- Derecha: menú hamburguesa -->
-    <div class="relative flex-shrink-0">
-      <button id="hamburgerBtn" onclick="toggleTopMenu()" class="w-11 h-11 rounded-xl bg-white/15 hover:bg-white/25 text-[18px] font-black flex items-center justify-center transition-colors" aria-label="Menú">
-        ☰
-      </button>
-
-      <div id="topMenu" class="hidden absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-        <button onclick="openProfilesModal(); closeTopMenu();" class="w-full flex items-center gap-3 px-4 py-3 text-[12px] font-black hover:bg-gray-50">
-          👤 <span>PERFILES</span>
-        </button>
-        <button onclick="openImportModal(); closeTopMenu();" class="w-full flex items-center gap-3 px-4 py-3 text-[12px] font-black hover:bg-gray-50">
-          📥 <span>IMPORTAR</span>
-        </button>
-        <button onclick="showExportModal(); closeTopMenu();" class="w-full flex items-center gap-3 px-4 py-3 text-[12px] font-black hover:bg-gray-50">
-          📋 <span>EXPORTAR</span>
-        </button>
-        <div class="px-4 py-3 border-t border-gray-200">
-          <button id="unlockBtn" onclick="toggleEditMode(); closeTopMenu();" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl text-[11px] font-black uppercase transition-colors">
-            🔒 Bloquear
-          </button>
-        </div>
-      </div>
-    </div>
+    <button id="menuBtn" onclick="toggleMenu()" class="bg-white/15 hover:bg-white/25 p-3 rounded-xl text-[12px] font-black uppercase transition-colors flex-shrink-0" aria-label="Menú">
+      ☰
+    </button>
   </div>
+
+  <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Modo Vista</p>
 
   <!-- Month/year -->
   <div class="mt-3 flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-2 shadow-inner">
     <button onclick="changeMonth(-1)" class="p-2 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes anterior">
-      <span class="text-2xl font-black">‹</span>
+      <span class="text-xl font-bold">‹</span>
     </button>
 
     <div class="flex flex-col items-center flex-1 mx-2">
-      <div id="currentMonthDisplay" class="text-lg md:text-xl font-black text-white text-center leading-tight">Febrero 2026</div>
-      <div class="flex gap-2 md:gap-3 items-center opacity-95 mt-1">
-        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-[12px] font-black text-white text-center appearance-none cursor-pointer w-24 md:w-auto"></select>
-        <span class="text-white font-black">/</span>
-        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-[12px] font-black text-white text-center appearance-none cursor-pointer w-20 md:w-auto"></select>
+      <div id="currentMonthDisplay" class="text-lg md:text-xl font-black text-white text-center mb-1">Febrero 2026</div>
+      <div class="flex gap-2 md:gap-3 items-center opacity-90">
+        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm font-bold text-white text-center appearance-none cursor-pointer w-24 md:w-auto"></select>
+        <span class="text-white font-bold">/</span>
+        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm font-bold text-white text-center appearance-none cursor-pointer w-20 md:w-auto"></select>
       </div>
       <div class="flex gap-2 mt-2">
-        <button onclick="goToday()" class="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-black uppercase transition-colors">Hoy</button>
+        <button onclick="goToday()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-black uppercase transition-colors">Hoy</button>
       </div>
     </div>
 
     <button onclick="changeMonth(1)" class="p-2 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes siguiente">
-      <span class="text-2xl font-black">›</span>
+      <span class="text-xl font-bold">›</span>
     </button>
   </div>
 </div>
 
+<!-- Drawer menu -->
+<div id="menuOverlay" class="drawer-overlay" onclick="closeMenu()"></div>
+<div id="menuDrawer" class="drawer" role="dialog" aria-modal="true" aria-label="Menú">
+  <div class="p-4 border-b border-white/10 flex items-center justify-between">
+    <div class="font-black uppercase text-[12px] tracking-widest">Acciones</div>
+    <button onclick="closeMenu()" class="bg-white/15 hover:bg-white/25 px-3 py-2 rounded-xl text-[10px] font-black uppercase">Cerrar</button>
+  </div>
+
+  <div class="p-4 space-y-3">
+    <button onclick="openProfilesModal(); closeMenu();" class="w-full p-3 bg-white/10 hover:bg-white/15 rounded-2xl font-black uppercase text-[11px]">👤 Perfiles</button>
+    <button onclick="openImportModal(); closeMenu();" class="w-full p-3 bg-sky-600 hover:bg-sky-700 rounded-2xl font-black uppercase text-[11px]">📥 Importar</button>
+    <button onclick="showExportModal(); closeMenu();" class="w-full p-3 bg-white/10 hover:bg-white/15 rounded-2xl font-black uppercase text-[11px]">📋 Exportar</button>
+    <button id="unlockBtn" onclick="toggleEditMode(); closeMenu();" class="w-full p-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-black uppercase text-[11px]">🔒 Bloquear</button>
+
+    <div class="pt-3 border-t border-white/10">
+      <div class="text-[10px] text-gray-300 font-bold leading-4">
+        * Recomendación: agrega este sitio a tu pantalla de inicio desde el navegador del teléfono.
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Tabs -->
-<div id="mainTabs" class="flex bg-white shadow-sm border-b">
+
+<div class="flex bg-white shadow-sm sticky top-[144px] md:top-[160px] z-40 border-b">
   <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn tab-active">📅 Calendario</button>
   <button onclick="showView('summary')" id="tab-summary" class="tab-btn">📊 Resumen</button>
   <button onclick="showView('settings')" id="tab-settings" class="tab-btn">⚙️ Ajustes</button>
@@ -572,7 +594,7 @@
   <div id="calendar" class="calendar-grid"></div>
 </div>
 
-<!-- Summary -->
+<!-- Summary - CORREGIDO: Solo categorías usadas en el mes -->
 <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen">
   <div class="space-y-4 md:space-y-6">
     <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
@@ -606,7 +628,7 @@
   </div>
 </div>
 
-<!-- Settings -->
+<!-- Settings - CORREGIDO: Tabs separados correctamente -->
 <div id="view-settings" class="view-section bg-white min-h-screen">
   <!-- CORREGIDO: Ahora los tabs están en un contenedor con scroll -->
   <div class="config-tabs-container">
@@ -620,7 +642,7 @@
 
   <div id="config-content" class="p-4 md:p-6">
     <!-- Turnos -->
-    <div id="tab-turnos" class="config-tab-content cfg-visible">
+    <div id="tab-turnos" class="config-tab-content block">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-[14px] font-black text-gray-600 uppercase">🎨 Configurar Turnos</h3>
         <button onclick="saveShiftSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase">
@@ -934,7 +956,7 @@
   </div>
 </div>
 
-<!-- Modal Import -->
+<!-- Modal Import - CORREGIDO: Nombres visibles en selects -->
 <div id="importModal" class="modal">
   <div class="bg-white w-full max-w-2xl rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2">
     <div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 mx-auto mb-4 flex items-center justify-center">
@@ -954,11 +976,11 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes (si no detecta)</label>
-          <select id="importMonth" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="importMonth" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Año (si no detecta)</label>
-          <select id="importYear" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="importYear" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
       </div>
 
@@ -1023,11 +1045,11 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes</label>
-          <select id="exportMonth" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="exportMonth" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Año</label>
-          <select id="exportYear" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="exportYear" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
       </div>
 
@@ -1062,7 +1084,7 @@
   </div>
 </div>
 
-<!-- Modal Profiles -->
+<!-- Modal Profiles - CORREGIDO: Nombres visibles en selects -->
 <div id="profilesModal" class="modal">
   <div class="bg-white w-full max-w-3xl rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
@@ -1070,18 +1092,21 @@
         <h3 class="font-black uppercase text-base md:text-lg">👤 Gestión de Perfiles</h3>
         <p class="text-[11px] text-gray-500 font-bold">Crear, editar, asignar localidad o eliminar perfiles.</p>
       </div>
-      <button onclick="closeProfilesModal()" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase whitespace-nowrap">Cerrar</button>
+      <div class="flex gap-2">
+        <button onclick="deleteAllProfilesExceptAdmin()" class="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase whitespace-nowrap">🧹 Eliminar todos (dejar ADMIN)</button>
+        <button onclick="closeProfilesModal()" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase whitespace-nowrap">Cerrar</button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-4">
         <h4 class="text-[12px] font-black text-gray-700 uppercase mb-3">➕ Crear perfil</h4>
         <div class="space-y-3">
-          <input id="createName" type="text" placeholder="Nombre completo" class="w-full bg-white border-blue-200 focus:border-blue-400">
-          <input id="createPin" type="password" placeholder="PIN (4 dígitos)" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400">
+          <input id="createName" type="text" placeholder="Nombre completo" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900">
+          <input id="createPin" type="password" placeholder="PIN (4 dígitos)" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900">
           <div>
             <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
-            <select id="createLoc" class="w-full bg-white border-blue-200 focus:border-blue-400"></select>
+            <select id="createLoc" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900"></select>
           </div>
           <button onclick="createProfile()" class="w-full p-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black uppercase text-[11px]">
             Crear
@@ -1093,7 +1118,6 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-2">
           <h4 class="text-[12px] font-black text-gray-700 uppercase">Perfiles existentes</h4>
           <button onclick="renderProfilesList()" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase whitespace-nowrap">Actualizar</button>
-          <button onclick="deleteAllProfilesExceptAdmin()" class="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase whitespace-nowrap">Eliminar todos</button>
         </div>
         <div id="profilesList" class="max-h-[300px] md:max-h-[360px] overflow-y-auto space-y-2"></div>
       </div>
@@ -1361,7 +1385,7 @@ function toISODate(y,m,d){
 }
 
 // =========================================================
-// UI Initialization
+// UI Initialization - CORREGIDO: Color de texto en selects
 // =========================================================
 function init(){
   // Cargar feriados por defecto
@@ -1427,19 +1451,19 @@ function loadDefaultHolidays(){
 }
 
 function initSelectors(){
-  // Meses
+  // Meses - CORREGIDO: Color de texto
   const monthSelects = ['selectMonth', 'importMonth', 'exportMonth'];
   monthSelects.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.innerHTML = MONTHS.map((m, i) => 
-        `<option value="${i}">${m}</option>`
+        `<option value="${i}" style="color: #111827; font-weight: 800;">${m}</option>`
       ).join('');
       el.value = current.getMonth();
     }
   });
   
-  // Años
+  // Años - CORREGIDO: Color de texto
   const yearSelects = ['selectYear', 'importYear', 'exportYear'];
   const currentYear = current.getFullYear();
   yearSelects.forEach(id => {
@@ -1447,7 +1471,7 @@ function initSelectors(){
     if (el) {
       let html = '';
       for(let y = currentYear - 2; y <= currentYear + 2; y++){
-        html += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+        html += `<option value="${y}" ${y === currentYear ? 'selected' : ''} style="color: #111827; font-weight: 800;">${y}</option>`;
       }
       el.innerHTML = html;
     }
@@ -1529,6 +1553,33 @@ function showView(v){
   }
 }
 
+
+// =========================================================
+// Drawer Menu (hamburguesa)
+// =========================================================
+function openMenu(){
+  const o = document.getElementById('menuOverlay');
+  const d = document.getElementById('menuDrawer');
+  if(o) o.classList.add('active');
+  if(d) d.classList.add('active');
+  // evitar scroll del body cuando el menú está abierto
+  document.body.style.overflow = 'hidden';
+}
+function closeMenu(){
+  const o = document.getElementById('menuOverlay');
+  const d = document.getElementById('menuDrawer');
+  if(o) o.classList.remove('active');
+  if(d) d.classList.remove('active');
+  document.body.style.overflow = '';
+}
+function toggleMenu(){
+  const d = document.getElementById('menuDrawer');
+  if(d && d.classList.contains('active')) closeMenu(); else openMenu();
+}
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeMenu();
+});
+
 function showConfigTab(tab){
   // Ocultar todas las pestañas de configuración
   document.querySelectorAll('.config-tab').forEach(t => {
@@ -1538,7 +1589,6 @@ function showConfigTab(tab){
   // Ocultar todos los contenidos
   document.querySelectorAll('.config-tab-content').forEach(c => {
     c.classList.add('hidden');
-    c.classList.remove('cfg-visible');
   });
   
   // Mostrar pestaña seleccionada
@@ -1546,7 +1596,7 @@ function showConfigTab(tab){
   const contentElement = document.getElementById(`tab-${tab}`);
   
   if (tabElement) tabElement.classList.add('active');
-  if (contentElement) { contentElement.classList.remove('hidden'); contentElement.classList.add('cfg-visible'); }
+  if (contentElement) contentElement.classList.remove('hidden');
   
   // Cargar contenido específico
   if(tab === 'turnos'){ 
@@ -1631,7 +1681,7 @@ function updateUserDropdown(){
   
   const users = Object.keys(db.users).sort();
   select.innerHTML = users.map(u => 
-    `<option value="${escapeHTML(u)}" ${u === db.current ? 'selected' : ''}>${escapeHTML(u)}</option>`
+    `<option value="${escapeHTML(u)}" ${u === db.current ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(u)}</option>`
   ).join('');
 }
 
@@ -1656,7 +1706,7 @@ function switchUser(){
 }
 
 // =========================================================
-// Calendar Rendering - MEJORADO para exportación
+// Calendar Rendering
 // =========================================================
 function render(){
   const grid = document.getElementById('calendar');
@@ -1775,19 +1825,61 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
 }
 
 // =========================================================
-// Summary Functions
+// Summary Functions - CORREGIDO: Solo categorías usadas en el mes
 // =========================================================
 function renderSummaryCategories(){
   const container = document.getElementById('summary-categories');
   if (!container) return;
   
+  const y = current.getFullYear();
+  const m0 = current.getMonth();
+  const m1 = m0 + 1;
+  const user = db.users[db.current];
+  if (!user) return;
+  
+  const SHIFTS = user.config;
   const categories = db.categories;
+  
+  // Determinar qué categorías están usadas en este mes
+  const usedCategories = new Set();
+  Object.keys(user.data).forEach(key => {
+    if (!key.startsWith(`${y}-${m1}-`)) return;
+    
+    const d = user.data[key];
+    if (d.mode === 'mixto') {
+      const topCat = SHIFTS[d.t]?.cat;
+      const botCat = SHIFTS[d.b]?.cat;
+      if (topCat) usedCategories.add(topCat);
+      if (botCat) usedCategories.add(botCat);
+    } else {
+      const cat = SHIFTS[d.s]?.cat;
+      if (cat) usedCategories.add(cat);
+    }
+  });
+  
+  // Filtrar categorías para mostrar solo las usadas
+  const usedCatIds = Array.from(usedCategories).filter(catId => categories[catId]);
+  
+  // Si no hay categorías usadas, mostrar un mensaje
+  if (usedCatIds.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full bg-white p-6 rounded-3xl shadow-sm text-center">
+        <p class="text-[12px] font-black text-gray-400 uppercase mb-2">📊 Resumen del Mes</p>
+        <p class="text-[11px] text-gray-500">No hay datos para el mes seleccionado</p>
+      </div>
+    `;
+    return;
+  }
+  
   let html = '';
   
-  Object.entries(categories).forEach(([catId, cat]) => {
+  usedCatIds.forEach((catId) => {
+    const cat = categories[catId];
+    if (!cat) return;
+    
     const color = cat.color || '#3b82f6';
     html += `
-      <div id="card-${cssSafe(catId)}" class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
+      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
         <div class="flex items-center justify-between mb-2">
           <p class="text-[11px] font-black text-gray-400 uppercase">${escapeHTML(cat.name)}</p>
           <span class="text-[10px] font-black px-2 py-1 rounded-full" style="background: ${color}20; color: ${color};">${escapeHTML(cat.icon)}</span>
@@ -1799,6 +1891,9 @@ function renderSummaryCategories(){
   });
   
   container.innerHTML = html;
+  
+  // Calcular y actualizar valores
+  calcSummary();
 }
 
 function calcSummary(){
@@ -1874,23 +1969,15 @@ function calcSummary(){
   
   freeDays = Math.max(0, freeDays);
   
-  // Actualizar UI (y ocultar categorías no usadas en el mes)
+  // Actualizar UI - solo categorías usadas
   Object.keys(categories).forEach(catId => {
-    const hrsEl  = document.getElementById(`hrs-${cssSafe(catId)}`);
+    const hrsEl = document.getElementById(`hrs-${cssSafe(catId)}`);
     const daysEl = document.getElementById(`days-${cssSafe(catId)}`);
-    const cardEl = document.getElementById(`card-${cssSafe(catId)}`);
-
-    const h = (catHours[catId] || 0);
-    const d = (catDays[catId]  || 0);
-
-    if (hrsEl)  hrsEl.textContent  = `${h.toFixed(1)} HRS`;
-    if (daysEl) daysEl.textContent = `${d} día${d !== 1 ? 's' : ''}`;
-
-    // Requisito: en resumen solo mostrar categorías usadas en el mes seleccionado
-    if (cardEl) cardEl.classList.toggle('hidden', d === 0);
+    if (hrsEl) hrsEl.textContent = `${catHours[catId].toFixed(1)} HRS`;
+    if (daysEl) daysEl.textContent = `${catDays[catId]} día${catDays[catId] !== 1 ? 's' : ''}`;
   });
-
-// Actualizar otros elementos
+  
+  // Actualizar otros elementos
   const elements = {
     'total-off': freeDays + vacDays + weekendDays,
     'free-days': freeDays,
@@ -2225,11 +2312,11 @@ function renderSettings(){
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
-              <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
-              <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+              <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
                 ${Object.keys(db.categories).map(cid => {
                   const c = db.categories[cid];
                   return `<option value="${cid}" ${conf.cat === cid ? 'selected' : ''}>${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
@@ -2241,7 +2328,7 @@ function renderSettings(){
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
-              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
                 ${['Mañana','Tarde','CENA','16hrs','L','Vacaciones','Cumpleaños','Ausencia','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x =>
                   `<option value="${x}" ${conf.color === x ? 'selected' : ''}>${x}</option>`
                 ).join('')}
@@ -2249,11 +2336,11 @@ function renderSettings(){
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Entrada</p>
-              <input type="time" id="set-in-${cssSafe(id)}" value="${conf.in || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input type="time" id="set-in-${cssSafe(id)}" value="${conf.in || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Salida</p>
-              <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
           </div>
           
@@ -2404,7 +2491,7 @@ function loadCategoriesSelect(){
   
   select.innerHTML = Object.keys(db.categories).map(cid => {
     const c = db.categories[cid];
-    return `<option value="${cid}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
+    return `<option value="${cid}" style="color: #111827; font-weight: 800;">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
   }).join('');
 }
 
@@ -2468,11 +2555,11 @@ function renderCategories(){
         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Icono</div>
-            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</div>
@@ -2579,7 +2666,7 @@ function renderLocalities(){
         </div>
         <div class="flex-1">
           <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-          <input id="loc-${idx}" value="${escapeHTML(loc)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${isGeneral ? 'disabled' : ''}/>
+          <input id="loc-${idx}" value="${escapeHTML(loc)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900" ${isGeneral ? 'disabled' : ''}/>
           <div class="text-[10px] font-bold text-gray-500 mt-1">${isGeneral ? 'Reservado para asuetos generales.' : ''}</div>
         </div>
         ${isGeneral ? 
@@ -2705,7 +2792,7 @@ function refreshHolidayLocationSelects(){
   const select = document.getElementById('newHolidayLocation');
   if (select) {
     select.innerHTML = db.localities.map(l => 
-      `<option value="${escapeHTML(l)}" ${l.toUpperCase() === 'GENERAL' ? 'selected' : ''}>${escapeHTML(l)}</option>`
+      `<option value="${escapeHTML(l)}" ${l.toUpperCase() === 'GENERAL' ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(l)}</option>`
     ).join('');
   }
 }
@@ -2715,7 +2802,7 @@ function refreshProfileLocationSelects(){
   if (createLoc) {
     createLoc.innerHTML = db.localities
       .filter(l => l.toUpperCase() !== 'GENERAL')
-      .map(l => `<option value="${escapeHTML(l)}" ${l === 'San Salvador' ? 'selected' : ''}>${escapeHTML(l)}</option>`)
+      .map(l => `<option value="${escapeHTML(l)}" ${l === 'San Salvador' ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(l)}</option>`)
       .join('');
   }
 }
@@ -2753,15 +2840,15 @@ function renderHolidays(){
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Fecha</div>
-            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y, m, d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y, m, d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name || '')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name || '')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
               ${db.localities.map(l => 
                 `<option value="${escapeHTML(l)}" ${(h.location || 'General') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`
               ).join('')}
@@ -2863,8 +2950,40 @@ function savePinOnly(){
 }
 
 // =========================================================
-// Profiles Modal Functions
+// Profiles Modal Functions - CORREGIDO: Nombres visibles
 // =========================================================
+
+function deleteAllProfilesExceptAdmin(){
+  // Acción administrativa: requiere PIN universal o PIN de ADMIN
+  const p = prompt("CONFIRMACIÓN: Ingresa PIN de ADMIN (o PIN universal) para eliminar TODOS los perfiles y dejar solo ADMIN:");
+  const adminPin = db.users?.ADMIN?.pin;
+  if(p !== adminPin && p !== ADMIN_UNIVERSAL_PIN){
+    return alert("PIN incorrecto. Operación cancelada.");
+  }
+
+  if(!confirm("Esto eliminará TODOS los perfiles excepto ADMIN. ¿Deseas continuar?")) return;
+
+  const keep = 'ADMIN';
+  const keys = Object.keys(db.users || {});
+  keys.forEach(k => {
+    if(k !== keep) delete db.users[k];
+  });
+
+  db.current = keep;
+  saveDB();
+
+  // Refrescar UI
+  updateUserDropdown();
+  updateUserInitial();
+  render();
+  renderSummaryCategories();
+  calcSummary();
+  renderProfilesList();
+
+  alert("Listo: se eliminaron todos los perfiles y se dejó únicamente ADMIN.");
+}
+
+
 function openProfilesModal(){
   refreshProfileLocationSelects();
   renderProfilesList();
@@ -2950,15 +3069,15 @@ function renderProfilesList(){
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Renombrar perfil</div>
-            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${u === 'ADMIN' ? 'disabled' : ''}/>
+            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900" ${u === 'ADMIN' ? 'disabled' : ''}/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">PIN</div>
-            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
               ${db.localities
                 .filter(l => l.toUpperCase() !== 'GENERAL')
                 .map(l => `<option value="${escapeHTML(l)}" ${(user.locality || 'San Salvador') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`)
@@ -3038,7 +3157,7 @@ function saveProfileEdits(u){
 }
 
 // =========================================================
-// Import Functions
+// Import Functions - CORREGIDO: Nombres visibles en lista
 // =========================================================
 function openImportModal(){
   document.getElementById('importFile').value = '';
@@ -3130,15 +3249,15 @@ async function analyzeImportFile(){
       users: Array.from(usersSet).sort()
     };
     
-    // Mostrar lista de usuarios
+    // Mostrar lista de usuarios - CORREGIDO: Texto visible
     const list = document.getElementById('importUsersList');
     if(importContext.users.length === 0){
       list.innerHTML = `<div class="text-gray-400 font-bold">No se detectaron usuarios.</div>`;
     } else {
       list.innerHTML = importContext.users.map(u => `
-        <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
+        <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer" style="color: #111827;">
           <input class="impUserChk" type="checkbox" value="${escapeHTML(u)}" checked>
-          <span class="font-black text-gray-800">${escapeHTML(u)}</span>
+          <span class="font-black">${escapeHTML(u)}</span>
         </label>
       `).join('');
     }
@@ -3335,7 +3454,7 @@ function runImportSelected(){
 }
 
 // =========================================================
-// Export Functions - MEJORADAS para mostrar comentarios completos
+// Export Functions - CORREGIDO: Texto visible en selects
 // =========================================================
 function showExportModal(){
   const exportMonth = document.getElementById('exportMonth');
@@ -3369,9 +3488,9 @@ function buildExportUserList(){
   
   const users = Object.keys(db.users).sort();
   list.innerHTML = users.map(u => `
-    <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
+    <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer" style="color: #111827;">
       <input class="expUserChk" type="checkbox" value="${escapeHTML(u)}">
-      <span class="font-black text-gray-800">${escapeHTML(u)}</span>
+      <span class="font-black">${escapeHTML(u)}</span>
     </label>
   `).join('');
 }
@@ -3505,18 +3624,18 @@ async function buildExportImageForUser(userKey, year, monthIndex0){
   
   freeDays = Math.max(0, freeDays);
   
-  // Crear elemento temporal para html2canvas - MÁS ESPACIO para comentarios
+  // Crear elemento temporal para html2canvas
   const temp = document.createElement('div');
   temp.style.position = 'fixed';
   temp.style.left = '-9999px';
   temp.style.top = '-9999px';
-  temp.style.width = '1000px'; // Ancho aumentado
+  temp.style.width = '1000px';
   temp.style.background = '#ffffff';
   temp.style.padding = '25px';
   temp.style.borderRadius = '12px';
   temp.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
   
-  // Construir HTML de exportación - CON MÁS ESPACIO PARA COMENTARIOS
+  // Construir HTML de exportación
   temp.innerHTML = buildExportHTML(userKey, user.locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, SHIFTS, user, categories);
   
   document.body.appendChild(temp);
@@ -3579,7 +3698,7 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
     `;
   }
   
-  // Construir calendario para exportación - CON CELDAS MÁS ALTAS
+  // Construir calendario para exportación
   let calendarHTML = '';
   const firstDay = new Date(year, monthIndex0, 1).getDay();
   const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
@@ -3691,7 +3810,7 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
         </div>
       </div>
       
-      <!-- Calendario (MÁS ESPACIO) -->
+      <!-- Calendario -->
       <div style="margin-bottom:25px;">
         <div style="font-size:16px;font-weight:900;color:#334155;margin-bottom:12px;text-align:center;">
           CALENDARIO - ${monthName} ${year}
@@ -3775,7 +3894,6 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
 // =========================================================
 document.addEventListener('DOMContentLoaded', () => {
   init();
-  updateTopbarHeight();
   
   // Configurar eventos de export scope
   document.addEventListener('change', (e) => {
@@ -3788,75 +3906,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-// =========================================================
-// UI Helpers (Top Menu + Sticky Tabs Height)
-// =========================================================
-function updateTopbarHeight(){
-  const tb = document.getElementById('topbar');
-  if (!tb) return;
-  const h = tb.getBoundingClientRect().height;
-  document.documentElement.style.setProperty('--topbar-h', `${Math.ceil(h)}px`);
-}
-
-function toggleTopMenu(){
-  const m = document.getElementById('topMenu');
-  if (!m) return;
-  m.classList.toggle('hidden');
-}
-
-function closeTopMenu(){
-  const m = document.getElementById('topMenu');
-  if (m) m.classList.add('hidden');
-}
-
-// Cerrar menú al tocar fuera
-document.addEventListener('click', (e) => {
-  const btn = document.getElementById('hamburgerBtn');
-  const menu = document.getElementById('topMenu');
-  if (!btn || !menu) return;
-  if (menu.classList.contains('hidden')) return;
-  if (btn.contains(e.target) || menu.contains(e.target)) return;
-  closeTopMenu();
-});
-
-window.addEventListener('resize', updateTopbarHeight);
-
-// =========================================================
-// Profiles: eliminar todos excepto ADMIN
-// =========================================================
-function deleteAllProfilesExceptAdmin(){
-  if (!confirm('Esto eliminará TODOS los perfiles (y sus calendarios) excepto ADMIN. ¿Desea continuar?')) return;
-
-  const pin = prompt('Ingrese PIN universal de administrador para confirmar:');
-  if (pin !== ADMIN_UNIVERSAL_PIN){
-    alert('PIN incorrecto. Operación cancelada.');
-    return;
-  }
-
-  // Respaldar ADMIN y restaurar solo ese
-  const admin = db.users?.ADMIN;
-  if (!admin){
-    alert('No existe el perfil ADMIN. Operación cancelada.');
-    return;
-  }
-
-  db.users = { ADMIN: admin };
-  db.current = 'ADMIN';
-
-  // Sanitizar lista de localidades si faltara
-  if (!Array.isArray(db.localities) || db.localities.length === 0){
-    db.localities = ['General','San Salvador'];
-  }
-
-  saveDB();
-  refreshUserSelect();
-  renderProfilesList();
-  updateTopbarHeight();
-  showView('calendar');
-  alert('Listo: se eliminaron los perfiles y quedó únicamente ADMIN.');
-}
-
 </script>
 
 </body>
