@@ -66,7 +66,7 @@
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: visible;
       transition: transform 0.15s;
     }
     
@@ -141,7 +141,7 @@
       line-height: 1.1;
       padding: 4px;
       color: rgba(0, 0, 0, 0.8);
-      overflow: hidden;
+      overflow: visible;
     }
     
     @media (max-width: 640px) {
@@ -151,27 +151,48 @@
       }
     }
     
+    
+    /* Miniatura de foto en el día */
+    .day-photo-thumb{
+      position:absolute;
+      top:6px;
+      left:6px;
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      overflow:hidden;
+      border:2px solid rgba(255,255,255,0.9);
+      box-shadow:0 6px 14px rgba(0,0,0,0.18);
+      background:rgba(255,255,255,0.35);
+      z-index:12;
+    }
+    .day-photo-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
     /* Texto de nota - AUMENTADO para mejor visibilidad */
     .note-text {
       font-size: 10px;
-      position: absolute;
-      bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      text-align: center;
-      color: #000;
-      font-weight: 900;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 6px;
-      padding: 2px 4px;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      z-index: 10;
+      position: static;
+      margin: 6px auto 8px;
+      width: calc(100% - 10px);
+      text-align: left;
+      color: #111827;
+      font-weight: 700;
+      background: rgba(255,255,255,0.92);
+      border-radius: 8px;
+      padding: 6px 8px;
+      border: 1px solid rgba(0,0,0,0.10);
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.15;
+      word-break: break-word;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
     }
-    
+
     @media (max-width: 640px) {
       .note-text {
         font-size: 8px;
@@ -196,8 +217,8 @@
       border-radius: 4px;
       padding: 1px 3px;
       border: 1px solid rgba(0, 0, 0, 0.12);
-      white-space: nowrap;
-      overflow: hidden;
+      white-space: normal;
+      overflow: visible;
       text-overflow: ellipsis;
       z-index: 10;
     }
@@ -216,8 +237,8 @@
       border-radius: 4px;
       padding: 1px 3px;
       border: 1px solid rgba(0,0,0,0.12);
-      white-space: nowrap;
-      overflow: hidden;
+      white-space: normal;
+      overflow: visible;
       text-overflow: ellipsis;
       z-index: 10;
     }
@@ -440,7 +461,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: visible;
     }
     
     .export-note-text {
@@ -845,9 +866,10 @@
 <!-- Modal día -->
 <div id="modal" class="modal">
   <div class="bg-white w-full max-w-md md:max-w-lg rounded-3xl md:rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 mx-2">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-4 md:py-5 font-black text-sm uppercase tracking-widest">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-4 md:py-5 font-black text-sm uppercase tracking-widest relative">
       <div>📅 Configurar Día</div>
       <div id="modalDate" class="text-[10px] font-normal opacity-90 mt-1"></div>
+      <button id="modalCloseX" type="button" aria-label="Cerrar" class="absolute top-3 right-3 md:top-4 md:right-4 w-10 h-10 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 flex items-center justify-center text-white text-xl leading-none">✕</button>
     </div>
     <div class="p-4 md:p-6 overflow-y-auto max-h-[80vh]">
       <!-- Holiday info -->
@@ -860,7 +882,49 @@
           </div>
         </div>
       </div>
-      
+
+      <!-- Panel rápido: Foto / Notas / Turno -->
+      <div class="px-4 md:px-6 pb-2 md:pb-4">
+        <div class="grid grid-cols-12 gap-3">
+          <div class="col-span-4">
+            <div class="rounded-2xl border border-black/10 bg-gray-50 p-3 shadow-sm">
+              <div class="text-[11px] font-black uppercase tracking-widest text-gray-600 mb-2">Foto</div>
+              <input id="photoInput" type="file" accept="image/*" class="hidden"/>
+              <button id="photoPickBtn" type="button" class="w-full rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📷 Adjuntar</button>
+              <div id="photoPreviewWrap" class="mt-3 hidden">
+                <img id="photoPreview" alt="Foto" class="w-full h-24 object-cover rounded-xl border border-black/10"/>
+                <button id="photoRemoveBtn" type="button" class="mt-2 w-full rounded-xl bg-red-50 border border-red-200 px-3 py-2 font-bold text-[12px] text-red-700">🗑️ Quitar</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-span-8">
+            <div class="rounded-2xl border border-black/10 bg-gray-50 p-3 shadow-sm">
+              <div class="text-[11px] font-black uppercase tracking-widest text-gray-600 mb-2">Notas</div>
+              <textarea id="notaQuick" rows="4" class="w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-[13px] leading-snug" placeholder="Escribe una nota..."></textarea>
+              <div class="mt-2 text-[11px] text-gray-500">Se guarda en el día. En el calendario se muestra una vista previa completa.</div>
+            </div>
+          </div>
+          <div class="col-span-12">
+            <div id="turnCard" class="rounded-2xl border border-black/10 bg-gradient-to-r from-slate-50 to-white p-3 shadow-sm cursor-pointer">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-[11px] font-black uppercase tracking-widest text-gray-600">Turno</div>
+                  <div id="shiftPreviewTitle" class="font-black text-[16px] text-gray-900 mt-1">—</div>
+                </div>
+                <button id="btnClearShift" type="button" class="mt-2 w-full rounded-xl bg-gray-100 border border-black/10 px-3 py-2 font-bold text-[12px] text-gray-700">🧽 Vaciar turno</button>
+                <div class="flex gap-2 hidden">
+                  <button id="btnCopyThisDay" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📋 Copiar</button>
+                  <button id="btnPasteHere" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📥 Pegar</button>
+                </div>
+              </div>
+              <div class="mt-3 text-[12px] text-gray-600">Toca un turno abajo para cambiarlo.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="turnPickerArea" class="mt-4 hidden">
+
       <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-4 md:mb-6">
         <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
         <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
@@ -943,6 +1007,8 @@
       <div id="note-simple" class="mt-4 md:mt-6">
         <p class="text-[10px] font-black text-gray-400 uppercase mb-2">📝 Comentario (editable)</p>
         <textarea id="nota" placeholder="Ej: 06:00-14:00 | Doble turno | etc." class="w-full p-4 bg-gray-100 border-none rounded-2xl md:rounded-[24px] text-sm font-bold h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
       </div>
 
       <div class="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
@@ -1835,6 +1901,9 @@ function render(){
 
 function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = false){
   const cell = document.createElement('div');
+  let wasLongPress = false;
+let suppressClickUntil = 0;
+  let pressTimer = null;
   
   let classes = 'day-cell';
   if (isOffMonth) classes += ' day-off-month';
@@ -1880,17 +1949,55 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
     cell.innerHTML += `<div class="holiday-indicator">A</div>`;
   }
   
+  
+  // Miniatura de foto
+  if (info && info.photoData) {
+    cell.innerHTML += `<div class="day-photo-thumb"><img src="${info.photoData}" alt="foto"/></div>`;
+  }
+
   // Número del día
   cell.innerHTML += `<span class="day-number">${dayNum}</span>`;
   
   // Evento click
-  cell.onclick = () => {
+  cell.onclick = (ev) => {
+    if (wasLongPress) { wasLongPress = false; return; }
     if (!isEditMode()) {
       alert("Activa modo edición para editar.");
       return;
     }
+    // Si está activo el modo pegar, pegar sin abrir modal
+    if (pasteMode && (clipboardDayData || clipboardShiftOnly)) {
+      pasteTo(key);
+      return;
+    }
+    hideDayMenu();
     openDay(key, info || {mode: 'simple', s: 'L'});
   };
+
+  // Menú acciones (PC clic derecho / Touch mantener presionado)
+  cell.oncontextmenu = (ev) => {
+    ev.preventDefault();
+    if (!isEditMode()) return;
+    wasLongPress = true;
+    showDayMenu(ev.clientX, ev.clientY, key);
+  };
+  const startPress = (ev) => {
+    if (!isEditMode()) return;
+    const pt = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
+    pressTimer = setTimeout(()=> {
+      wasLongPress = true;
+      showDayMenu(pt.clientX || 20, pt.clientY || 20, key);
+    }, 450);
+  };
+  const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+
+  cell.addEventListener('touchstart', startPress, {passive:true});
+  cell.addEventListener('touchend', cancelPress);
+  cell.addEventListener('touchmove', cancelPress);
+  cell.addEventListener('pointerdown', (ev)=>{ startPress(ev); });
+  cell.addEventListener('pointerup', cancelPress);
+  cell.addEventListener('pointercancel', cancelPress);
+
   
   return cell;
 }
@@ -2078,6 +2185,7 @@ function calcSummary(){
 // =========================================================
 function openDay(key, info){
   activeKey = key;
+  activePhotoData = (info && info.photoData) ? info.photoData : "";
   mode = info.mode || 'simple';
   selS = info.s || 'Mañana';
   selT = info.t || 'Mañana';
@@ -2107,7 +2215,29 @@ function openDay(key, info){
     }
   }
   
-  // Configurar campos según modo
+  
+  // Foto preview en modal
+  const prevWrap = document.getElementById('photoPreviewWrap');
+  const prevImg = document.getElementById('photoPreview');
+  const pickBtn = document.getElementById('photoPickBtn');
+  if (prevImg) prevImg.src = activePhotoData || "";
+  if (prevWrap) prevWrap.classList.toggle('hidden', !activePhotoData);
+
+  // Nota rápida (UI)
+  const nq = document.getElementById('notaQuick');
+  if (nq) nq.value = (info && info.n) ? String(info.n) : "";
+
+  // Preview de turno
+  const sp = document.getElementById('shiftPreviewTitle');
+  if (sp) {
+    if (mode === 'mixto') {
+      sp.textContent = `${selT} / ${selB}`;
+    } else {
+      sp.textContent = selS;
+    }
+  }
+
+// Configurar campos según modo
   if (mode === 'simple') {
     const shift = SHIFTS[selS] || {in: '00:00', out: '00:00'};
     document.getElementById('tIn').value = info.tIn || shift.in;
@@ -2321,6 +2451,188 @@ function maybeAutoNoteMixto(){
   }
 }
 
+
+// =========================================================
+// Copiar / pegar (PC + Touch) + Foto + UI modal mejorada
+// =========================================================
+let clipboardDayData = null;      // copia completa (turno + notas + foto)
+let clipboardShiftOnly = null;    // solo turno (sin nota/foto)
+let pasteMode = false;
+let activePhotoData = "";
+
+function deepCopy(obj){ return obj ? JSON.parse(JSON.stringify(obj)) : obj; }
+
+function setPasteMode(on){
+  pasteMode = !!on;
+  const btn = document.getElementById('actPasteMode');
+  if(btn) btn.textContent = `🖱️ Modo pegar: ${pasteMode ? 'ON' : 'OFF'}`;
+  const pasteHere = document.getElementById('btnPasteHere');
+  if(pasteHere) pasteHere.classList.toggle('opacity-40', !clipboardDayData && !clipboardShiftOnly);
+}
+
+function copyDay(key){
+  const user = db.users[db.current]; if(!user) return;
+  clipboardDayData = deepCopy(user.data[key] || null);
+  clipboardShiftOnly = null;
+  setPasteMode(false);
+}
+
+function copyShift(key){
+  const user = db.users[db.current]; if(!user) return;
+  const src = user.data[key] || null;
+  if(!src){ clipboardShiftOnly = null; return; }
+  // solo campos relacionados al turno + horas/notas internas
+  const out = deepCopy(src);
+  // conservar nota dentro del turno (n) porque forma parte del día laboral
+  clipboardShiftOnly = out;
+  clipboardDayData = null;
+  setPasteMode(false);
+}
+
+function pasteTo(key){
+  const user = db.users[db.current]; if(!user) return;
+  const src = clipboardDayData || clipboardShiftOnly;
+  if(!src) return;
+  user.data[key] = deepCopy(src);
+  saveDB(); render(); renderSummaryCategories(); calcSummary();
+}
+
+function hideDayMenu(){
+  const m = document.getElementById('dayActionsMenu');
+  if(m) m.classList.add('hidden');
+}
+
+let menuKey = null;
+function showDayMenu(x,y,key){
+  menuKey = key;
+  const m = document.getElementById('dayActionsMenu');
+  if(!m) return;
+  // actualizar estado
+  const pasteBtn = document.getElementById('actPaste');
+  const pmBtn = document.getElementById('actPasteMode');
+  const canPaste = !!(clipboardDayData || clipboardShiftOnly);
+  if(pasteBtn) pasteBtn.classList.toggle('opacity-40', !canPaste);
+  if(pmBtn) pmBtn.textContent = `🖱️ Modo pegar: ${pasteMode ? 'ON' : 'OFF'}`;
+  m.style.left = Math.min(x, window.innerWidth - 260) + 'px';
+  m.style.top  = Math.min(y, window.innerHeight - 260) + 'px';
+  m.classList.remove('hidden');
+}
+
+document.addEventListener('click', (e)=>{
+  const m = document.getElementById('dayActionsMenu');
+  if(!m) return;
+  if(!m.contains(e.target)) hideDayMenu();
+}, true);
+
+document.addEventListener('scroll', ()=>hideDayMenu(), true);
+window.addEventListener('resize', ()=>hideDayMenu());
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const c1 = document.getElementById('actCopyDay');
+  const c2 = document.getElementById('actCopyShift');
+  const p  = document.getElementById('actPaste');
+  const pm = document.getElementById('actPasteMode');
+  const cl = document.getElementById('actClear');
+
+  if(c1) c1.onclick = ()=>{ if(menuKey){ copyDay(menuKey); } hideDayMenu(); };
+  if(c2) c2.onclick = ()=>{ if(menuKey){ copyShift(menuKey); } hideDayMenu(); };
+  if(p)  p.onclick  = ()=>{ if(menuKey){ pasteTo(menuKey); } hideDayMenu(); };
+  if(pm) pm.onclick = ()=>{ setPasteMode(!pasteMode); hideDayMenu(); };
+  if(cl) cl.onclick = ()=>{ clipboardDayData=null; clipboardShiftOnly=null; setPasteMode(false); hideDayMenu(); };
+
+  // Modal: botones copiar/pegar
+  const bCopy = document.getElementById('btnCopyThisDay');
+  const bPaste = document.getElementById('btnPasteHere');
+  if(bCopy) bCopy.onclick = ()=>{ if(activeKey) copyDay(activeKey); };
+  if(bPaste) bPaste.onclick = ()=>{ if(activeKey) pasteTo(activeKey); };
+
+    const bClear = document.getElementById('btnClearShift');
+  const turnCard = document.getElementById('turnCard');
+  const turnArea = document.getElementById('turnPickerArea');
+  let turnAreaOpen = false;
+  const setTurnArea = (open)=>{ turnAreaOpen = !!open; if(turnArea) turnArea.classList.toggle('hidden', !turnAreaOpen); };
+  // por defecto, picker cerrado para no saturar
+  setTurnArea(false);
+
+  if(turnCard){
+    turnCard.addEventListener('click', (ev)=>{
+      // Si tocó el botón "Vaciar turno", no desplegar/contraer
+      if(ev.target && (ev.target.id === 'btnClearShift' || ev.target.closest && ev.target.closest('#btnClearShift'))) return;
+      setTurnArea(!turnAreaOpen);
+    });
+  }
+
+  const modalCloseX = document.getElementById('modalCloseX');
+  if(modalCloseX){ modalCloseX.onclick = closeDayModal; }
+
+  if (bClear) bClear.onclick = ()=>{ 
+    const user = db.users[db.current];
+    if (!user || !activeKey) return;
+
+    // Vacía SOLO el turno (no borra notas ni foto) y NO cierra el modal
+    const info = user.data[activeKey] || {};
+    // Limpia turnos (simple/mixto)
+    info.s = ''; info.mode = info.mode || 'simple';
+    info.tln = ''; info.tOut = ''; info.tIn = ''; info.tOutTop = ''; info.tInTop = ''; info.tOutBottom = ''; info.tInBottom = '';
+    // Mantiene notas/foto tal cual
+    user.data[activeKey] = info;
+
+    // Si quedó totalmente vacío (sin notas ni foto), se elimina la entrada
+    const hasNotes = (info.n && String(info.n).trim()) || (info.nt && String(info.nt).trim()) || (info.nb && String(info.nb).trim());
+    const hasPhoto = !!info.photoData;
+    if (!hasNotes && !hasPhoto) delete user.data[activeKey];
+
+    saveDB();
+    render();
+    renderSummaryCategories();
+    calcSummary();
+
+    // Refresca vista dentro del modal
+    openDay(activeKey);
+  };
+
+// Modal: foto
+  const inp = document.getElementById('photoInput');
+  const pick = document.getElementById('photoPickBtn');
+  const prevWrap = document.getElementById('photoPreviewWrap');
+  const prevImg = document.getElementById('photoPreview');
+  const rem = document.getElementById('photoRemoveBtn');
+
+  if(pick && inp) pick.onclick = ()=> inp.click();
+  if(inp){
+    inp.onchange = ()=>{
+      const f = inp.files && inp.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        activePhotoData = String(reader.result || '');
+        if(prevImg) prevImg.src = activePhotoData;
+        if(prevWrap) prevWrap.classList.remove('hidden');
+      };
+      reader.readAsDataURL(f);
+    };
+  }
+  if(rem){
+    rem.onclick = ()=>{
+      activePhotoData = "";
+      if(inp) inp.value = "";
+      if(prevImg) prevImg.src = "";
+      if(prevWrap) prevWrap.classList.add('hidden');
+    };
+  }
+
+  // Modal: nota rápida sincroniza con nota principal
+  const nq = document.getElementById('notaQuick');
+  const n1 = document.getElementById('nota');
+  if(nq && n1){
+    const sync = ()=>{
+      n1.value = nq.value;
+    };
+    nq.addEventListener('input', sync);
+    n1.addEventListener('input', ()=>{ nq.value = n1.value; });
+  }
+});
+
 function saveDay(){
   const user = db.users[db.current];
   if (!user) return;
@@ -2354,6 +2666,8 @@ function saveDay(){
     };
   }
   
+  if (activePhotoData) data.photoData = activePhotoData;
+  else if (data.photoData) delete data.photoData;
   user.data[activeKey] = data;
   saveDB();
   render();
@@ -4006,6 +4320,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+
+<!-- Menú acciones de día (copiar/pegar) -->
+<div id="dayActionsMenu" class="fixed z-[9999] hidden">
+  <div class="bg-white/95 backdrop-blur-md border border-black/10 rounded-2xl shadow-2xl overflow-hidden min-w-[220px]">
+    <div class="px-4 py-3 font-black text-[12px] uppercase tracking-widest text-gray-700 bg-gray-50 border-b border-black/5">Acciones</div>
+    <button id="actCopyDay" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">📋 Copiar día</button>
+    <button id="actCopyShift" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">📌 Copiar turno</button>
+    <button id="actPaste" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">📥 Pegar</button>
+    <button id="actPasteMode" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">🖱️ Modo pegar: OFF</button>
+    <button id="actClear" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold text-red-600">🧹 Limpiar portapapeles</button>
+  </div>
+</div>
 
 </body>
 </html>
