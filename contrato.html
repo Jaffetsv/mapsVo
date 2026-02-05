@@ -1515,7 +1515,9 @@ function showConfigTab(tab){
   const contentElement = document.getElementById(`tab-${tab}`);
   
   if (tabElement) tabElement.classList.add('active');
-  if (contentElement) contentElement.classList.remove('hidden');
+  if (contentElement) {
+    contentElement.classList.remove('hidden');
+  }
   
   // Cargar contenido específico
   if(tab === 'turnos'){ 
@@ -1744,16 +1746,45 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
 }
 
 // =========================================================
-// Summary Functions
+// Summary Functions - CORREGIDO: Solo categorías usadas
 // =========================================================
 function renderSummaryCategories(){
   const container = document.getElementById('summary-categories');
   if (!container) return;
   
+  const user = db.users[db.current];
+  if (!user) return;
+  
+  const SHIFTS = user.config;
   const categories = db.categories;
+  
+  // Filtrar categorías usadas en el mes actual
+  const y = current.getFullYear();
+  const m1 = current.getMonth() + 1;
+  
+  const usedCategories = new Set();
+  
+  Object.keys(user.data).forEach(k => {
+    if (!k.startsWith(`${y}-${m1}-`)) return;
+    
+    const d = user.data[k];
+    if (d.mode === 'mixto') {
+      const topShift = SHIFTS[d.t];
+      const bottomShift = SHIFTS[d.b];
+      if (topShift && topShift.cat) usedCategories.add(topShift.cat);
+      if (bottomShift && bottomShift.cat) usedCategories.add(bottomShift.cat);
+    } else {
+      const shift = SHIFTS[d.s];
+      if (shift && shift.cat) usedCategories.add(shift.cat);
+    }
+  });
+  
+  // Solo mostrar categorías usadas
   let html = '';
   
   Object.entries(categories).forEach(([catId, cat]) => {
+    if (!usedCategories.has(catId)) return;
+    
     const color = cat.color || '#3b82f6';
     html += `
       <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border-l-[10px]" style="border-color: ${color};">
@@ -1767,7 +1798,17 @@ function renderSummaryCategories(){
     `;
   });
   
+  // Si no hay categorías usadas, mostrar mensaje
+  if (html === '') {
+    html = `
+      <div class="col-span-full bg-white p-8 rounded-3xl shadow-sm text-center">
+        <p class="text-gray-400 font-bold">No hay categorías utilizadas este mes</p>
+      </div>
+    `;
+  }
+  
   container.innerHTML = html;
+  calcSummary();
 }
 
 function calcSummary(){
@@ -1843,7 +1884,7 @@ function calcSummary(){
   
   freeDays = Math.max(0, freeDays);
   
-  // Actualizar UI
+  // Actualizar UI solo para categorías existentes en el DOM
   Object.keys(categories).forEach(catId => {
     const hrsEl = document.getElementById(`hrs-${cssSafe(catId)}`);
     const daysEl = document.getElementById(`days-${cssSafe(catId)}`);
@@ -2429,15 +2470,15 @@ function renderCategories(){
         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Icono</div>
-            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</div>
-            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-10 bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-10 bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-2 text-[10px] font-bold text-gray-500">
             ID: <span class="font-black text-gray-800">${cid}</span>
@@ -2824,7 +2865,7 @@ function savePinOnly(){
 }
 
 // =========================================================
-// Profiles Modal Functions
+// Profiles Modal Functions - CORREGIDO: Nombres visibles
 // =========================================================
 function openProfilesModal(){
   refreshProfileLocationSelects();
@@ -2881,27 +2922,29 @@ function renderProfilesList(){
   
   const keys = Object.keys(db.users).sort();
   
+  // Asegurar que todos los perfiles tienen nombres visibles
   keys.forEach(u => {
     const user = db.users[u];
     const isCurrent = (u === db.current);
     
+    // FIX: Hacer que el nombre sea siempre visible
     container.innerHTML += `
-      <div class="border border-gray-200 rounded-2xl p-3 ${isCurrent ? 'bg-blue-50 border-blue-200' : ''}">
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <div class="font-black text-gray-900 text-[12px]">
+      <div class="border border-gray-200 rounded-2xl p-3 ${isCurrent ? 'bg-blue-50 border-blue-200' : 'bg-white'}" style="display: block !important;">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <div class="flex-1 min-w-0">
+            <div class="font-black text-gray-900 text-[12px] truncate" style="display: block !important; visibility: visible !important;">
               ${escapeHTML(u)} ${isCurrent ? '<span class="ml-2 text-[9px] font-black text-blue-600">(Actual)</span>' : ''}
             </div>
-            <div class="text-[10px] font-bold text-gray-500">
+            <div class="text-[10px] font-bold text-gray-500 truncate">
               Localidad: <span class="font-black text-gray-800">${escapeHTML(user.locality || 'San Salvador')}</span>
             </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="setCurrentProfile('${u}')" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase">
+          <div class="flex gap-2 flex-shrink-0">
+            <button onclick="setCurrentProfile('${u}')" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase whitespace-nowrap">
               Usar
             </button>
             ${u === 'ADMIN' ? '' : `
-              <button onclick="deleteProfile('${u}')" class="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-black uppercase">
+              <button onclick="deleteProfile('${u}')" class="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-black uppercase whitespace-nowrap">
                 Eliminar
               </button>
             `}
@@ -2911,15 +2954,15 @@ function renderProfilesList(){
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Renombrar perfil</div>
-            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${u === 'ADMIN' ? 'disabled' : ''}/>
+            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${u === 'ADMIN' ? 'disabled' : ''} style="display: block !important;"/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">PIN</div>
-            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" style="display: block !important;"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" style="display: block !important;">
               ${db.localities
                 .filter(l => l.toUpperCase() !== 'GENERAL')
                 .map(l => `<option value="${escapeHTML(l)}" ${(user.locality || 'San Salvador') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`)
@@ -2927,14 +2970,23 @@ function renderProfilesList(){
             </select>
           </div>
           <div class="md:col-span-3">
-            <button onclick="saveProfileEdits('${u}')" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase text-[11px]">
-              💾 Guardar cambios de este perfil
+            <button onclick="saveProfileEdits('${u}')" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase text-[11px] whitespace-nowrap" style="display: block !important;">
+              💾 Guardar cambios
             </button>
           </div>
         </div>
       </div>
     `;
   });
+  
+  // FIX: Forzar que los elementos sean visibles
+  setTimeout(() => {
+    container.querySelectorAll('div, input, select, button').forEach(el => {
+      el.style.display = 'block';
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+    });
+  }, 10);
 }
 
 function setCurrentProfile(u){
@@ -3752,4 +3804,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
