@@ -1983,6 +1983,8 @@ let suppressClickUntil = 0;
   };
   const startPress = (ev) => {
     if (!isEditMode()) return;
+    // Solo botón primario (evita disparos por clic derecho/contextmenu)
+    if (ev && ev.button !== undefined && ev.button !== 0) return;
     const pt = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
     pressTimer = setTimeout(()=> {
       wasLongPress = true;
@@ -1991,12 +1993,22 @@ let suppressClickUntil = 0;
   };
   const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
 
-  cell.addEventListener('touchstart', startPress, {passive:true});
-  cell.addEventListener('touchend', cancelPress);
-  cell.addEventListener('touchmove', cancelPress);
-  cell.addEventListener('pointerdown', (ev)=>{ startPress(ev); });
-  cell.addEventListener('pointerup', cancelPress);
-  cell.addEventListener('pointercancel', cancelPress);
+  // Long-press: usar *solo un* sistema de eventos para evitar dobles timers (touch + pointer)
+  const supportsPointer = ('PointerEvent' in window);
+  if (supportsPointer) {
+    cell.addEventListener('pointerdown', (ev)=>{ startPress(ev); });
+    cell.addEventListener('pointerup', cancelPress);
+    cell.addEventListener('pointercancel', cancelPress);
+    cell.addEventListener('pointermove', cancelPress);
+  } else {
+    cell.addEventListener('touchstart', startPress, {passive:true});
+    cell.addEventListener('touchend', cancelPress);
+    cell.addEventListener('touchmove', cancelPress);
+    cell.addEventListener('mousedown', startPress);
+    cell.addEventListener('mouseup', cancelPress);
+    cell.addEventListener('mouseleave', cancelPress);
+  }
+
 
   
   return cell;
@@ -2563,7 +2575,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 
   const modalCloseX = document.getElementById('modalCloseX');
-  if(modalCloseX){ modalCloseX.onclick = closeDayModal; }
+  if(modalCloseX){ modalCloseX.onclick = ()=>{ closeModal(); }; }
 
   if (bClear) bClear.onclick = ()=>{ 
     const user = db.users[db.current];
