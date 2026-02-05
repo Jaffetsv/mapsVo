@@ -212,10 +212,10 @@
       text-align: center;
       color: #000;
       font-weight: 900;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255,255,255,0.9);
       border-radius: 4px;
       padding: 1px 3px;
-      border: 1px solid rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(0,0,0,0.12);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -230,7 +230,7 @@
       font-size: 8px;
       font-weight: 900;
       color: #dc2626;
-      background: rgba(254, 226, 226, 0.9);
+      background: rgba(254,226,226,0.9);
       padding: 1px 4px;
       border-bottom-right-radius: 8px;
       z-index: 20;
@@ -296,7 +296,7 @@
     
     select:focus, input:focus, textarea:focus {
       border-color: var(--blue-600);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
     }
     
     /* Opciones de turno */
@@ -315,20 +315,25 @@
     
     .shift-option.selected {
       border-color: var(--blue-600) !important;
-      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      box-shadow: 0 6px 14px rgba(37,99,235,0.22);
       transform: translateY(-1px);
     }
     
-    /* Config tabs - FIXED: Ahora se desplazarán */
+    /* Config tabs - CORREGIDO: Mejor scroll y sticky */
     .config-tabs-container {
       display: flex;
       background: #f8fafc;
       border-bottom: 1px solid #e5e7eb;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
       position: sticky;
       top: 144px; /* Altura del header */
       z-index: 30;
+    }
+    
+    .config-tabs-container::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
     }
     
     @media (max-width: 768px) {
@@ -462,15 +467,23 @@
       text-align: center;
       color: #000;
       font-weight: 900;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255,255,255,0.95);
       border-radius: 4px;
       padding: 2px 4px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0,0,0,0.1);
       white-space: nowrap;
       overflow: visible;
       text-overflow: unset;
       z-index: 10;
       max-height: 20px;
+    }
+
+    /* Arreglo para mostrar texto en selects */
+    select option {
+      color: #111827;
+      font-weight: 800;
+      font-size: 13px;
+      background: #f9fafb;
     }
   </style>
 </head>
@@ -543,7 +556,7 @@
   <div id="calendar" class="calendar-grid"></div>
 </div>
 
-<!-- Summary -->
+<!-- Summary - CORREGIDO: Solo categorías usadas en el mes -->
 <div id="view-summary" class="view-section p-4 md:p-5 bg-gray-50 min-h-screen">
   <div class="space-y-4 md:space-y-6">
     <div id="summary-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
@@ -577,7 +590,7 @@
   </div>
 </div>
 
-<!-- Settings -->
+<!-- Settings - CORREGIDO: Tabs separados correctamente -->
 <div id="view-settings" class="view-section bg-white min-h-screen">
   <!-- CORREGIDO: Ahora los tabs están en un contenedor con scroll -->
   <div class="config-tabs-container">
@@ -905,7 +918,7 @@
   </div>
 </div>
 
-<!-- Modal Import -->
+<!-- Modal Import - CORREGIDO: Nombres visibles en selects -->
 <div id="importModal" class="modal">
   <div class="bg-white w-full max-w-2xl rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2">
     <div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 mx-auto mb-4 flex items-center justify-center">
@@ -925,11 +938,11 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes (si no detecta)</label>
-          <select id="importMonth" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="importMonth" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Año (si no detecta)</label>
-          <select id="importYear" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="importYear" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
       </div>
 
@@ -994,11 +1007,11 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Mes</label>
-          <select id="exportMonth" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="exportMonth" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
         <div>
           <label class="text-[12px] font-bold text-gray-600 block mb-2">Año</label>
-          <select id="exportYear" class="w-full bg-gray-50 border-gray-200"></select>
+          <select id="exportYear" class="w-full bg-gray-50 border-gray-200 text-gray-900"></select>
         </div>
       </div>
 
@@ -1033,7 +1046,7 @@
   </div>
 </div>
 
-<!-- Modal Profiles -->
+<!-- Modal Profiles - CORREGIDO: Nombres visibles en selects -->
 <div id="profilesModal" class="modal">
   <div class="bg-white w-full max-w-3xl rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
@@ -1048,11 +1061,11 @@
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-4">
         <h4 class="text-[12px] font-black text-gray-700 uppercase mb-3">➕ Crear perfil</h4>
         <div class="space-y-3">
-          <input id="createName" type="text" placeholder="Nombre completo" class="w-full bg-white border-blue-200 focus:border-blue-400">
-          <input id="createPin" type="password" placeholder="PIN (4 dígitos)" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400">
+          <input id="createName" type="text" placeholder="Nombre completo" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900">
+          <input id="createPin" type="password" placeholder="PIN (4 dígitos)" maxlength="4" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900">
           <div>
             <label class="text-[11px] font-bold text-gray-600 block mb-2">Localidad</label>
-            <select id="createLoc" class="w-full bg-white border-blue-200 focus:border-blue-400"></select>
+            <select id="createLoc" class="w-full bg-white border-blue-200 focus:border-blue-400 text-gray-900"></select>
           </div>
           <button onclick="createProfile()" class="w-full p-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black uppercase text-[11px]">
             Crear
@@ -1331,7 +1344,7 @@ function toISODate(y,m,d){
 }
 
 // =========================================================
-// UI Initialization
+// UI Initialization - CORREGIDO: Color de texto en selects
 // =========================================================
 function init(){
   // Cargar feriados por defecto
@@ -1397,19 +1410,19 @@ function loadDefaultHolidays(){
 }
 
 function initSelectors(){
-  // Meses
+  // Meses - CORREGIDO: Color de texto
   const monthSelects = ['selectMonth', 'importMonth', 'exportMonth'];
   monthSelects.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.innerHTML = MONTHS.map((m, i) => 
-        `<option value="${i}">${m}</option>`
+        `<option value="${i}" style="color: #111827; font-weight: 800;">${m}</option>`
       ).join('');
       el.value = current.getMonth();
     }
   });
   
-  // Años
+  // Años - CORREGIDO: Color de texto
   const yearSelects = ['selectYear', 'importYear', 'exportYear'];
   const currentYear = current.getFullYear();
   yearSelects.forEach(id => {
@@ -1417,7 +1430,7 @@ function initSelectors(){
     if (el) {
       let html = '';
       for(let y = currentYear - 2; y <= currentYear + 2; y++){
-        html += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>${y}</option>`;
+        html += `<option value="${y}" ${y === currentYear ? 'selected' : ''} style="color: #111827; font-weight: 800;">${y}</option>`;
       }
       el.innerHTML = html;
     }
@@ -1515,9 +1528,7 @@ function showConfigTab(tab){
   const contentElement = document.getElementById(`tab-${tab}`);
   
   if (tabElement) tabElement.classList.add('active');
-  if (contentElement) {
-    contentElement.classList.remove('hidden');
-  }
+  if (contentElement) contentElement.classList.remove('hidden');
   
   // Cargar contenido específico
   if(tab === 'turnos'){ 
@@ -1602,7 +1613,7 @@ function updateUserDropdown(){
   
   const users = Object.keys(db.users).sort();
   select.innerHTML = users.map(u => 
-    `<option value="${escapeHTML(u)}" ${u === db.current ? 'selected' : ''}>${escapeHTML(u)}</option>`
+    `<option value="${escapeHTML(u)}" ${u === db.current ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(u)}</option>`
   ).join('');
 }
 
@@ -1627,7 +1638,7 @@ function switchUser(){
 }
 
 // =========================================================
-// Calendar Rendering - MEJORADO para exportación
+// Calendar Rendering
 // =========================================================
 function render(){
   const grid = document.getElementById('calendar');
@@ -1746,44 +1757,57 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
 }
 
 // =========================================================
-// Summary Functions - CORREGIDO: Solo categorías usadas
+// Summary Functions - CORREGIDO: Solo categorías usadas en el mes
 // =========================================================
 function renderSummaryCategories(){
   const container = document.getElementById('summary-categories');
   if (!container) return;
   
+  const y = current.getFullYear();
+  const m0 = current.getMonth();
+  const m1 = m0 + 1;
   const user = db.users[db.current];
   if (!user) return;
   
   const SHIFTS = user.config;
   const categories = db.categories;
   
-  // Filtrar categorías usadas en el mes actual
-  const y = current.getFullYear();
-  const m1 = current.getMonth() + 1;
-  
+  // Determinar qué categorías están usadas en este mes
   const usedCategories = new Set();
-  
-  Object.keys(user.data).forEach(k => {
-    if (!k.startsWith(`${y}-${m1}-`)) return;
+  Object.keys(user.data).forEach(key => {
+    if (!key.startsWith(`${y}-${m1}-`)) return;
     
-    const d = user.data[k];
+    const d = user.data[key];
     if (d.mode === 'mixto') {
-      const topShift = SHIFTS[d.t];
-      const bottomShift = SHIFTS[d.b];
-      if (topShift && topShift.cat) usedCategories.add(topShift.cat);
-      if (bottomShift && bottomShift.cat) usedCategories.add(bottomShift.cat);
+      const topCat = SHIFTS[d.t]?.cat;
+      const botCat = SHIFTS[d.b]?.cat;
+      if (topCat) usedCategories.add(topCat);
+      if (botCat) usedCategories.add(botCat);
     } else {
-      const shift = SHIFTS[d.s];
-      if (shift && shift.cat) usedCategories.add(shift.cat);
+      const cat = SHIFTS[d.s]?.cat;
+      if (cat) usedCategories.add(cat);
     }
   });
   
-  // Solo mostrar categorías usadas
+  // Filtrar categorías para mostrar solo las usadas
+  const usedCatIds = Array.from(usedCategories).filter(catId => categories[catId]);
+  
+  // Si no hay categorías usadas, mostrar un mensaje
+  if (usedCatIds.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full bg-white p-6 rounded-3xl shadow-sm text-center">
+        <p class="text-[12px] font-black text-gray-400 uppercase mb-2">📊 Resumen del Mes</p>
+        <p class="text-[11px] text-gray-500">No hay datos para el mes seleccionado</p>
+      </div>
+    `;
+    return;
+  }
+  
   let html = '';
   
-  Object.entries(categories).forEach(([catId, cat]) => {
-    if (!usedCategories.has(catId)) return;
+  usedCatIds.forEach((catId) => {
+    const cat = categories[catId];
+    if (!cat) return;
     
     const color = cat.color || '#3b82f6';
     html += `
@@ -1798,16 +1822,9 @@ function renderSummaryCategories(){
     `;
   });
   
-  // Si no hay categorías usadas, mostrar mensaje
-  if (html === '') {
-    html = `
-      <div class="col-span-full bg-white p-8 rounded-3xl shadow-sm text-center">
-        <p class="text-gray-400 font-bold">No hay categorías utilizadas este mes</p>
-      </div>
-    `;
-  }
-  
   container.innerHTML = html;
+  
+  // Calcular y actualizar valores
   calcSummary();
 }
 
@@ -1884,7 +1901,7 @@ function calcSummary(){
   
   freeDays = Math.max(0, freeDays);
   
-  // Actualizar UI solo para categorías existentes en el DOM
+  // Actualizar UI - solo categorías usadas
   Object.keys(categories).forEach(catId => {
     const hrsEl = document.getElementById(`hrs-${cssSafe(catId)}`);
     const daysEl = document.getElementById(`days-${cssSafe(catId)}`);
@@ -2227,11 +2244,11 @@ function renderSettings(){
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
-              <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
-              <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+              <select id="set-cat-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
                 ${Object.keys(db.categories).map(cid => {
                   const c = db.categories[cid];
                   return `<option value="${cid}" ${conf.cat === cid ? 'selected' : ''}>${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
@@ -2243,7 +2260,7 @@ function renderSettings(){
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
-              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
                 ${['Mañana','Tarde','CENA','16hrs','L','Vacaciones','Cumpleaños','Ausencia','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x =>
                   `<option value="${x}" ${conf.color === x ? 'selected' : ''}>${x}</option>`
                 ).join('')}
@@ -2251,11 +2268,11 @@ function renderSettings(){
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Entrada</p>
-              <input type="time" id="set-in-${cssSafe(id)}" value="${conf.in || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input type="time" id="set-in-${cssSafe(id)}" value="${conf.in || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Salida</p>
-              <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+              <input type="time" id="set-out-${cssSafe(id)}" value="${conf.out || '00:00'}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
             </div>
           </div>
           
@@ -2406,7 +2423,7 @@ function loadCategoriesSelect(){
   
   select.innerHTML = Object.keys(db.categories).map(cid => {
     const c = db.categories[cid];
-    return `<option value="${cid}">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
+    return `<option value="${cid}" style="color: #111827; font-weight: 800;">${escapeHTML(c.icon)} ${escapeHTML(c.name)}</option>`;
   }).join('');
 }
 
@@ -2470,15 +2487,15 @@ function renderCategories(){
         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-name-${cid}" value="${escapeHTML(c.name)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Icono</div>
-            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
+            <input id="cat-icon-${cid}" value="${escapeHTML(c.icon)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</div>
-            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-10 bg-white border-blue-200 focus:border-blue-400 rounded-xl"/>
+            <input type="color" id="cat-color-${cid}" value="${c.color || '#3b82f6'}" class="w-full h-10 bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
           </div>
           <div class="md:col-span-2 text-[10px] font-bold text-gray-500">
             ID: <span class="font-black text-gray-800">${cid}</span>
@@ -2581,7 +2598,7 @@ function renderLocalities(){
         </div>
         <div class="flex-1">
           <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-          <input id="loc-${idx}" value="${escapeHTML(loc)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${isGeneral ? 'disabled' : ''}/>
+          <input id="loc-${idx}" value="${escapeHTML(loc)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900" ${isGeneral ? 'disabled' : ''}/>
           <div class="text-[10px] font-bold text-gray-500 mt-1">${isGeneral ? 'Reservado para asuetos generales.' : ''}</div>
         </div>
         ${isGeneral ? 
@@ -2707,7 +2724,7 @@ function refreshHolidayLocationSelects(){
   const select = document.getElementById('newHolidayLocation');
   if (select) {
     select.innerHTML = db.localities.map(l => 
-      `<option value="${escapeHTML(l)}" ${l.toUpperCase() === 'GENERAL' ? 'selected' : ''}>${escapeHTML(l)}</option>`
+      `<option value="${escapeHTML(l)}" ${l.toUpperCase() === 'GENERAL' ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(l)}</option>`
     ).join('');
   }
 }
@@ -2717,7 +2734,7 @@ function refreshProfileLocationSelects(){
   if (createLoc) {
     createLoc.innerHTML = db.localities
       .filter(l => l.toUpperCase() !== 'GENERAL')
-      .map(l => `<option value="${escapeHTML(l)}" ${l === 'San Salvador' ? 'selected' : ''}>${escapeHTML(l)}</option>`)
+      .map(l => `<option value="${escapeHTML(l)}" ${l === 'San Salvador' ? 'selected' : ''} style="color: #111827; font-weight: 800;">${escapeHTML(l)}</option>`)
       .join('');
   }
 }
@@ -2755,15 +2772,15 @@ function renderHolidays(){
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Fecha</div>
-            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y, m, d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="h-date-${cssSafe(k)}" type="date" value="${toISODate(y, m, d)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</div>
-            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name || '')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl"/>
+            <input id="h-name-${cssSafe(k)}" value="${escapeHTML(h.name || '')}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl">
+            <select id="h-loc-${cssSafe(k)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
               ${db.localities.map(l => 
                 `<option value="${escapeHTML(l)}" ${(h.location || 'General') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`
               ).join('')}
@@ -2922,29 +2939,27 @@ function renderProfilesList(){
   
   const keys = Object.keys(db.users).sort();
   
-  // Asegurar que todos los perfiles tienen nombres visibles
   keys.forEach(u => {
     const user = db.users[u];
     const isCurrent = (u === db.current);
     
-    // FIX: Hacer que el nombre sea siempre visible
     container.innerHTML += `
-      <div class="border border-gray-200 rounded-2xl p-3 ${isCurrent ? 'bg-blue-50 border-blue-200' : 'bg-white'}" style="display: block !important;">
-        <div class="flex items-center justify-between gap-2 mb-2">
-          <div class="flex-1 min-w-0">
-            <div class="font-black text-gray-900 text-[12px] truncate" style="display: block !important; visibility: visible !important;">
+      <div class="border border-gray-200 rounded-2xl p-3 ${isCurrent ? 'bg-blue-50 border-blue-200' : ''}">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <div class="font-black text-gray-900 text-[12px]">
               ${escapeHTML(u)} ${isCurrent ? '<span class="ml-2 text-[9px] font-black text-blue-600">(Actual)</span>' : ''}
             </div>
-            <div class="text-[10px] font-bold text-gray-500 truncate">
+            <div class="text-[10px] font-bold text-gray-500">
               Localidad: <span class="font-black text-gray-800">${escapeHTML(user.locality || 'San Salvador')}</span>
             </div>
           </div>
-          <div class="flex gap-2 flex-shrink-0">
-            <button onclick="setCurrentProfile('${u}')" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase whitespace-nowrap">
+          <div class="flex gap-2">
+            <button onclick="setCurrentProfile('${u}')" class="px-3 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[10px] font-black uppercase">
               Usar
             </button>
             ${u === 'ADMIN' ? '' : `
-              <button onclick="deleteProfile('${u}')" class="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-black uppercase whitespace-nowrap">
+              <button onclick="deleteProfile('${u}')" class="px-3 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-black uppercase">
                 Eliminar
               </button>
             `}
@@ -2954,15 +2969,15 @@ function renderProfilesList(){
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-3">
           <div class="md:col-span-2">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Renombrar perfil</div>
-            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" ${u === 'ADMIN' ? 'disabled' : ''} style="display: block !important;"/>
+            <input id="p-name-${cssSafe(u)}" value="${escapeHTML(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900" ${u === 'ADMIN' ? 'disabled' : ''}/>
           </div>
           <div>
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">PIN</div>
-            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" style="display: block !important;"/>
+            <input id="p-pin-${cssSafe(u)}" value="${escapeHTML(user.pin || '0000')}" maxlength="4" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
           </div>
           <div class="md:col-span-3">
             <div class="text-[9px] font-black text-gray-400 uppercase mb-1">Localidad</div>
-            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl" style="display: block !important;">
+            <select id="p-loc-${cssSafe(u)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
               ${db.localities
                 .filter(l => l.toUpperCase() !== 'GENERAL')
                 .map(l => `<option value="${escapeHTML(l)}" ${(user.locality || 'San Salvador') === l ? 'selected' : ''}>${escapeHTML(l)}</option>`)
@@ -2970,23 +2985,14 @@ function renderProfilesList(){
             </select>
           </div>
           <div class="md:col-span-3">
-            <button onclick="saveProfileEdits('${u}')" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase text-[11px] whitespace-nowrap" style="display: block !important;">
-              💾 Guardar cambios
+            <button onclick="saveProfileEdits('${u}')" class="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase text-[11px]">
+              💾 Guardar cambios de este perfil
             </button>
           </div>
         </div>
       </div>
     `;
   });
-  
-  // FIX: Forzar que los elementos sean visibles
-  setTimeout(() => {
-    container.querySelectorAll('div, input, select, button').forEach(el => {
-      el.style.display = 'block';
-      el.style.visibility = 'visible';
-      el.style.opacity = '1';
-    });
-  }, 10);
 }
 
 function setCurrentProfile(u){
@@ -3051,7 +3057,7 @@ function saveProfileEdits(u){
 }
 
 // =========================================================
-// Import Functions
+// Import Functions - CORREGIDO: Nombres visibles en lista
 // =========================================================
 function openImportModal(){
   document.getElementById('importFile').value = '';
@@ -3143,15 +3149,15 @@ async function analyzeImportFile(){
       users: Array.from(usersSet).sort()
     };
     
-    // Mostrar lista de usuarios
+    // Mostrar lista de usuarios - CORREGIDO: Texto visible
     const list = document.getElementById('importUsersList');
     if(importContext.users.length === 0){
       list.innerHTML = `<div class="text-gray-400 font-bold">No se detectaron usuarios.</div>`;
     } else {
       list.innerHTML = importContext.users.map(u => `
-        <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
+        <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer" style="color: #111827;">
           <input class="impUserChk" type="checkbox" value="${escapeHTML(u)}" checked>
-          <span class="font-black text-gray-800">${escapeHTML(u)}</span>
+          <span class="font-black">${escapeHTML(u)}</span>
         </label>
       `).join('');
     }
@@ -3348,7 +3354,7 @@ function runImportSelected(){
 }
 
 // =========================================================
-// Export Functions - MEJORADAS para mostrar comentarios completos
+// Export Functions - CORREGIDO: Texto visible en selects
 // =========================================================
 function showExportModal(){
   const exportMonth = document.getElementById('exportMonth');
@@ -3382,9 +3388,9 @@ function buildExportUserList(){
   
   const users = Object.keys(db.users).sort();
   list.innerHTML = users.map(u => `
-    <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer">
+    <label class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-50 cursor-pointer" style="color: #111827;">
       <input class="expUserChk" type="checkbox" value="${escapeHTML(u)}">
-      <span class="font-black text-gray-800">${escapeHTML(u)}</span>
+      <span class="font-black">${escapeHTML(u)}</span>
     </label>
   `).join('');
 }
@@ -3518,18 +3524,18 @@ async function buildExportImageForUser(userKey, year, monthIndex0){
   
   freeDays = Math.max(0, freeDays);
   
-  // Crear elemento temporal para html2canvas - MÁS ESPACIO para comentarios
+  // Crear elemento temporal para html2canvas
   const temp = document.createElement('div');
   temp.style.position = 'fixed';
   temp.style.left = '-9999px';
   temp.style.top = '-9999px';
-  temp.style.width = '1000px'; // Ancho aumentado
+  temp.style.width = '1000px';
   temp.style.background = '#ffffff';
   temp.style.padding = '25px';
   temp.style.borderRadius = '12px';
   temp.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
   
-  // Construir HTML de exportación - CON MÁS ESPACIO PARA COMENTARIOS
+  // Construir HTML de exportación
   temp.innerHTML = buildExportHTML(userKey, user.locality, year, monthIndex0, todayStr, catHours, catDays, freeDays, vacDays, weekendDays, holidayWorked, SHIFTS, user, categories);
   
   document.body.appendChild(temp);
@@ -3592,7 +3598,7 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
     `;
   }
   
-  // Construir calendario para exportación - CON CELDAS MÁS ALTAS
+  // Construir calendario para exportación
   let calendarHTML = '';
   const firstDay = new Date(year, monthIndex0, 1).getDay();
   const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
@@ -3704,7 +3710,7 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
         </div>
       </div>
       
-      <!-- Calendario (MÁS ESPACIO) -->
+      <!-- Calendario -->
       <div style="margin-bottom:25px;">
         <div style="font-size:16px;font-weight:900;color:#334155;margin-bottom:12px;text-align:center;">
           CALENDARIO - ${monthName} ${year}
@@ -3804,4 +3810,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-
