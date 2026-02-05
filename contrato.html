@@ -524,22 +524,24 @@
 <!-- Month/year (compacto, protagonista: calendario) -->
 <div class="px-3 md:px-4 pt-2">
   <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl px-2 py-2 shadow-inner">
-    <button onclick="changeMonth(-1)" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes anterior">
-      <span class="text-xl font-black">‹</span>
+    <button onclick="changeMonth(-1)" class="p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors flex-shrink-0" aria-label="Mes anterior">
+      <span class="text-2xl md:text-3xl font-black text-white">‹</span>
     </button>
 
     <div class="flex flex-col items-center flex-1 mx-2 min-w-0">
-      <div id="currentMonthDisplay" class="text-lg md:text-2xl font-black text-white text-center leading-tight truncate">Febrero 2026</div>
-      <div class="mt-1 flex items-center gap-2 opacity-95">
-        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm md:text-base font-black text-white text-center appearance-none cursor-pointer"></select>
-        <span class="text-white font-black">/</span>
-        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm md:text-base font-black text-white text-center appearance-none cursor-pointer"></select>
-        <button onclick="goToday()" class="ml-2 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] md:text-[11px] font-black uppercase transition-colors">Hoy</button>
+      <div id="currentMonthDisplay" class="hidden text-lg md:text-2xl font-black text-white text-center leading-tight truncate">Febrero 2026</div>
+      <div class="mt-1 flex flex-col items-center gap-2 opacity-95">
+        <div class="flex items-center gap-2">
+          <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-lg md:text-xl font-black text-white text-center appearance-none cursor-pointer"></select>
+          <span class="text-white font-black">/</span>
+          <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-lg md:text-xl font-black text-white text-center appearance-none cursor-pointer"></select>
+        </div>
+        <button onclick="goToday()" class="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-[10px] md:text-[11px] font-black uppercase transition-colors">Hoy</button>
       </div>
     </div>
 
-    <button onclick="changeMonth(1)" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes siguiente">
-      <span class="text-xl font-black">›</span>
+    <button onclick="changeMonth(1)" class="p-2 md:p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors flex-shrink-0" aria-label="Mes siguiente">
+      <span class="text-2xl md:text-3xl font-black text-white">›</span>
     </button>
   </div>
 </div>
@@ -1260,6 +1262,10 @@ function isEditMode(){
   return user ? !user.editLocked : false;
 }
 
+function isAdminUser(){
+  return db && db.current === 'ADMIN';
+}
+
 function calculateHours(start, end){
   if(!start || !end || start === '00:00' && end === '00:00') return 0;
   try {
@@ -1387,6 +1393,55 @@ function escapeHTML(s){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// =========================================================
+// Colores de turnos (para selector y personalización)
+// =========================================================
+const SHIFT_COLOR_HEX = {
+  'Mañana':'#ffff00',
+  'Tarde':'#fbcfe8',
+  'CENA':'#d8b4fe',
+  '16hrs':'#bef264',
+  'L':'#ffffff',
+  'Vacaciones':'#fed7aa',
+  'Cumpleaños':'#f9a8d4',
+  'Ausencia':'#d1d5db',
+  'azul':'#93c5fd',
+  'rojo':'#fca5a5',
+  'verde':'#86efac',
+  'naranja':'#fdba74',
+  'rosa':'#fda4af',
+  'cian':'#67e8f9',
+  'morado':'#c4b5fd',
+  'lima':'#a3e635',
+  'ambar':'#fcd34d',
+  'teal':'#5eead4',
+  'indigo':'#a5b4fc',
+  'gris':'#d1d5db'
+};
+
+function shiftBgClass(color){
+  return (typeof color === 'string' && color.startsWith('#')) ? '' : `bg-${color}`;
+}
+function shiftBgStyle(color){
+  return (typeof color === 'string' && color.startsWith('#')) ? `background:${color} !important;` : '';
+}
+function shiftToHex(color){
+  if (!color) return '#ffffff';
+  if (typeof color === 'string' && color.startsWith('#')) return color;
+  return SHIFT_COLOR_HEX[color] || '#ffffff';
+}
+function syncShiftColorPicker(id){
+  const safeId = cssSafe(id);
+  const sel = document.getElementById(`set-color-${safeId}`);
+  const pick = document.getElementById(`set-colorpick-${safeId}`);
+  if(!sel || !pick) return;
+  if(sel.value === '__custom__'){
+    // no forzar
+    return;
+  }
+  pick.value = shiftToHex(sel.value);
 }
 
 function toISODate(y,m,d){
@@ -1798,8 +1853,8 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
       const bottomShift = SHIFTS[info.b] || {color: 'L', label: 'L'};
       
       cell.innerHTML = `
-        <div class="shift-label bg-${topShift.color}">${escapeHTML(topShift.label)}</div>
-        <div class="shift-label bg-${bottomShift.color}">${escapeHTML(bottomShift.label)}</div>
+        <div class="shift-label ${shiftBgClass(topShift.color)}" style="${shiftBgStyle(topShift.color)}">${escapeHTML(topShift.label)}</div>
+        <div class="shift-label ${shiftBgClass(bottomShift.color)}" style="${shiftBgStyle(bottomShift.color)}">${escapeHTML(bottomShift.label)}</div>
       `;
       
       if (info.noteTop) {
@@ -1810,7 +1865,7 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
       }
     } else {
       const shift = SHIFTS[info.s] || {color: 'L', label: 'L'};
-      cell.innerHTML = `<div class="shift-label bg-${shift.color}">${escapeHTML(shift.label)}</div>`;
+      cell.innerHTML = `<div class="shift-label ${shiftBgClass(shift.color)}" style="${shiftBgStyle(shift.color)}">${escapeHTML(shift.label)}</div>`;
       if (info.n) {
         cell.innerHTML += `<div class="note-text">${escapeHTML(info.n)}</div>`;
       }
@@ -2144,7 +2199,8 @@ function refreshShiftButtons(){
   const createButton = (key, selected, onClick) => {
     const shift = SHIFTS[key] || {color: 'L', label: key};
     const btn = document.createElement('div');
-    btn.className = `shift-option ${selected ? 'selected' : ''} bg-${shift.color}`;
+    btn.className = `shift-option ${selected ? 'selected' : ''} ${shiftBgClass(shift.color)}`;
+    btn.style.cssText = shiftBgStyle(shift.color);
     btn.textContent = shift.label || key;
     btn.onclick = onClick;
     return btn;
@@ -2329,7 +2385,7 @@ function renderSettings(){
     const conf = SHIFTS[id];
     container.innerHTML += `
       <div class="flex items-start gap-3 bg-gradient-to-r from-gray-50 to-white p-4 rounded-2xl border border-gray-200">
-        <div class="w-10 h-10 rounded-full bg-${conf.color} border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
+        <div class="w-10 h-10 rounded-full ${shiftBgClass(conf.color)} border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0" style="${shiftBgStyle(conf.color)}">
           <span class="text-[10px] font-black text-gray-800">${(conf.label||id).charAt(0)}</span>
         </div>
         <div class="flex-1">
@@ -2338,7 +2394,7 @@ function renderSettings(){
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
               <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
               <div class="mt-2 flex items-center gap-2">
-                <input type="checkbox" id="set-vis-${cssSafe(id)}" ${ (ALWAYS_VISIBLE_SHIFTS.includes(id) || conf.enabled) ? 'checked' : '' } ${ ALWAYS_VISIBLE_SHIFTS.includes(id) ? 'disabled' : '' }>
+                <input type="checkbox" id="set-vis-${cssSafe(id)}" ${ (ALWAYS_VISIBLE_SHIFTS.includes(id) || conf.enabled) ? 'checked' : '' } ${ (ALWAYS_VISIBLE_SHIFTS.includes(id) && !isAdminUser()) ? 'disabled' : '' }>
                 <label for="set-vis-${cssSafe(id)}" class="text-[10px] font-black uppercase text-gray-500">Visible en selector</label>
               </div>
             </div>
@@ -2356,11 +2412,17 @@ function renderSettings(){
           <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Color</p>
-              <select id="set-color-${cssSafe(id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
+              <div class="flex items-center gap-2">
+              <select id="set-color-${cssSafe(id)}" onchange="syncShiftColorPicker('${id}')" class="flex-1 bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900">
                 ${['Mañana','Tarde','CENA','16hrs','L','Vacaciones','Cumpleaños','Ausencia','azul','rojo','verde','naranja','rosa','cian','morado','lima','ambar','teal','indigo','gris'].map(x =>
-                  `<option value="${x}" ${conf.color === x ? 'selected' : ''}>${x}</option>`
+                  `<option value="${x}" ${(!String(conf.color||'').startsWith('#') && conf.color === x) ? 'selected' : ''}>${x}</option>`
                 ).join('')}
+                <option value="__custom__" ${String(conf.color||'').startsWith('#') ? 'selected' : ''}>Personalizado</option>
               </select>
+              <input type="color" id="set-colorpick-${cssSafe(id)}" value="${shiftToHex(conf.color)}"
+                     onchange="document.getElementById('set-color-${cssSafe(id)}').value='__custom__';"
+                     class="w-12 h-10 p-1 bg-white border border-gray-200 rounded-xl"/>
+            </div>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Entrada</p>
@@ -2400,11 +2462,13 @@ function saveShiftSettings(){
     const safeId = cssSafe(id);
     const label = document.getElementById(`set-label-${safeId}`)?.value?.trim() || id;
     const cat = document.getElementById(`set-cat-${safeId}`)?.value || SHIFTS[id].cat;
-    const color = document.getElementById(`set-color-${safeId}`)?.value || SHIFTS[id].color;
+    const colorSel = document.getElementById(`set-color-${safeId}`)?.value;
+    const colorPick = document.getElementById(`set-colorpick-${safeId}`)?.value;
+    const color = (colorSel === '__custom__' && colorPick) ? colorPick : (colorSel || SHIFTS[id].color);
     const inTime = document.getElementById(`set-in-${safeId}`)?.value || SHIFTS[id].in || '00:00';
     const outTime = document.getElementById(`set-out-${safeId}`)?.value || SHIFTS[id].out || '00:00';
     const vis = document.getElementById(`set-vis-${safeId}`);
-    const enabled = ALWAYS_VISIBLE_SHIFTS.includes(id) ? true : (!!vis && vis.checked);
+    const enabled = (ALWAYS_VISIBLE_SHIFTS.includes(id) && !isAdminUser()) ? true : (!!vis && vis.checked);
 
     
     SHIFTS[id].label = label;
