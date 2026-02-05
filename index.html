@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
-  <title>Shifter Pro v23 - Calendario de Turnos</title>
+  <title>Shifter Pro v38 - Calendario de Turnos</title>
   
   <!-- CDNs con fallback -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +17,12 @@
         '.grid { display: grid; }' +
         '.flex { display: flex; }' +
         '.block { display: block !important; }' +
-        '</style>');
+        '
+
+/* Toast */
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(17,24,39,.92);color:#fff;padding:10px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-weight:700;letter-spacing:.2px;z-index:99999;opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;max-width:min(520px,92vw);text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+</style>');
     }
   </script>
   
@@ -866,9 +871,10 @@
 <!-- Modal día -->
 <div id="modal" class="modal">
   <div class="bg-white w-full max-w-md md:max-w-lg rounded-3xl md:rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 mx-2">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-4 md:py-5 font-black text-sm uppercase tracking-widest">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-4 md:py-5 font-black text-sm uppercase tracking-widest relative">
       <div>📅 Configurar Día</div>
       <div id="modalDate" class="text-[10px] font-normal opacity-90 mt-1"></div>
+      <button id="modalCloseX" type="button" aria-label="Cerrar" class="absolute top-3 right-3 md:top-4 md:right-4 w-10 h-10 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/25 flex items-center justify-center text-white text-xl leading-none">✕</button>
     </div>
     <div class="p-4 md:p-6 overflow-y-auto max-h-[80vh]">
       <!-- Holiday info -->
@@ -878,6 +884,10 @@
           <div class="flex-1">
             <div id="holidayName" class="text-[12px] font-black text-yellow-800"></div>
             <div id="holidayLocation" class="text-[10px] font-bold text-yellow-600"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Panel rápido: Foto / Notas / Turno -->
       <div class="px-4 md:px-6 pb-2 md:pb-4">
         <div class="grid grid-cols-12 gap-3">
@@ -900,13 +910,14 @@
             </div>
           </div>
           <div class="col-span-12">
-            <div class="rounded-2xl border border-black/10 bg-gradient-to-r from-slate-50 to-white p-3 shadow-sm">
+            <div id="turnCard" class="rounded-2xl border border-black/10 bg-gradient-to-r from-slate-50 to-white p-3 shadow-sm cursor-pointer">
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <div class="text-[11px] font-black uppercase tracking-widest text-gray-600">Turno</div>
                   <div id="shiftPreviewTitle" class="font-black text-[16px] text-gray-900 mt-1">—</div>
                 </div>
-                <div class="flex gap-2">
+                <button id="btnClearShift" type="button" class="mt-2 w-full rounded-xl bg-gray-100 border border-black/10 px-3 py-2 font-bold text-[12px] text-gray-700">🧽 Vaciar turno</button>
+                <div class="flex gap-2 hidden">
                   <button id="btnCopyThisDay" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📋 Copiar</button>
                   <button id="btnPasteHere" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📥 Pegar</button>
                 </div>
@@ -917,10 +928,8 @@
         </div>
       </div>
 
-          </div>
-        </div>
-      </div>
-      
+      <div id="turnPickerArea" class="mt-4 hidden" style="display:none;">
+
       <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-4 md:mb-6">
         <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
         <button onclick="setMode('mixto')" id="m-m" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Mixto</button>
@@ -1003,6 +1012,8 @@
       <div id="note-simple" class="mt-4 md:mt-6">
         <p class="text-[10px] font-black text-gray-400 uppercase mb-2">📝 Comentario (editable)</p>
         <textarea id="nota" placeholder="Ej: 06:00-14:00 | Doble turno | etc." class="w-full p-4 bg-gray-100 border-none rounded-2xl md:rounded-[24px] text-sm font-bold h-20 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
       </div>
 
       <div class="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
@@ -1339,6 +1350,8 @@ function calculateHours(start, end){
 }
 
 function defaultNoteForShift(shiftKey){
+  // Para el turno Libre (L) no autocompletar nota por defecto
+  if ((shiftKey||'') === 'L') return '';
   const user = db.users[db.current];
   if (!user) return shiftKey || '';
   const sh = user.config[shiftKey];
@@ -1895,6 +1908,9 @@ function render(){
 
 function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = false){
   const cell = document.createElement('div');
+  let wasLongPress = false;
+let suppressClickUntil = 0;
+  let pressTimer = null;
   
   let classes = 'day-cell';
   if (isOffMonth) classes += ' day-off-month';
@@ -1951,6 +1967,7 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
   
   // Evento click
   cell.onclick = (ev) => {
+    if (wasLongPress) { wasLongPress = false; return; }
     if (!isEditMode()) {
       alert("Activa modo edición para editar.");
       return;
@@ -1960,6 +1977,7 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
       pasteTo(key);
       return;
     }
+    hideDayMenu();
     openDay(key, info || {mode: 'simple', s: 'L'});
   };
 
@@ -1967,25 +1985,37 @@ function createDayCell(dayNum, isOffMonth, info, SHIFTS, user, key, isToday = fa
   cell.oncontextmenu = (ev) => {
     ev.preventDefault();
     if (!isEditMode()) return;
+    wasLongPress = true;
     showDayMenu(ev.clientX, ev.clientY, key);
   };
-
-  let pressTimer = null;
   const startPress = (ev) => {
     if (!isEditMode()) return;
+    // Solo botón primario (evita disparos por clic derecho/contextmenu)
+    if (ev && ev.button !== undefined && ev.button !== 0) return;
     const pt = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
     pressTimer = setTimeout(()=> {
+      wasLongPress = true;
       showDayMenu(pt.clientX || 20, pt.clientY || 20, key);
     }, 450);
   };
   const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
 
-  cell.addEventListener('touchstart', startPress, {passive:true});
-  cell.addEventListener('touchend', cancelPress);
-  cell.addEventListener('touchmove', cancelPress);
-  cell.addEventListener('pointerdown', (ev)=>{ if(ev.pointerType==='touch'){ startPress(ev); }});
-  cell.addEventListener('pointerup', cancelPress);
-  cell.addEventListener('pointercancel', cancelPress);
+  // Long-press: usar *solo un* sistema de eventos para evitar dobles timers (touch + pointer)
+  const supportsPointer = ('PointerEvent' in window);
+  if (supportsPointer) {
+    cell.addEventListener('pointerdown', (ev)=>{ startPress(ev); });
+    cell.addEventListener('pointerup', cancelPress);
+    cell.addEventListener('pointercancel', cancelPress);
+    cell.addEventListener('pointermove', cancelPress);
+  } else {
+    cell.addEventListener('touchstart', startPress, {passive:true});
+    cell.addEventListener('touchend', cancelPress);
+    cell.addEventListener('touchmove', cancelPress);
+    cell.addEventListener('mousedown', startPress);
+    cell.addEventListener('mouseup', cancelPress);
+    cell.addEventListener('mouseleave', cancelPress);
+  }
+
 
   
   return cell;
@@ -2267,6 +2297,8 @@ function openDay(key, info){
   setMode(mode);
   refreshShiftButtons();
   
+  // Siempre iniciar con el selector de turnos COLAPSADO
+  try{ if (typeof setTurnArea === 'function') setTurnArea(false); }catch(e){}
   const modal = document.getElementById('modal');
   if (modal) modal.classList.add('active');
 }
@@ -2535,7 +2567,51 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(bCopy) bCopy.onclick = ()=>{ if(activeKey) copyDay(activeKey); };
   if(bPaste) bPaste.onclick = ()=>{ if(activeKey) pasteTo(activeKey); };
 
-  // Modal: foto
+    const bClear = document.getElementById('btnClearShift');
+  const turnCard = document.getElementById('turnCard');
+  const turnArea = document.getElementById('turnPickerArea');
+  let turnAreaOpen = false;
+  const setTurnArea = (open)=>{ turnAreaOpen = !!open; if(turnArea){ turnArea.classList.toggle('hidden', !turnAreaOpen); turnArea.style.display = turnAreaOpen ? '' : 'none'; } };
+  // por defecto, picker cerrado para no saturar
+  setTurnArea(false);
+
+  if(turnCard){
+    turnCard.addEventListener('click', (ev)=>{
+      // Si tocó el botón "Vaciar turno", no desplegar/contraer
+      if(ev.target && (ev.target.id === 'btnClearShift' || ev.target.closest && ev.target.closest('#btnClearShift'))) return;
+      setTurnArea(!turnAreaOpen);
+    });
+  }
+
+  const modalCloseX = document.getElementById('modalCloseX');
+  if(modalCloseX){ modalCloseX.onclick = ()=>{ closeModal(); }; }
+
+  if (bClear) bClear.onclick = () => {
+    if (!activeKey) return;
+    if (!isEditMode()) return alert("Activa modo edición.");
+
+    const user = (db && db.users && db.users[db.current]) ? db.users[db.current] : null;
+    if (!user) return;
+
+    if (!user.data) user.data = {};
+
+    // Dejar el día en estado default (como si no hubiera turno):
+    // - Borra datos del día (turno, notas, foto)
+    // - Mantiene asueto si aplica (asuetos están en db.holidays)
+    delete user.data[activeKey];
+    activePhotoData = "";
+
+    saveDB();
+    render();
+    renderSummaryCategories();
+    calcSummary();
+
+    // Reabrir modal en estado limpio (si el modal sigue abierto)
+    try { openDay(activeKey, { mode: 'simple', s: 'L' }); } catch(e) {}
+    showToast('Turno vaciado');
+  };
+
+// Modal: foto
   const inp = document.getElementById('photoInput');
   const pick = document.getElementById('photoPickBtn');
   const prevWrap = document.getElementById('photoPreviewWrap');
@@ -2612,7 +2688,24 @@ function saveDay(){
   
   if (activePhotoData) data.photoData = activePhotoData;
   else if (data.photoData) delete data.photoData;
-  user.data[activeKey] = data;
+  
+  // Eliminar guardado si es estado default (L sin nota ni foto)
+  if (data.mode === 'simple') {
+    const isDefaultL = (data.s === 'L');
+    const hasNote = !!(data.n && String(data.n).trim());
+    const hasPhoto = !!data.photoData;
+    if (isDefaultL && !hasNote && !hasPhoto) {
+      delete user.data[activeKey];
+      saveDB();
+      render();
+      renderSummaryCategories();
+      calcSummary();
+      closeModal();
+      showToast('Guardado');
+      return;
+    }
+  }
+user.data[activeKey] = data;
   saveDB();
   render();
   renderSummaryCategories();
@@ -4263,6 +4356,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm=setTimeout(()=>t.classList.remove('show'), 1600);
+}
 </script>
 
 
@@ -4278,5 +4381,7 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
+
+<div id="toast"></div>
 </body>
 </html>
