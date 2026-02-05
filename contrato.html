@@ -61,7 +61,7 @@
     /* Celdas de día */
     .day-cell {
       background: var(--white);
-      min-height: 120px;
+      min-height: 150px;
       position: relative;
       cursor: pointer;
       display: flex;
@@ -72,7 +72,7 @@
     
     @media (max-width: 640px) {
       .day-cell {
-        min-height: 90px;
+        min-height: 120px;
       }
     }
     
@@ -81,7 +81,7 @@
     }
     
     .day-number {
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 900;
       padding: 2px 6px;
       position: absolute;
@@ -134,7 +134,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 900;
       text-transform: uppercase;
       text-align: center;
@@ -267,7 +267,7 @@
       text-align: center;
       padding: 14px;
       font-weight: 900;
-      font-size: 11px;
+      font-size: 13px;
       border-bottom: 3px solid transparent;
       transition: 0.2s;
       background: var(--white);
@@ -1470,7 +1470,10 @@ function initSelectors(){
     const el = document.getElementById(id);
     if (el) {
       let html = '';
-      for(let y = currentYear - 2; y <= currentYear + 2; y++){
+      const MIN_YEAR = 2020;
+      const MAX_YEAR = 2035;
+      const startY = Math.min(currentYear - 5, MIN_YEAR);
+      for(let y = startY; y <= MAX_YEAR; y++){
         html += `<option value="${y}" ${y === currentYear ? 'selected' : ''} style="color: #111827; font-weight: 800;">${y}</option>`;
       }
       el.innerHTML = html;
@@ -1752,7 +1755,8 @@ function render(){
   
   // Días del mes siguiente
   const total = firstDayMonday + lastDate;
-  for(let i = 1; i <= (42 - total); i++){
+  const trailing = (7 - (total % 7)) % 7;
+  for(let i = 1; i <= trailing; i++){
     const nextMonth = m === 11 ? 1 : m + 2;
     const nextYear = m === 11 ? y + 1 : y;
     const key = dayKey(nextYear, nextMonth, i);
