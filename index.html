@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
-  <title>Shifter Pro v38 - Calendario de Turnos</title>
+  <title>Shifter Pro v23 - Calendario de Turnos</title>
   
   <!-- CDNs con fallback -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,10 +18,14 @@
         '.flex { display: flex; }' +
         '.block { display: block !important; }' +
         '
+    /* === UX: evitar selección/callout al mantener presionado (iOS/Android/PC) === */
+    .day-cell, .day-cell *{
+      -webkit-user-select:none;
+      user-select:none;
+      -webkit-touch-callout:none;
+    }
+    .day-cell{ touch-action: manipulation; }
 
-/* Toast */
-#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(17,24,39,.92);color:#fff;padding:10px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-weight:700;letter-spacing:.2px;z-index:99999;opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;max-width:min(520px,92vw);text-align:center;}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
 </style>');
     }
   </script>
@@ -520,27 +524,7 @@
     .drawer.active{ transform: translateX(0); }
     .drawer a, .drawer button{ text-align:left; }
 
-  
-    /* ===== Anti selección (long-press / menú Acciones) ===== */
-    .no-select, .no-select *{
-      -webkit-user-select: none !important;
-      user-select: none !important;
-      -webkit-touch-callout: none;
-    }
-    #actionsMenu, #actionsMenu *{
-      -webkit-user-select:none !important;
-      user-select:none !important;
-      -webkit-touch-callout:none;
-    }
-
-
-    #dayActionsMenu, #dayActionsMenu *{
-      -webkit-user-select:none !important;
-      user-select:none !important;
-      -webkit-touch-callout:none;
-    }
-
-</style>
+  </style>
 </head>
 
 <body class="bg-gray-100">
@@ -930,13 +914,16 @@
             </div>
           </div>
           <div class="col-span-12">
-            <div id="turnCard" class="rounded-2xl border border-black/10 bg-gradient-to-r from-slate-50 to-white p-3 shadow-sm cursor-pointer">
+            <div id="turnCard" class="rounded-2xl border border-black/10 bg-gradient-to-r from-slate-50 to-white p-3 shadow-sm">
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <div class="text-[11px] font-black uppercase tracking-widest text-gray-600">Turno</div>
                   <div id="shiftPreviewTitle" class="font-black text-[16px] text-gray-900 mt-1">—</div>
                 </div>
-                <button id="btnClearShift" type="button" class="mt-2 w-full rounded-xl bg-gray-100 border border-black/10 px-3 py-2 font-bold text-[12px] text-gray-700">🧽 Vaciar turno</button>
+                <div class="flex flex-col gap-2 w-[220px] max-w-[52vw]">
+  <button id="btnOpenTurnPicker" type="button" class="w-full rounded-xl bg-white border border-black/10 px-3 py-2 font-black text-[12px] text-gray-800">🎯 Asignar / cambiar turno</button>
+  <button id="btnClearShift" type="button" class="w-full rounded-xl bg-gray-100 border border-black/10 px-3 py-2 font-black text-[12px] text-gray-700">🧽 Vaciar turno</button>
+</div>
                 <div class="flex gap-2 hidden">
                   <button id="btnCopyThisDay" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📋 Copiar</button>
                   <button id="btnPasteHere" type="button" class="rounded-xl bg-white border border-black/10 px-3 py-2 font-bold text-[12px]">📥 Pegar</button>
@@ -948,7 +935,7 @@
         </div>
       </div>
 
-      <div id="turnPickerArea" class="mt-4 hidden" style="display:none;">
+      <div id="turnPickerArea" class="mt-4 hidden">
 
       <div class="flex bg-gray-100 p-1.5 rounded-2xl mb-4 md:mb-6">
         <button onclick="setMode('simple')" id="m-s" class="flex-1 py-3 rounded-xl font-black text-[11px] uppercase transition-all">Simple</button>
@@ -1370,8 +1357,6 @@ function calculateHours(start, end){
 }
 
 function defaultNoteForShift(shiftKey){
-  // Para el turno Libre (L) no autocompletar nota por defecto
-  if ((shiftKey||'') === 'L') return '';
   const user = db.users[db.current];
   if (!user) return shiftKey || '';
   const sh = user.config[shiftKey];
@@ -2224,6 +2209,8 @@ function calcSummary(){
 // =========================================================
 function openDay(key, info){
   activeKey = key;
+  // No dejar el selector de turnos abierto por defecto
+  try { if (window._setTurnArea) window._setTurnArea(false); } catch(e) {}
   activePhotoData = (info && info.photoData) ? info.photoData : "";
   mode = info.mode || 'simple';
   selS = info.s || 'Mañana';
@@ -2317,8 +2304,6 @@ function openDay(key, info){
   setMode(mode);
   refreshShiftButtons();
   
-  // Siempre iniciar con el selector de turnos COLAPSADO
-  try{ if (typeof setTurnArea === 'function') setTurnArea(false); }catch(e){}
   const modal = document.getElementById('modal');
   if (modal) modal.classList.add('active');
 }
@@ -2326,6 +2311,8 @@ function openDay(key, info){
 function closeModal(){ 
   const modal = document.getElementById('modal');
   if (modal) modal.classList.remove('active');
+  // Asegura que el selector de turnos no quede abierto entre días
+  try { if (window._setTurnArea) window._setTurnArea(false); } catch(e) {}
 }
 
 function setMode(m){
@@ -2588,47 +2575,84 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(bPaste) bPaste.onclick = ()=>{ if(activeKey) pasteTo(activeKey); };
 
     const bClear = document.getElementById('btnClearShift');
-  const turnCard = document.getElementById('turnCard');
-  const turnArea = document.getElementById('turnPickerArea');
-  let turnAreaOpen = false;
-  const setTurnArea = (open)=>{ turnAreaOpen = !!open; if(turnArea){ turnArea.classList.toggle('hidden', !turnAreaOpen); turnArea.style.display = turnAreaOpen ? '' : 'none'; } };
-  // por defecto, picker cerrado para no saturar
-  setTurnArea(false);
+const btnOpenTurnPicker = document.getElementById('btnOpenTurnPicker');
+const turnArea = document.getElementById('turnPickerArea');
+let turnAreaOpen = false;
+const setTurnArea = (open)=>{ turnAreaOpen = !!open; if(turnArea) turnArea.classList.toggle('hidden', !turnAreaOpen); };
+// expuesto para reiniciar al cambiar de día
+window._setTurnArea = setTurnArea;
+// por defecto, picker cerrado para no saturar
+setTurnArea(false);
 
-  if(turnCard){
-    turnCard.addEventListener('click', (ev)=>{
-      // Si tocó el botón "Vaciar turno", no desplegar/contraer
-      if(ev.target && (ev.target.id === 'btnClearShift' || ev.target.closest && ev.target.closest('#btnClearShift'))) return;
-      setTurnArea(!turnAreaOpen);
-    });
-  }
+if(btnOpenTurnPicker){
+  btnOpenTurnPicker.addEventListener('click', (ev)=>{
+    ev.preventDefault(); ev.stopPropagation();
+    setTurnArea(!turnAreaOpen);
+  });
+}
 
-  const modalCloseX = document.getElementById('modalCloseX');
-  if(modalCloseX){ modalCloseX.onclick = ()=>{ closeModal(); }; }
+  const modalCloseX = document.getElementById('modalCloseX') || document.getElementById('modalX');
+  if(modalCloseX){ modalCloseX.onclick = ()=>{ try { if (window._setTurnArea) window._setTurnArea(false); } catch(e) {}
+  closeModal(); }; }
 
-  if (bClear) bClear.onclick = () => {
-    if (!activeKey) return;
-    if (!isEditMode()) return alert("Activa modo edición.");
+  if (bClear) bClear.onclick = ()=>{ 
+    const user = db.users[db.current];
+    if (!user || !activeKey) return;
 
-    const user = (db && db.users && db.users[db.current]) ? db.users[db.current] : null;
-    if (!user) return;
+    const prev = user.data[activeKey] || {};
+    const prevShift = prev.mode === 'mixto' ? `${prev.t||''}/${prev.b||''}` : (prev.s||'');
+    const prevDefaultNote = prev.mode === 'mixto' ? '' : defaultNoteForShift(prev.s || '');
 
-    if (!user.data) user.data = {};
+    // Limpia turno (simple/mixto) y horarios asociados
+    const info = {...prev};
+    info.mode = 'simple';
+    info.s = '';
+    info.t = ''; info.b = '';
+    info._emptyShift = true;
 
-    // Dejar el día en estado default (como si no hubiera turno):
-    // - Borra datos del día (turno, notas, foto)
-    // - Mantiene asueto si aplica (asuetos están en db.holidays)
-    delete user.data[activeKey];
-    activePhotoData = "";
+    info.tIn = ''; info.tOut = ''; info.h = 0;
+    info.tInTop = ''; info.tOutTop = ''; info.tInBottom = ''; info.tOutBottom = '';
+    info.hrsTop = 0; info.hrsBottom = 0;
 
+    // Si la nota era "auto" (por turno) la limpia; si el usuario escribió algo diferente, se conserva
+    const n = (info.n ?? '').toString().trim();
+    if (!n || n === prevDefaultNote || n === prevShift || n === 'LIBRE') info.n = '';
+
+    // también limpia notas mixtas si existían y eran automáticas
+    const nt = (info.noteTop ?? '').toString().trim();
+    const nb = (info.noteBottom ?? '').toString().trim();
+    if (!nt || nt === defaultNoteForShift(prev.t || '')) info.noteTop = '';
+    if (!nb || nb === defaultNoteForShift(prev.b || '')) info.noteBottom = '';
+
+    // Si quedó totalmente vacío (sin notas ni foto), elimina la entrada
+    const hasNotes = (info.n && String(info.n).trim()) || (info.noteTop && String(info.noteTop).trim()) || (info.noteBottom && String(info.noteBottom).trim());
+    const hasPhoto = !!info.photoData;
+    if (!hasNotes && !hasPhoto) {
+      delete user.data[activeKey];
+    } else {
+      user.data[activeKey] = info;
+    }
+
+    // Cierra picker y refresca UI
+    try { if (window._setTurnArea) window._setTurnArea(false); } catch(e) {}
     saveDB();
-    render();
-    renderSummaryCategories();
-    calcSummary();
 
-    // Reabrir modal en estado limpio (si el modal sigue abierto)
-    try { openDay(activeKey, { mode: 'simple', s: 'L' }); } catch(e) {}
-    showToast('Turno vaciado');
+    // Actualiza modal (campos) y calendario sin re-crear el DOM
+    selS = '';
+    mode = 'simple';
+    const sp = document.getElementById('shiftPreviewTitle');
+    if (sp) sp.textContent = '—';
+    const nota = document.getElementById('nota');
+    if (nota) nota.value = '';
+    const nq = document.getElementById('notaQuick');
+    if (nq) nq.value = '';
+    // Limpia horas visibles
+    const tIn = document.getElementById('tIn'); const tOut = document.getElementById('tOut'); const tHrs = document.getElementById('tHrs');
+    if (tIn) tIn.value = ''; if (tOut) tOut.value = ''; if (tHrs) tHrs.value = '0';
+    updateShiftCard(); updateNotesPreview();
+    renderCalendar(); renderSummary(); render(); renderSummaryCategories(); calcSummary();
+
+    toast('Turno vaciado');
   };
 
 // Modal: foto
@@ -2708,28 +2732,12 @@ function saveDay(){
   
   if (activePhotoData) data.photoData = activePhotoData;
   else if (data.photoData) delete data.photoData;
-  
-  // Eliminar guardado si es estado default (L sin nota ni foto)
-  if (data.mode === 'simple') {
-    const isDefaultL = (data.s === 'L');
-    const hasNote = !!(data.n && String(data.n).trim());
-    const hasPhoto = !!data.photoData;
-    if (isDefaultL && !hasNote && !hasPhoto) {
-      delete user.data[activeKey];
-      saveDB();
-      render();
-      renderSummaryCategories();
-      calcSummary();
-      closeModal();
-      showToast('Guardado');
-      return;
-    }
-  }
-user.data[activeKey] = data;
+  user.data[activeKey] = data;
   saveDB();
   render();
   renderSummaryCategories();
   calcSummary();
+  try { if (window._setTurnArea) window._setTurnArea(false); } catch(e) {}
   closeModal();
 }
 
@@ -4173,60 +4181,28 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
   const firstDay = new Date(year, monthIndex0, 1).getDay();
   const firstDayMonday = firstDay === 0 ? 6 : firstDay - 1;
   const lastDate = new Date(year, monthIndex0 + 1, 0).getDate();
-  const prevLastDate = new Date(year, monthIndex0, 0).getDate();
-  const prevMonth = monthIndex0 === 0 ? 12 : monthIndex0;
-  const prevYear  = monthIndex0 === 0 ? year - 1 : year;
-  const nextMonth = monthIndex0 === 11 ? 1 : (monthIndex0 + 2);
-  const nextYear  = monthIndex0 === 11 ? year + 1 : year;
-
-  const buildExportDayCell = (dNum, info, isHoliday, isOtherMonth) => {
-    const opacity = isOtherMonth ? 0.35 : 1;
-    const border = '1px solid #e5e7eb';
-    const numBadge = `<div style="position:absolute;top:2px;right:2px;font-size:10px;font-weight:900;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:4px;">${dNum}</div>`;
-    const holidayBadge = isHoliday ? `<div style="position:absolute;top:2px;left:2px;font-size:8px;font-weight:900;color:#dc2626;background:rgba(254,226,226,0.9);padding:1px 4px;border-radius:4px;">A</div>` : '';
-    // Sin turno registrado: celda tenue pero con número
-    if(!info){
-      return `<div style="height:100px;position:relative;border:${border};background:#f9fafb;opacity:${opacity};">${numBadge}${holidayBadge}</div>`;
-    }
-    if(info.mode === 'mixto'){
-      const topShift = SHIFTS[info.t] || {color:'L', label:'L'};
-      const bottomShift = SHIFTS[info.b] || {color:'L', label:'L'};
-      return `
-        <div style="height:100px;position:relative;border:${border};opacity:${opacity};">
-          <div style="height:50%;background:${getColorValue(topShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;border-bottom:1px solid rgba(0,0,0,0.1);">
-            ${escapeHTML(topShift.label)}
-          </div>
-          <div style="height:50%;background:${getColorValue(bottomShift.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">
-            ${escapeHTML(bottomShift.label)}
-          </div>
-          ${numBadge}
-          ${holidayBadge}
-        </div>
-      `;
-    }else{
-      const sh = SHIFTS[info.s] || {color:'L', label:'L'};
-      return `
-        <div style="height:100px;position:relative;border:${border};background:${getColorValue(sh.color)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;opacity:${opacity};">
-          ${escapeHTML(sh.label)}
-          ${numBadge}
-          ${holidayBadge}
-        </div>
-      `;
-    }
-  };
-
   
-  // Días del mes anterior (visibles con número)
-  for(let i = firstDayMonday; i > 0; i--){
-    const dPrev = prevLastDate - i + 1;
-    const keyPrev = dayKey(prevYear, prevMonth, dPrev);
-    const infoPrev = user.data[keyPrev] || null;
-    const holidayPrev = db.holidays[keyPrev];
-    const isHolidayPrev = holidayPrev && holidayApplies(holidayPrev.location, user.locality);
-    calendarHTML += buildExportDayCell(dPrev, infoPrev, isHolidayPrev, true);
+  // Días del mes anterior (se muestran atenuados, con número y turno)
+  const prevLast = new Date(year, monthIndex0, 0);
+  const prevYear = prevLast.getFullYear();
+  const prevMonth0 = prevLast.getMonth();
+  const prevLastDay = prevLast.getDate();
+  for(let i = firstDayMonday-1; i >= 0; i--){
+    const dPrev = prevLastDay - i;
+    const keyPrev = dayKey(prevYear, prevMonth0+1, dPrev);
+    const infoPrev = (user.data && user.data[keyPrev]) ? user.data[keyPrev] : null;
+    const bgPrev = infoPrev ? getColorValue(infoPrev) : '#ffffff';
+    const labelPrev = infoPrev ? (infoPrev.mode==='simple' ? (infoPrev.s||'') : (infoPrev.sTop||'')) : '';
+    const dayHTMLPrev = `
+      <div style="height:100px;position:relative;border:1px solid #e5e7eb;background:${bgPrev};opacity:0.35;">
+        <div style="position:absolute;top:6px;right:8px;font-size:14px;color:#111827;font-weight:700;">${dPrev}</div>
+        ${labelPrev ? `<div style="position:absolute;left:0;right:0;top:38px;text-align:center;font-weight:900;letter-spacing:0.5px;color:#111827;">${labelPrev}</div>` : ``}
+      </div>`;
+    calendarHTML += dayHTMLPrev;
   }
-  
+
   // Días del mes actual
+
   for(let d = 1; d <= lastDate; d++){
     const key = dayKey(year, monthIndex0 + 1, d);
     const info = user.data[key] || {mode: 'simple', s: 'L'};
@@ -4277,16 +4253,26 @@ function buildExportHTML(userKey, locality, year, monthIndex0, todayStr, catHour
     calendarHTML += dayHTML;
   }
   
-  // Días del mes siguiente (visibles con número)
+
+// Días del mes siguiente (visibles en pantalla, se exportan atenuados)
   const totalCells = firstDayMonday + lastDate;
   const trailing = (7 - (totalCells % 7)) % 7;
-  for(let dNext = 1; dNext <= trailing; dNext++){
-    const keyNext = dayKey(nextYear, nextMonth, dNext);
-    const infoNext = user.data[keyNext] || null;
-    const holidayNext = db.holidays[keyNext];
-    const isHolidayNext = holidayNext && holidayApplies(holidayNext.location, user.locality);
-    calendarHTML += buildExportDayCell(dNext, infoNext, isHolidayNext, true);
+  const nextFirst = new Date(year, monthIndex0+1, 1);
+  const nextYear = nextFirst.getFullYear();
+  const nextMonth0 = nextFirst.getMonth();
+  for(let i=1; i<=trailing; i++){
+    const keyNext = dayKey(nextYear, nextMonth0+1, i);
+    const infoNext = (user.data && user.data[keyNext]) ? user.data[keyNext] : null;
+    const bgNext = infoNext ? getColorValue(infoNext) : '#ffffff';
+    const labelNext = infoNext ? (infoNext.mode==='simple' ? (infoNext.s||'') : (infoNext.sTop||'')) : '';
+    const dayHTMLNext = `
+      <div style="height:100px;position:relative;border:1px solid #e5e7eb;background:${bgNext};opacity:0.35;">
+        <div style="position:absolute;top:6px;right:8px;font-size:14px;color:#111827;font-weight:700;">${i}</div>
+        ${labelNext ? `<div style="position:absolute;left:0;right:0;top:38px;text-align:center;font-weight:900;letter-spacing:0.5px;color:#111827;">${labelNext}</div>` : ``}
+      </div>`;
+    calendarHTML += dayHTMLNext;
   }
+
 
   // Turnos usados en el mes
   const usedShifts = Object.keys(SHIFTS)
@@ -4434,21 +4420,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  if(!t) return;
-  t.textContent=msg;
-  t.classList.add('show');
-  clearTimeout(showToast._tm);
-  showToast._tm=setTimeout(()=>t.classList.remove('show'), 1600);
-}
 </script>
 
 
 <!-- Menú acciones de día (copiar/pegar) -->
-<div id="dayActionsMenu" class="fixed z-[9999] hidden no-select">
+<div id="dayActionsMenu" class="fixed z-[9999] hidden">
   <div class="bg-white/95 backdrop-blur-md border border-black/10 rounded-2xl shadow-2xl overflow-hidden min-w-[220px]">
     <div class="px-4 py-3 font-black text-[12px] uppercase tracking-widest text-gray-700 bg-gray-50 border-b border-black/5">Acciones</div>
     <button id="actCopyDay" class="w-full text-left px-4 py-3 hover:bg-gray-50 font-bold">📋 Copiar día</button>
@@ -4459,7 +4435,5 @@ function showToast(msg){
   </div>
 </div>
 
-
-<div id="toast"></div>
 </body>
 </html>
