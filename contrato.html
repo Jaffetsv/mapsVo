@@ -327,9 +327,6 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none; /* Firefox */
-      position: sticky;
-      top: 144px; /* Altura del header */
-      z-index: 30;
     }
     
     .config-tabs-container::-webkit-scrollbar {
@@ -338,7 +335,7 @@
     
     @media (max-width: 768px) {
       .config-tabs-container {
-        top: 144px;
+        /* sin sticky */
       }
     }
     
@@ -503,52 +500,50 @@
 <body class="bg-gray-100">
 
 <!-- Top bar -->
-<div class="bg-[#1e293b] text-white p-3 md:p-4 sticky top-0 z-50 shadow-lg">
-  <div class="flex items-center justify-between gap-3">
-    <div class="flex items-center gap-3 min-w-0">
-      <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0">
-        <span id="userInitial">A</span>
-      </div>
-
-      <div class="min-w-0">
-        <div class="text-[10px] font-black uppercase tracking-widest text-gray-300">Perfil</div>
-        <!-- CORREGIDO: select claro para que en móvil (iOS/Android) NO se vea en blanco -->
-        <select id="userSelect" onchange="switchUser()"
-          class="mt-1 w-[220px] max-w-[70vw] bg-white text-gray-900 border border-white/20 rounded-xl px-3 py-2 text-[11px] font-black">
-        </select>
-      </div>
+<div class="bg-[#1e293b] text-white px-3 md:px-4 py-2 sticky top-0 z-50 shadow-lg">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-black text-sm flex-shrink-0" aria-hidden="true">
+      <span id="userInitial">A</span>
     </div>
+
+    <!-- Perfil: ocupa la barra completa para evitar espacios desperdiciados -->
+    <select id="userSelect" onchange="switchUser()"
+      class="flex-1 min-w-0 bg-white text-gray-900 border border-white/20 rounded-xl px-3 py-2 text-[12px] md:text-[13px] font-black">
+    </select>
 
     <button id="menuBtn" onclick="toggleMenu()" class="bg-white/15 hover:bg-white/25 p-3 rounded-xl text-[12px] font-black uppercase transition-colors flex-shrink-0" aria-label="Menú">
       ☰
     </button>
   </div>
 
-  <p id="editStatus" class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Modo Vista</p>
+  <div class="mt-1">
+    <p id="editStatus" class="inline-flex px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-black uppercase tracking-widest text-gray-200">Modo Vista</p>
+  </div>
+</div>
 
-  <!-- Month/year -->
-  <div class="mt-3 flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl p-2 shadow-inner">
-    <button onclick="changeMonth(-1)" class="p-2 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes anterior">
-      <span class="text-xl font-bold">‹</span>
+<!-- Month/year (compacto, protagonista: calendario) -->
+<div class="px-3 md:px-4 pt-2">
+  <div class="flex items-center justify-between bg-gradient-to-r from-blue-900 to-slate-800 rounded-2xl px-2 py-2 shadow-inner">
+    <button onclick="changeMonth(-1)" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes anterior">
+      <span class="text-xl font-black">‹</span>
     </button>
 
-    <div class="flex flex-col items-center flex-1 mx-2">
-      <div id="currentMonthDisplay" class="text-lg md:text-xl font-black text-white text-center mb-1">Febrero 2026</div>
-      <div class="flex gap-2 md:gap-3 items-center opacity-90">
-        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm font-bold text-white text-center appearance-none cursor-pointer w-24 md:w-auto"></select>
-        <span class="text-white font-bold">/</span>
-        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm font-bold text-white text-center appearance-none cursor-pointer w-20 md:w-auto"></select>
-      </div>
-      <div class="flex gap-2 mt-2">
-        <button onclick="goToday()" class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-black uppercase transition-colors">Hoy</button>
+    <div class="flex flex-col items-center flex-1 mx-2 min-w-0">
+      <div id="currentMonthDisplay" class="text-lg md:text-2xl font-black text-white text-center leading-tight truncate">Febrero 2026</div>
+      <div class="mt-1 flex items-center gap-2 opacity-95">
+        <select id="selectMonth" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm md:text-base font-black text-white text-center appearance-none cursor-pointer"></select>
+        <span class="text-white font-black">/</span>
+        <select id="selectYear" onchange="jumpToDate()" class="bg-transparent border-none p-0 text-sm md:text-base font-black text-white text-center appearance-none cursor-pointer"></select>
+        <button onclick="goToday()" class="ml-2 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-[10px] md:text-[11px] font-black uppercase transition-colors">Hoy</button>
       </div>
     </div>
 
-    <button onclick="changeMonth(1)" class="p-2 md:p-3 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes siguiente">
-      <span class="text-xl font-bold">›</span>
+    <button onclick="changeMonth(1)" class="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0" aria-label="Mes siguiente">
+      <span class="text-xl font-black">›</span>
     </button>
   </div>
 </div>
+
 
 <!-- Drawer menu -->
 <div id="menuOverlay" class="drawer-overlay" onclick="closeMenu()"></div>
@@ -574,7 +569,7 @@
 
 <!-- Tabs -->
 
-<div class="flex bg-white shadow-sm sticky top-[144px] md:top-[160px] z-40 border-b">
+<div class="flex bg-white shadow-sm border-b">
   <button onclick="showView('calendar')" id="tab-calendar" class="tab-btn tab-active">📅 Calendario</button>
   <button onclick="showView('summary')" id="tab-summary" class="tab-btn">📊 Resumen</button>
   <button onclick="showView('settings')" id="tab-settings" class="tab-btn">⚙️ Ajustes</button>
@@ -1152,6 +1147,27 @@ try {
   db = createDefaultDB();
 }
 
+normalizeEnabledFlags();
+
+function normalizeEnabledFlags(){
+  try{
+    if(!db || !db.users) return;
+    Object.keys(db.users).forEach(u=>{
+      const user = db.users[u];
+      if(!user || !user.config) return;
+      Object.keys(user.config).forEach(k=>{
+        if(typeof user.config[k].enabled === 'undefined'){
+          user.config[k].enabled = (['Mañana','Tarde','16hrs','CENA','L','Vacaciones'].includes(k));
+        }
+        // Si alguien renombró "VACACIONES" a otro label, no afecta el key.
+      });
+    });
+    saveDB();
+  }catch(e){
+    console.log('normalizeEnabledFlags error', e);
+  }
+}
+
 function createDefaultDB() {
   return {
     version: 23,
@@ -1176,14 +1192,14 @@ function createDefaultDB() {
         locality:'San Salvador',
         data:{},
         config:{
-          'Mañana': { label:'Mañana', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00' },
-          'Tarde': { label:'Tarde', color:'Tarde', cat:'hosp', in:'14:00', out:'22:00' },
-          '16hrs': { label:'16hrs', color:'16hrs', cat:'hosp', in:'06:00', out:'22:00' },
-          'CENA': { label:'CENA', color:'CENA', cat:'sena', in:'05:00', out:'17:00' },
-          'Cumpleaños': { label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00' },
-          'L': { label:'L', color:'L', cat:'off', in:'00:00', out:'00:00' },
-          'Vacaciones': { label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00' },
-          'Ausencia': { label:'Ausencia', color:'Ausencia', cat:'ausencia', in:'00:00', out:'00:00' }
+          'Mañana': { label:'Mañana', color:'Mañana', cat:'hosp', in:'06:00', out:'14:00', enabled:true },
+          'Tarde': { label:'Tarde', color:'Tarde', cat:'hosp', in:'14:00', out:'22:00', enabled:true },
+          '16hrs': { label:'16hrs', color:'16hrs', cat:'hosp', in:'06:00', out:'22:00', enabled:true },
+          'CENA': { label:'CENA', color:'CENA', cat:'sena', in:'05:00', out:'17:00', enabled:true },
+          'Cumpleaños': { label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00', enabled:false },
+          'L': { label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', enabled:true },
+          'Vacaciones': { label:'Vac', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', enabled:true },
+          'Ausencia': { label:'Ausencia', color:'Ausencia', cat:'ausencia', in:'00:00', out:'00:00', enabled:false }
         }
       }
     }
@@ -1204,11 +1220,11 @@ function saveDB(){
 const IMPORT_ABSENCE_MAP = {
   'C':  { key:'CAPACITACION', label:'Capacitación', color:'azul', cat:'admin', in:'00:00', out:'00:00', note:'CAPACITACIÓN' },
   'I':  { key:'INCAPACIDAD', label:'Incapacidad', color:'rojo', cat:'off', in:'00:00', out:'00:00', note:'INCAPACIDAD' },
-  'V':  { key:'Vacaciones', label:'Vacaciones', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', note:'VACACIONES' },
-  'L':  { key:'L', label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', note:'LIBRE' },
+  'V':  { key:'Vacaciones', label:'Vac', color:'Vacaciones', cat:'off', in:'00:00', out:'00:00', enabled:true, note:'VACACIONES' },
+  'L':  { key:'L', label:'L', color:'L', cat:'off', in:'00:00', out:'00:00', enabled:true, note:'LIBRE' },
   'PS': { key:'PERMISO_SINDICAL', label:'Permiso Sindical', color:'morado', cat:'admin', in:'00:00', out:'00:00', note:'PERMISO SINDICAL' },
   'F':  { key:'AUSENCIA_INJUST', label:'Aus. Injust.', color:'Ausencia', cat:'ausencia', in:'00:00', out:'00:00', note:'AUSENCIA INJUSTIFICADA' },
-  'CU': { key:'Cumpleaños', label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00', note:'CUMPLEAÑOS' }
+  'CU': { key:'Cumpleaños', label:'Cumpleaños', color:'Cumpleaños', cat:'cumple', in:'00:00', out:'00:00', enabled:false, note:'CUMPLEAÑOS' }
 };
 
 const IMPORT_SHIFT_CODE_MAP = {
@@ -1233,6 +1249,8 @@ let selectedColor = "Mañana";
 let importContext = null;
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ALWAYS_VISIBLE_SHIFTS = ['Mañana','Tarde','16hrs','CENA','L','Vacaciones'];
+
 
 // =========================================================
 // Helper Functions
@@ -1294,23 +1312,17 @@ function codeToShiftDef(codeNorm){
   return null;
 }
 
-function ensureShiftExistsForUser(userKey, shiftDef){
+function ensureShiftExistsForUser(userKey, shiftDef, enableNow=false){
   const user = db.users[userKey];
   if(!user || !shiftDef) return;
   if(!user.config[shiftDef.key]){
-    user.config[shiftDef.key] = { 
-      label: shiftDef.label, 
-      color: shiftDef.color || 'gris', 
-      cat: shiftDef.cat || 'hosp', 
-      in: shiftDef.in || '00:00', 
-      out: shiftDef.out || '00:00' 
-    };
+    user.config[shiftDef.key] = { label: shiftDef.label, color: shiftDef.color || 'gris', cat: shiftDef.cat || 'hosp', in: shiftDef.in || '00:00', out: shiftDef.out || '00:00', enabled: !!enableNow };
   }
-}
+  if(enableNow && user.config[shiftDef.key]) user.config[shiftDef.key].enabled = true;
 
-function ensureImportBaseShiftsForUser(userKey){
-  Object.values(IMPORT_ABSENCE_MAP).forEach(def => ensureShiftExistsForUser(userKey, def));
-  Object.values(IMPORT_SHIFT_CODE_MAP).forEach(def => ensureShiftExistsForUser(userKey, def));
+}function ensureImportBaseShiftsForUser(userKey){
+  Object.values(IMPORT_ABSENCE_MAP).forEach(def => ensureShiftExistsForUser(userKey, def, false));
+  Object.values(IMPORT_SHIFT_CODE_MAP).forEach(def => ensureShiftExistsForUser(userKey, def, false));
 }
 
 function ensureUserExists(nameUpper){
@@ -2115,6 +2127,14 @@ function setMode(m){
   });
 }
 
+function getVisibleShiftKeys(user){
+  if(!user) return [];
+  const keys = Object.keys(user.config || {});
+  const visible = keys.filter(k => (['Mañana','Tarde','16hrs','CENA','L','Vacaciones'].includes(k)) || (user.config[k] && user.config[k].enabled));
+  const extras = visible.filter(k => !(['Mañana','Tarde','16hrs','CENA','L','Vacaciones'].includes(k))).sort((a,b)=>a.localeCompare(b,'es'));
+  return [...ALWAYS_VISIBLE_SHIFTS.filter(k=>visible.includes(k)), ...extras];
+}
+
 function refreshShiftButtons(){
   const user = db.users[db.current];
   if (!user) return;
@@ -2134,7 +2154,7 @@ function refreshShiftButtons(){
   const simpleContainer = document.getElementById('sec-simple');
   if (simpleContainer) {
     simpleContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
+    getVisibleShiftKeys(user).forEach(key => {
       const btn = createButton(key, selS === key, () => {
         selS = key;
         const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
@@ -2152,7 +2172,7 @@ function refreshShiftButtons(){
   const topContainer = document.getElementById('mix-t');
   if (topContainer) {
     topContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
+    getVisibleShiftKeys(user).forEach(key => {
       const btn = createButton(key, selT === key, () => {
         selT = key;
         const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
@@ -2170,7 +2190,7 @@ function refreshShiftButtons(){
   const bottomContainer = document.getElementById('mix-b');
   if (bottomContainer) {
     bottomContainer.innerHTML = '';
-    Object.keys(SHIFTS).forEach(key => {
+    getVisibleShiftKeys(user).forEach(key => {
       const btn = createButton(key, selB === key, () => {
         selB = key;
         const shift = SHIFTS[key] || {in: '00:00', out: '00:00'};
@@ -2301,7 +2321,7 @@ function renderSettings(){
   const SHIFTS = user.config;
   
   // Ordenar: turnos por defecto primero, luego los demás
-  const defaultShifts = ['Mañana','Tarde','16hrs','CENA','Cumpleaños','L','Vacaciones','Ausencia'];
+  const defaultShifts = ['Mañana','Tarde','16hrs','CENA','L','Vacaciones'];
   const otherShifts = Object.keys(SHIFTS).filter(s => !defaultShifts.includes(s)).sort();
   const sortedShifts = [...defaultShifts.filter(s => SHIFTS[s]), ...otherShifts];
   
@@ -2317,6 +2337,10 @@ function renderSettings(){
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Nombre</p>
               <input id="set-label-${cssSafe(id)}" value="${escapeHTML(conf.label||id)}" class="w-full bg-white border-gray-200 focus:border-blue-400 rounded-xl text-gray-900"/>
+              <div class="mt-2 flex items-center gap-2">
+                <input type="checkbox" id="set-vis-${cssSafe(id)}" ${ (ALWAYS_VISIBLE_SHIFTS.includes(id) || conf.enabled) ? 'checked' : '' } ${ ALWAYS_VISIBLE_SHIFTS.includes(id) ? 'disabled' : '' }>
+                <label for="set-vis-${cssSafe(id)}" class="text-[10px] font-black uppercase text-gray-500">Visible en selector</label>
+              </div>
             </div>
             <div>
               <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Categoría</p>
@@ -2379,12 +2403,16 @@ function saveShiftSettings(){
     const color = document.getElementById(`set-color-${safeId}`)?.value || SHIFTS[id].color;
     const inTime = document.getElementById(`set-in-${safeId}`)?.value || SHIFTS[id].in || '00:00';
     const outTime = document.getElementById(`set-out-${safeId}`)?.value || SHIFTS[id].out || '00:00';
+    const vis = document.getElementById(`set-vis-${safeId}`);
+    const enabled = ALWAYS_VISIBLE_SHIFTS.includes(id) ? true : (!!vis && vis.checked);
+
     
     SHIFTS[id].label = label;
     SHIFTS[id].cat = cat;
     SHIFTS[id].color = color;
     SHIFTS[id].in = inTime;
     SHIFTS[id].out = outTime;
+    SHIFTS[id].enabled = enabled;
   });
   
   if(propagate){
@@ -2521,7 +2549,8 @@ function addNewShift(){
     color: color,
     cat: cat,
     in: inTime,
-    out: outTime
+    out: outTime,
+    enabled: true
   };
   
   saveDB();
@@ -3406,6 +3435,8 @@ function runImportSelected(){
       
       const def = codeToShiftDef(code);
       if(!def) continue;
+      // Asegurar que el turno exista y quede habilitado (si viene del Excel)
+      ensureShiftExistsForUser(userKey, def, true);
       
       const key = dayKey(year, monthIndex0 + 1, day);
       
