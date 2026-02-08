@@ -26,7 +26,21 @@
     }
     .day-cell{ touch-action: manipulation; }
 
-</style>');
+
+    /* ===== Mobile fix: evitar que el número del día tape el turno ===== */
+    @media (max-width: 640px) {
+      .day-number{
+        font-size: 10px;
+        padding: 1px 4px;
+        line-height: 1.1;
+      }
+      /* Reserva espacio superior para etiquetas/turnos */
+      .day-cell{
+        padding-top: 18px;
+      }
+    }
+
+  </style>');
     }
   </script>
   
@@ -584,9 +598,11 @@
   </div>
 
   <div class="p-4 space-y-3">
+    <div id="authStatusLine" class="w-full p-3 bg-white/5 rounded-2xl text-[10px] font-bold text-gray-200">🔒 Sin sesión</div>
     <button onclick="openProfilesModal(); closeMenu();" class="w-full p-3 bg-white/10 hover:bg-white/15 rounded-2xl font-black uppercase text-[11px]">👤 Perfiles</button>
     <button onclick="openImportModal(); closeMenu();" class="w-full p-3 bg-sky-600 hover:bg-sky-700 rounded-2xl font-black uppercase text-[11px]">📥 Importar</button>
     <button onclick="showExportModal(); closeMenu();" class="w-full p-3 bg-white/10 hover:bg-white/15 rounded-2xl font-black uppercase text-[11px]">📋 Exportar</button>
+    <button id="authMenuBtn" onclick="openAuthModal(); closeMenu();" class="w-full p-3 bg-white/10 hover:bg-white/15 rounded-2xl font-black uppercase text-[11px]">🔑 Iniciar sesión</button>
     <button id="unlockBtn" onclick="toggleEditMode(); closeMenu();" class="w-full p-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-black uppercase text-[11px]">🔒 Bloquear</button>
 
     <div class="pt-3 border-t border-white/10">
@@ -1120,6 +1136,55 @@
   </div>
 </div>
 
+
+<!-- Modal Auth (Preparado para sincronización en la nube) -->
+<div id="authModal" class="modal">
+  <div class="bg-white w-full max-w-md rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2 max-h-[85vh] overflow-y-auto overscroll-contain">
+    <div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-600 mx-auto mb-4 flex items-center justify-center">
+      <span class="text-white text-2xl font-black">🔑</span>
+    </div>
+    <h3 class="font-black text-center uppercase text-base md:text-lg mb-2">Inicio de sesión</h3>
+    <p class="text-[11px] text-gray-500 font-bold text-center mb-6">
+      Esto habilitará la sincronización entre dispositivos cuando conectemos el servicio en la nube.
+    </p>
+
+    <div id="authSignedOut" class="space-y-4">
+      <div>
+        <label class="text-[12px] font-black uppercase text-gray-600">Correo o usuario</label>
+        <input id="authIdentifier" type="text" class="w-full mt-1 p-3 rounded-2xl border-2 border-gray-200 focus:border-violet-500 outline-none font-bold text-[12px]" placeholder="correo@dominio.com o usuario"/>
+      </div>
+      <div>
+        <label class="text-[12px] font-black uppercase text-gray-600">Contraseña</label>
+        <input id="authPassword" type="password" class="w-full mt-1 p-3 rounded-2xl border-2 border-gray-200 focus:border-violet-500 outline-none font-bold text-[12px]" placeholder="••••••••"/>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeAuthModal()" class="flex-1 p-3 bg-gray-100 hover:bg-gray-200 rounded-2xl font-black uppercase text-[11px]">Cancelar</button>
+        <button onclick="authSignIn()" class="flex-1 p-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white rounded-2xl font-black uppercase text-[11px]">Ingresar</button>
+      </div>
+
+      <div class="text-[10px] text-gray-500 font-bold leading-4">
+        * Por ahora los datos siguen guardándose localmente. Luego conectaremos un proveedor para sincronizar en la nube.
+      </div>
+    </div>
+
+    <div id="authSignedIn" class="hidden space-y-4">
+      <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+        <div class="text-[11px] font-black uppercase text-emerald-700">Sesión activa</div>
+        <div id="authUserLine" class="text-[12px] font-black text-emerald-900 mt-1">—</div>
+        <div class="text-[10px] font-bold text-emerald-800 mt-1">Cambios locales. Sincronización disponible cuando conectemos el servicio.</div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeAuthModal()" class="flex-1 p-3 bg-gray-100 hover:bg-gray-200 rounded-2xl font-black uppercase text-[11px]">Cerrar</button>
+        <button onclick="authSignOut()" class="flex-1 p-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase text-[11px]">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div id="authError" class="hidden mt-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-[11px] font-bold"></div>
+  </div>
+</div>
+
 <!-- Modal Export -->
 <div id="exportModal" class="modal">
   <div class="bg-white w-full max-w-xl rounded-3xl md:rounded-[40px] p-4 md:p-6 lg:p-8 shadow-2xl mx-2">
@@ -1363,9 +1428,167 @@ try{
 function saveDB(){ 
   try {
     localStorage.setItem('shifter_v23', JSON.stringify(db));
+    // Sync opcional (se habilitará cuando conectemos proveedor en la nube)
+    scheduleCloudSave();
   } catch (e) {
     console.error('Error guardando DB:', e);
   }
+
+// =========================================================
+// Auth + Cloud Sync (SCaffold - listo para conectar proveedor)
+// =========================================================
+const AUTH_STORAGE_KEY = 'shifter_auth_v1';
+
+let auth = {
+  user: null, // { id, identifier, createdAt }
+};
+
+// Adaptador de nube (placeholder). En la siguiente fase lo conectaremos a un servicio real.
+// Para habilitarlo: CloudAdapter.enabled = true y definir sus métodos.
+const CloudAdapter = {
+  enabled: false,
+  async signIn(identifier, password){ throw new Error('Sin proveedor de nube configurado.'); },
+  async signOut(){ return true; },
+  async load(userId){ throw new Error('Sin proveedor de nube configurado.'); },
+  async save(userId, payload){ throw new Error('Sin proveedor de nube configurado.'); },
+};
+window.ShifterCloud = CloudAdapter;
+
+// Debounce para guardado en la nube (cuando se habilite)
+let _cloudSaveTimer = null;
+
+function loadAuth(){
+  try{
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    auth.user = raw ? JSON.parse(raw) : null;
+  }catch(e){
+    auth.user = null;
+  }
+  refreshAuthUI();
+}
+
+function persistAuth(){
+  try{
+    if(auth.user) localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth.user));
+    else localStorage.removeItem(AUTH_STORAGE_KEY);
+  }catch(e){}
+}
+
+function refreshAuthUI(){
+  const line = document.getElementById('authStatusLine');
+  const btn  = document.getElementById('authMenuBtn');
+  const so   = document.getElementById('authSignedOut');
+  const si   = document.getElementById('authSignedIn');
+  const userLine = document.getElementById('authUserLine');
+
+  const signedIn = !!(auth && auth.user && auth.user.identifier);
+
+  if(line){
+    line.textContent = signedIn ? `✅ Sesión: ${auth.user.identifier}` : '🔒 Sin sesión';
+  }
+  if(btn){
+    btn.textContent = signedIn ? '👤 Cuenta / Sesión' : '🔑 Iniciar sesión';
+  }
+  if(so && si){
+    if(signedIn){
+      so.classList.add('hidden');
+      si.classList.remove('hidden');
+      if(userLine) userLine.textContent = auth.user.identifier;
+    }else{
+      si.classList.add('hidden');
+      so.classList.remove('hidden');
+      if(userLine) userLine.textContent = '—';
+    }
+  }
+}
+
+function openAuthModal(){
+  const m = document.getElementById('authModal');
+  if(!m) return;
+  m.classList.add('active');
+  const err = document.getElementById('authError');
+  if(err){ err.classList.add('hidden'); err.textContent=''; }
+  refreshAuthUI();
+}
+
+
+function closeAuthModal(){
+  const m = document.getElementById('authModal');
+  if(!m) return;
+  m.classList.remove('active');
+  // mantener consistente con otros modales (usa hidden y/o active según tu CSS)
+  setTimeout(()=>{ m.classList.add('hidden'); }, 150);
+}
+
+async function authSignIn(){
+  const idEl = document.getElementById('authIdentifier');
+  const pwEl = document.getElementById('authPassword');
+  const err  = document.getElementById('authError');
+
+  const identifier = (idEl && idEl.value ? idEl.value : '').trim();
+  const password = (pwEl && pwEl.value ? pwEl.value : '').trim();
+
+  if(!identifier){
+    if(err){ err.textContent='Debes ingresar correo o usuario.'; err.classList.remove('hidden'); }
+    return;
+  }
+  if(!password){
+    if(err){ err.textContent='Debes ingresar contraseña.'; err.classList.remove('hidden'); }
+    return;
+  }
+
+  // Por ahora: sesión local (scaffold). Cuando conectemos el proveedor, usaremos CloudAdapter.signIn().
+  try{
+    if(CloudAdapter.enabled){
+      const user = await CloudAdapter.signIn(identifier, password);
+      auth.user = user || { id: identifier, identifier, createdAt: Date.now() };
+    }else{
+      auth.user = { id: identifier.toLowerCase(), identifier, createdAt: Date.now() };
+    }
+    persistAuth();
+    refreshAuthUI();
+    // Preparado para: pull inicial desde nube (cuando se habilite)
+    // await cloudPull();
+  }catch(e){
+    if(err){ err.textContent = (e && e.message) ? e.message : 'Error al iniciar sesión.'; err.classList.remove('hidden'); }
+    return;
+  }
+}
+
+async function authSignOut(){
+  const err  = document.getElementById('authError');
+  try{
+    if(CloudAdapter.enabled){
+      await CloudAdapter.signOut();
+    }
+    auth.user = null;
+    persistAuth();
+    refreshAuthUI();
+  }catch(e){
+    if(err){ err.textContent = (e && e.message) ? e.message : 'Error al cerrar sesión.'; err.classList.remove('hidden'); }
+  }
+}
+
+function scheduleCloudSave(){
+  // NO cambia el comportamiento actual si no hay proveedor habilitado o no hay sesión.
+  if(!CloudAdapter.enabled) return;
+  if(!(auth && auth.user && auth.user.id)) return;
+
+  try{
+    if(_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
+    _cloudSaveTimer = setTimeout(async ()=>{
+      try{
+        const payload = JSON.parse(JSON.stringify(db)); // snapshot simple
+        await CloudAdapter.save(auth.user.id, payload);
+      }catch(e){
+        console.warn('Cloud save falló:', e);
+      }
+    }, 900);
+  }catch(e){}
+}
+
+// (Opcional futuro)
+// async function cloudPull(){ ... }  // cargar DB desde nube y mezclar
 }
 
 // =========================================================
@@ -2882,6 +3105,9 @@ document.addEventListener('scroll', ()=>hideDayMenu(), true);
 window.addEventListener('resize', ()=>hideDayMenu());
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Auth (scaffold)
+  loadAuth();
+
   const c1 = document.getElementById('actCopyDay');
   const c2 = document.getElementById('actCopyShift');
   const p  = document.getElementById('actPaste');
