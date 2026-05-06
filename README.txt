@@ -1,6 +1,6 @@
-DLSR MAPS - rediseño profesional y optimizado
+DLSR MAPS - versión optimizada v5
 
-Archivos incluidos:
+Archivos principales:
 - index.html
 - acceso.html
 - placa.html
@@ -8,26 +8,32 @@ Archivos incluidos:
 - ubicacion.html
 - styles.css
 - app-core.js
+- data-worker.js
 - data-config.js
 - sw.js
 - manifest.json
 - logo.png
-- logo_fondo_blanco.png
 - logo_ui.png
+- logo_fondo_blanco.png
 
 Mejoras aplicadas:
-- Rediseño visual completo para PC, navegador móvil y web app instalada.
-- Inicio más liviano: no carga Excel ni mapas al abrir el menú.
-- Mapas inicializados bajo demanda para reducir bloqueo visual.
-- Botones menos agresivos y con estilo profesional.
-- Búsqueda por placa con sugerencias tipo buscador mientras se escribe.
-- Modo adicional para buscar por número contenido dentro de la referencia.
-- Búsqueda flexible: admite coincidencias parciales como CT1921, 1921 o 124-01.
-- Se mantienen búsqueda por contrato, placa, ubicación, coordenadas, geolocalización, Google Maps y Waze.
-- Se evita mostrar al usuario final nombres de archivos de data o cantidades de registros.
+1. La lectura y búsqueda sobre Excel ahora se ejecuta en un Web Worker.
+   Esto evita que la página se congele mientras el usuario escribe.
+2. En búsqueda por placa se agregaron sugerencias tipo buscador.
+   Permite buscar por referencia completa, parcial o por número contenido.
+3. Las sugerencias ahora forman parte del flujo visual de la página.
+   Ya no quedan superpuestas ni ocultas detrás del mapa o de los resultados.
+4. El mapa se inicializa solo cuando se necesita mostrar resultados.
+5. El inicio no carga Excel ni mapas, por lo que debe abrir más rápido.
+6. Se suavizaron los colores y botones para una apariencia más profesional.
+7. Se mantuvieron las funciones de Google Maps, Waze, geolocalización, contrato, placa y ubicación.
 
-Instrucciones:
-1. Suba todos estos archivos a la raíz del repositorio, reemplazando los anteriores.
-2. Mantenga los archivos Excel de datos en la raíz del repositorio.
-3. Si agrega un nuevo Excel, agregue su nombre en data-config.js.
-4. Después de publicar cambios, abra la página y presione Ctrl + F5 para limpiar caché.
+Para actualizar la data:
+- Edite data-config.js.
+- Agregue el nombre del nuevo Excel en la lista.
+- El sistema elegirá automáticamente el archivo más reciente según la fecha del nombre.
+
+Recomendación al publicar:
+- Subir todos los archivos a la raíz del repositorio.
+- Confirmar que los archivos Excel estén también en la raíz.
+- Después de publicar, abrir la página y presionar Ctrl + F5 para limpiar caché.

@@ -9,7 +9,7 @@
     if (sessionStorage.getItem("delsur_maps_auth") !== "1") window.location.replace("./acceso.html");
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260506-4" />
+  <link rel="stylesheet" href="./styles.css?v=20260506-5" />
 </head>
 <body>
   <main class="app-shell">
@@ -24,7 +24,7 @@
       <a class="btn btn-light" href="index.html">← Inicio</a>
     </header>
 
-    <section class="panel card">
+    <section class="panel card search-panel">
       <div class="actions">
         <div class="search-area">
           <label class="searchbox" for="inputValor">
@@ -61,14 +61,12 @@
   </main>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="./data-config.js?v=20260506-4"></script>
-  <script src="./app-core.js?v=20260506-4"></script>
+  <script src="./app-core.js?v=20260506-5"></script>
   <script>
     let map = null;
     let resultLayer = null;
     let userLayer = null;
-    let datosPromise = null;
+    let datosPreparados = false;
 
     const input = document.getElementById('inputValor');
     const btnBuscar = document.getElementById('btnBuscar');
@@ -92,11 +90,6 @@
       setTimeout(() => map.invalidateSize(), 80);
     }
 
-    function obtenerDatos() {
-      if (!datosPromise) datosPromise = DLSRCore.cargarPlacas();
-      return datosPromise;
-    }
-
     function setStatus(texto, tipo = 'info') {
       statusEl.textContent = texto;
       statusEl.className = 'status' + (tipo === 'loading' ? ' loading' : '') + (tipo === 'ok' ? ' ok' : '') + (tipo === 'warn' ? ' warn' : '') + (tipo === 'error' ? ' error' : '');
@@ -117,31 +110,6 @@
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">${DLSRCore.htmlSeguro(texto)}</td></tr>`;
     }
 
-    function leerCoordenadas(texto) {
-      const match = texto.match(/^\s*(-?\d+(?:[\.,]\d+)?)\s*[,;\s]+\s*(-?\d+(?:[\.,]\d+)?)\s*$/);
-      if (!match) return null;
-      const lat = DLSRCore.parseCoord(match[1]);
-      const lon = DLSRCore.parseCoord(match[2]);
-      return { lat, lon };
-    }
-
-    function topCercanos(lat, lon, data) {
-      const mejores = [];
-      for (const item of data) {
-        if (!DLSRCore.coordValida(item.lat, item.lon)) continue;
-        const distancia = DLSRCore.distanciaKm(lat, lon, item.lat, item.lon);
-        const candidato = { ...item, distancia };
-        if (mejores.length < 10) {
-          mejores.push(candidato);
-          mejores.sort((a, b) => a.distancia - b.distancia);
-        } else if (distancia < mejores[mejores.length - 1].distancia) {
-          mejores[mejores.length - 1] = candidato;
-          mejores.sort((a, b) => a.distancia - b.distancia);
-        }
-      }
-      return mejores;
-    }
-
     function marcadorResultado(item) {
       const h = DLSRCore.htmlSeguro;
       const gmaps = `https://www.google.com/maps?q=${item.lat},${item.lon}`;
@@ -151,18 +119,20 @@
       return L.marker([item.lat, item.lon]).bindPopup(popup);
     }
 
-    function mostrarBase(titulo, lat, lon, extra = '') {
+    function mostrarBase(base) {
       const h = DLSRCore.htmlSeguro;
+      const lat = base.lat;
+      const lon = base.lon;
       const gmaps = `https://www.google.com/maps?q=${lat},${lon}`;
       const waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
       resultCard.innerHTML = `
         <div class="result-head">
-          <div><h2 class="result-title">${h(titulo)}</h2><p class="result-subtitle">Punto base para calcular cercanía.</p></div>
+          <div><h2 class="result-title">${h(base.titulo || 'Punto consultado')}</h2><p class="result-subtitle">Punto base para calcular cercanía.</p></div>
         </div>
         <div class="result-grid">
           <div>Latitud<b>${h(lat)}</b></div>
           <div>Longitud<b>${h(lon)}</b></div>
-          ${extra ? `<div style="grid-column:1/-1;">Referencia base<b>${h(extra)}</b></div>` : ''}
+          ${base.extra ? `<div style="grid-column:1/-1;">Referencia base<b>${h(base.extra)}</b></div>` : ''}
         </div>
         <div class="link-row">
           <a class="link-chip" href="${gmaps}" target="_blank" rel="noopener">📍 Google Maps</a>
@@ -171,17 +141,18 @@
       resultCard.className = 'result-card card show';
     }
 
-    function mostrarCercanos(lat, lon, data) {
+    function mostrarCercanos(base, cercanos) {
       const h = DLSRCore.htmlSeguro;
       asegurarMapa();
       resultLayer.clearLayers();
-      const cercanos = topCercanos(lat, lon, data);
 
-      if (!cercanos.length) {
-        tablaVacia('No hay registros con coordenadas válidas.');
-        setStatus('No hay registros con coordenadas válidas.', 'error');
+      if (!cercanos || !cercanos.length) {
+        tablaVacia('No se encontraron resultados.');
+        setStatus('No se encontraron resultados.', 'error');
         return;
       }
+
+      if (base) mostrarBase(base);
 
       const bounds = [];
       for (const item of cercanos) {
@@ -197,7 +168,7 @@
         return `<tr>
           <td>${h(item.referencia || 'Sin referencia')}</td>
           <td>${h(item.alimentador || 'Sin alimentador')}</td>
-          <td>${(item.distancia * 1000).toFixed(0)} m / ${item.distancia.toFixed(2)} km</td>
+          <td>${(Number(item.distancia) * 1000).toFixed(0)} m / ${Number(item.distancia).toFixed(2)} km</td>
           <td><a href="${gmaps}" target="_blank" rel="noopener">Maps</a> | <a href="${waze}" target="_blank" rel="noopener">Waze</a></td>
         </tr>`;
       }).join('');
@@ -227,39 +198,10 @@
 
       try {
         setBusy(true);
-        setStatus('Buscando', 'loading');
-        const payload = await obtenerDatos();
-        const data = payload.data;
-        const coords = leerCoordenadas(valorOriginal);
-
-        if (coords) {
-          if (!DLSRCore.coordValida(coords.lat, coords.lon)) {
-            setStatus('Las coordenadas ingresadas no son válidas.', 'error');
-            tablaVacia('Las coordenadas ingresadas no son válidas.');
-            return;
-          }
-          mostrarBase('Coordenadas consultadas', coords.lat, coords.lon);
-          mostrarCercanos(coords.lat, coords.lon, data);
-          return;
-        }
-
-        const porReferencia = DLSRCore.buscarFlexible(payload, 'referencia', valorOriginal, 'referencia');
-        if (porReferencia && DLSRCore.coordValida(porReferencia.lat, porReferencia.lon)) {
-          mostrarBase('Referencia consultada', porReferencia.lat, porReferencia.lon, porReferencia.referencia);
-          mostrarCercanos(porReferencia.lat, porReferencia.lon, data);
-          return;
-        }
-
-        const q = DLSRCore.normalizarTexto(valorOriginal);
-        const coincidenciaAlimentador = data.find(item => DLSRCore.normalizarTexto(item.alimentador).includes(q) && DLSRCore.coordValida(item.lat, item.lon));
-        if (coincidenciaAlimentador) {
-          mostrarBase('Alimentador consultado', coincidenciaAlimentador.lat, coincidenciaAlimentador.lon, coincidenciaAlimentador.alimentador);
-          mostrarCercanos(coincidenciaAlimentador.lat, coincidenciaAlimentador.lon, data);
-          return;
-        }
-
-        setStatus('No se encontró una referencia, coordenada o alimentador relacionado.', 'error');
-        tablaVacia('No se encontraron resultados.');
+        setStatus(datosPreparados ? 'Buscando' : 'Preparando búsqueda', 'loading');
+        const respuesta = await DLSRData.cercanosDesdeConsulta(valorOriginal, 10);
+        datosPreparados = true;
+        mostrarCercanos(respuesta.base, respuesta.cercanos);
       } catch (err) {
         setStatus(err.message || 'Ocurrió un error al consultar los datos.', 'error');
         tablaVacia('No fue posible completar la búsqueda.');
@@ -292,9 +234,10 @@
             })
           }).addTo(userLayer).bindPopup('Tu ubicación').openPopup();
           map.setView([lat, lon], 15);
-          mostrarBase('Tu ubicación actual', lat, lon);
-          const { data } = await obtenerDatos();
-          mostrarCercanos(lat, lon, data);
+          const respuesta = await DLSRData.cercanosDesdePunto(lat, lon, 10);
+          respuesta.base = { titulo: 'Tu ubicación actual', lat, lon, extra: '' };
+          datosPreparados = true;
+          mostrarCercanos(respuesta.base, respuesta.cercanos);
         } catch (err) {
           setStatus(err.message || 'No fue posible calcular cercanos.', 'error');
           tablaVacia('No fue posible calcular cercanos.');
@@ -321,7 +264,10 @@
     btnBuscar.addEventListener('click', buscar);
     btnMiUbicacion.addEventListener('click', miUbicacion);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
-    DLSRCore.precargar(obtenerDatos);
+    DLSRCore.precargar(async () => {
+      await DLSRData.calentarPlacas();
+      datosPreparados = true;
+    });
   </script>
 </body>
 </html>

@@ -1,19 +1,8 @@
 (function () {
   "use strict";
 
-  const DATA_FILES = Array.isArray(window.DLSRMAPS_DATA_FILES) ? window.DLSRMAPS_DATA_FILES.slice() : [];
-  const DATA_VERSION = window.DLSRMAPS_DATA_VERSION || String(Date.now());
-
-  let workbookPromise = null;
-  const sheetCache = new Map();
-
-  const ALIAS = {
-    referencia: ["REFERENCIA", "Referencia", "referencia", "PLACA", "Placa", "placa", "CODIGO", "Código", "codigo", "Ref", "REF"],
-    contrato: ["Contrato", "CONTRATO", "contrato", "NIS", "nis", "Cuenta", "CUENTA", "No Contrato", "N° Contrato", "Numero Contrato", "Número Contrato"],
-    lat: ["Latitud", "LATITUD", "latitud", "Lat", "LAT", "Latitude", "Y"],
-    lon: ["Longitud", "LONGITUD", "longitud", "Lon", "LON", "Lng", "LNG", "Long", "LONG", "Longitude", "X"],
-    alimentador: ["Alimentador", "ALIMENTADOR", "alimentador", "Feeder", "Circuito", "CIRCUITO"]
-  };
+  const APP_VERSION = "20260506-5";
+  const WORKER_URL = `./data-worker.js?v=${APP_VERSION}`;
 
   function normalizarTexto(valor) {
     return String(valor ?? "")
@@ -31,50 +20,6 @@
     return String(valor ?? "").replace(/\D/g, "");
   }
 
-  function fechaArchivo(nombre) {
-    const m = String(nombre).match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
-    if (!m) return 0;
-    return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])).getTime();
-  }
-
-  function archivosOrdenados() {
-    return DATA_FILES.slice().sort((a, b) => fechaArchivo(b) - fechaArchivo(a) || String(b).localeCompare(String(a)));
-  }
-
-  function archivoUrl(nombre) {
-    return "./" + encodeURI(nombre) + "?v=" + encodeURIComponent(DATA_VERSION);
-  }
-
-  async function cargarWorkbook() {
-    if (workbookPromise) return workbookPromise;
-    workbookPromise = (async () => {
-      for (const archivo of archivosOrdenados()) {
-        try {
-          const response = await fetch(archivoUrl(archivo), { cache: "no-store" });
-          if (!response.ok) continue;
-          const arrayBuffer = await response.arrayBuffer();
-          return XLSX.read(arrayBuffer, { type: "array", cellDates: false });
-        } catch (_) {}
-      }
-      throw new Error("No fue posible preparar los datos de búsqueda.");
-    })();
-    return workbookPromise;
-  }
-
-  function obtenerHoja(workbook, nombresPosibles) {
-    const buscadas = nombresPosibles.map(normalizarClave);
-    const nombreHoja = workbook.SheetNames.find(n => buscadas.includes(normalizarClave(n)));
-    if (!nombreHoja) throw new Error("No se encontró la hoja requerida para esta búsqueda.");
-    return workbook.Sheets[nombreHoja];
-  }
-
-  function obtenerCampo(fila, alias) {
-    const claves = Object.keys(fila || {});
-    const buscadas = alias.map(normalizarClave);
-    const clave = claves.find(k => buscadas.includes(normalizarClave(k)));
-    return clave ? fila[clave] : "";
-  }
-
   function parseCoord(valor) {
     if (valor === null || valor === undefined || valor === "") return NaN;
     const limpio = String(valor).replace(",", ".").replace(/[^0-9.\-]/g, "");
@@ -82,7 +27,8 @@
   }
 
   function coordValida(lat, lon) {
-    return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+    return Number.isFinite(Number(lat)) && Number.isFinite(Number(lon)) &&
+      Number(lat) >= -90 && Number(lat) <= 90 && Number(lon) >= -180 && Number(lon) <= 180;
   }
 
   function htmlSeguro(valor) {
@@ -95,85 +41,6 @@
     }[c]));
   }
 
-  function filaPlaca(fila) {
-    const lat = parseCoord(obtenerCampo(fila, ALIAS.lat));
-    const lon = parseCoord(obtenerCampo(fila, ALIAS.lon));
-    const referencia = obtenerCampo(fila, ALIAS.referencia);
-    return {
-      referencia,
-      lat,
-      lon,
-      alimentador: obtenerCampo(fila, ALIAS.alimentador) || "Sin alimentador"
-    };
-  }
-
-  function filaContrato(fila) {
-    const lat = parseCoord(obtenerCampo(fila, ALIAS.lat));
-    const lon = parseCoord(obtenerCampo(fila, ALIAS.lon));
-    const contrato = obtenerCampo(fila, ALIAS.contrato);
-    const referencia = obtenerCampo(fila, ALIAS.referencia);
-    return {
-      contrato,
-      referencia,
-      lat,
-      lon,
-      alimentador: obtenerCampo(fila, ALIAS.alimentador) || "Sin alimentador"
-    };
-  }
-
-  function crearIndiceExacto(items, campo) {
-    const exacto = new Map();
-    for (const item of items) {
-      const key = normalizarClave(item[campo]);
-      if (key && !exacto.has(key)) exacto.set(key, item);
-    }
-    return exacto;
-  }
-
-  function crearIndiceBusqueda(items, campo) {
-    return items
-      .filter(item => item && item[campo])
-      .map(item => ({
-        item,
-        label: String(item[campo]),
-        key: normalizarClave(item[campo]),
-        digits: soloDigitos(item[campo])
-      }))
-      .filter(row => row.key);
-  }
-
-  async function cargarPlacas() {
-    if (sheetCache.has("placas")) return sheetCache.get("placas");
-    const workbook = await cargarWorkbook();
-    const hoja = obtenerHoja(workbook, ["Placas", "Placa", "PLACAS", "PLACA"]);
-    const data = XLSX.utils.sheet_to_json(hoja, { defval: "", raw: true })
-      .map(filaPlaca)
-      .filter(e => e.referencia);
-    const payload = {
-      data,
-      exacto: crearIndiceExacto(data, "referencia"),
-      indice: crearIndiceBusqueda(data, "referencia")
-    };
-    sheetCache.set("placas", payload);
-    return payload;
-  }
-
-  async function cargarContratos() {
-    if (sheetCache.has("contratos")) return sheetCache.get("contratos");
-    const workbook = await cargarWorkbook();
-    const hoja = obtenerHoja(workbook, ["Contratos", "Contrato", "CONTRATOS", "CONTRATO"]);
-    const data = XLSX.utils.sheet_to_json(hoja, { defval: "", raw: true })
-      .map(filaContrato)
-      .filter(e => e.contrato);
-    const payload = {
-      data,
-      exacto: crearIndiceExacto(data, "contrato"),
-      indice: crearIndiceBusqueda(data, "contrato")
-    };
-    sheetCache.set("contratos", payload);
-    return payload;
-  }
-
   function distanciaKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -184,75 +51,81 @@
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   }
 
-  function puntuacion(row, query, modo) {
-    const q = normalizarClave(query);
-    const qDigits = soloDigitos(query);
-    if (!q && !qDigits) return null;
-
-    if (modo === "numero") {
-      if (qDigits.length < 2) return null;
-      if (row.digits === qDigits) return 0;
-      if (row.digits.startsWith(qDigits)) return 1;
-      if (row.digits.includes(qDigits)) return 2;
-      return null;
-    }
-
-    if (row.key === q) return 0;
-    if (row.key.startsWith(q)) return 1;
-    if (q.length >= 2 && row.key.includes(q)) return 2;
-    if (qDigits.length >= 2 && row.digits.includes(qDigits)) return 3;
-    return null;
-  }
-
-  function sugerencias(indice, valor, limite = 8, modo = "referencia") {
-    const q = normalizarClave(valor);
-    const qDigits = soloDigitos(valor);
-    if ((modo === "numero" && qDigits.length < 2) || (modo !== "numero" && q.length < 2 && qDigits.length < 2)) return [];
-
-    const hallazgos = [];
-    const usados = new Set();
-    for (const row of indice || []) {
-      const score = puntuacion(row, valor, modo);
-      if (score === null) continue;
-      const unique = row.key;
-      if (usados.has(unique)) continue;
-      usados.add(unique);
-      hallazgos.push({ score, label: row.label, item: row.item, keyLength: row.key.length });
-      if (hallazgos.length > limite * 7) break;
-    }
-    return hallazgos
-      .sort((a, b) => a.score - b.score || a.keyLength - b.keyLength || a.label.localeCompare(b.label))
-      .slice(0, limite);
-  }
-
-  function buscarFlexible(payload, campo, valor, modo = "referencia") {
-    const key = normalizarClave(valor);
-    const exacto = payload.exacto && payload.exacto.get(key);
-    if (exacto) return exacto;
-    const top = sugerencias(payload.indice, valor, 1, modo)[0];
-    return top ? top.item : null;
-  }
-
   function precargar(fn) {
+    const run = () => Promise.resolve().then(fn).catch(() => {});
     if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(() => fn().catch(() => {}), { timeout: 1800 });
+      window.requestIdleCallback(run, { timeout: 1800 });
     } else {
-      window.setTimeout(() => fn().catch(() => {}), 650);
+      window.setTimeout(run, 800);
     }
+  }
+
+  let worker = null;
+  let callId = 0;
+  const pending = new Map();
+
+  function rechazarPendientes(message) {
+    for (const [, req] of pending) req.reject(new Error(message));
+    pending.clear();
+  }
+
+  function obtenerWorker() {
+    if (worker) return worker;
+    if (!("Worker" in window)) {
+      throw new Error("Este navegador no soporta el motor rápido de búsqueda.");
+    }
+
+    worker = new Worker(WORKER_URL);
+    worker.onmessage = event => {
+      const msg = event.data || {};
+      const req = pending.get(msg.id);
+      if (!req) return;
+      pending.delete(msg.id);
+      if (msg.ok) req.resolve(msg.result);
+      else req.reject(new Error(msg.error || "No fue posible completar la consulta."));
+    };
+    worker.onerror = () => {
+      rechazarPendientes("No fue posible iniciar el motor de búsqueda.");
+      try { worker.terminate(); } catch (_) {}
+      worker = null;
+    };
+    return worker;
+  }
+
+  function llamarWorker(type, payload = {}) {
+    return new Promise((resolve, reject) => {
+      let w;
+      try {
+        w = obtenerWorker();
+      } catch (err) {
+        reject(err);
+        return;
+      }
+      const id = ++callId;
+      pending.set(id, { resolve, reject });
+      w.postMessage({ id, type, payload });
+    });
   }
 
   window.DLSRCore = {
     normalizarTexto,
     normalizarClave,
     soloDigitos,
+    parseCoord,
     coordValida,
     htmlSeguro,
     distanciaKm,
-    cargarPlacas,
-    cargarContratos,
-    sugerencias,
-    buscarFlexible,
-    parseCoord,
     precargar
+  };
+
+  window.DLSRData = {
+    calentarPlacas() { return llamarWorker("warmPlacas"); },
+    calentarContratos() { return llamarWorker("warmContratos"); },
+    sugerirPlacas(value, mode, limit) { return llamarWorker("suggestPlacas", { value, mode, limit }); },
+    sugerirContratos(value, limit) { return llamarWorker("suggestContratos", { value, limit }); },
+    buscarPlaca(value, mode) { return llamarWorker("findPlaca", { value, mode }); },
+    buscarContrato(value) { return llamarWorker("findContrato", { value }); },
+    cercanosDesdePunto(lat, lon, limit) { return llamarWorker("nearestFromPoint", { lat, lon, limit }); },
+    cercanosDesdeConsulta(value, limit) { return llamarWorker("nearestFromQuery", { value, limit }); }
   };
 })();
