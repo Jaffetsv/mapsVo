@@ -4,5 +4,5 @@
     "Data 14-05-2025P.xlsx"
   ];
 
-  root.DLSRMAPS_DATA_VERSION = "20260506-5";
+  root.DLSRMAPS_DATA_VERSION = "20260506-6";
 })(typeof self !== "undefined" ? self : window);

@@ -9,7 +9,7 @@
     if (sessionStorage.getItem("delsur_maps_auth") !== "1") window.location.replace("./acceso.html");
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260506-5" />
+  <link rel="stylesheet" href="./styles.css?v=20260506-6" />
 </head>
 <body>
   <main class="app-shell">
@@ -31,6 +31,7 @@
             <span class="field-icon">⌕</span>
             <input id="inputValor" type="text" placeholder="Ejemplo: 13.70, -89.20 / CT1921 / AL242" autocomplete="off" inputmode="search" />
           </label>
+          <div class="location-hint" id="locationHint" hidden>📌 Mantenga activa la ubicación del navegador para mayor precisión.</div>
         </div>
         <button id="btnBuscar" class="btn btn-primary" type="button">🔎 Buscar</button>
         <button id="btnMiUbicacion" class="btn btn-green" type="button">📡 Mi ubicación</button>
@@ -61,12 +62,13 @@
   </main>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="./app-core.js?v=20260506-5"></script>
+  <script src="./app-core.js?v=20260506-6"></script>
   <script>
     let map = null;
     let resultLayer = null;
     let userLayer = null;
     let datosPreparados = false;
+    let ubicacionEnProceso = false;
 
     const input = document.getElementById('inputValor');
     const btnBuscar = document.getElementById('btnBuscar');
@@ -74,20 +76,31 @@
     const statusEl = document.getElementById('status');
     const resultCard = document.getElementById('resultCard');
     const tbody = document.querySelector('#tablaCercanos tbody');
+    const locationHint = document.getElementById('locationHint');
 
     function asegurarMapa() {
-      if (map) return;
+      if (map) {
+        refrescarMapa();
+        return;
+      }
       const mapEl = document.getElementById('map');
       mapEl.className = '';
       mapEl.innerHTML = '';
-      map = L.map('map', { zoomControl: true }).setView([13.7, -89.2], 8);
+      map = L.map('map', { zoomControl: true, preferCanvas: true }).setView([13.7, -89.2], 8);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; OpenStreetMap'
       }).addTo(map);
       resultLayer = L.layerGroup().addTo(map);
       userLayer = L.layerGroup().addTo(map);
-      setTimeout(() => map.invalidateSize(), 80);
+      refrescarMapa();
+    }
+
+    function refrescarMapa() {
+      if (!map) return;
+      requestAnimationFrame(() => map.invalidateSize(true));
+      setTimeout(() => map.invalidateSize(true), 120);
+      setTimeout(() => map.invalidateSize(true), 480);
     }
 
     function setStatus(texto, tipo = 'info') {
@@ -95,10 +108,12 @@
       statusEl.className = 'status' + (tipo === 'loading' ? ' loading' : '') + (tipo === 'ok' ? ' ok' : '') + (tipo === 'warn' ? ' warn' : '') + (tipo === 'error' ? ' error' : '');
     }
 
-    function setBusy(activo) {
+    function setBusy(activo, origen = 'buscar') {
       btnBuscar.disabled = activo;
       btnMiUbicacion.disabled = activo;
-      btnBuscar.textContent = activo ? 'Buscando…' : '🔎 Buscar';
+      btnBuscar.textContent = activo && origen === 'buscar' ? 'Buscando…' : '🔎 Buscar';
+      btnMiUbicacion.textContent = activo && origen === 'ubicacion' ? 'Ubicando…' : '📡 Mi ubicación';
+      btnMiUbicacion.classList.toggle('locating', activo && origen === 'ubicacion');
     }
 
     function ocultarResultado() {
@@ -119,19 +134,19 @@
       return L.marker([item.lat, item.lon]).bindPopup(popup);
     }
 
-    function mostrarBase(base) {
+    function mostrarBase(base, subtitulo = 'Punto base para calcular cercanía.') {
       const h = DLSRCore.htmlSeguro;
-      const lat = base.lat;
-      const lon = base.lon;
+      const lat = Number(base.lat);
+      const lon = Number(base.lon);
       const gmaps = `https://www.google.com/maps?q=${lat},${lon}`;
       const waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
       resultCard.innerHTML = `
         <div class="result-head">
-          <div><h2 class="result-title">${h(base.titulo || 'Punto consultado')}</h2><p class="result-subtitle">Punto base para calcular cercanía.</p></div>
+          <div><h2 class="result-title">${h(base.titulo || 'Punto consultado')}</h2><p class="result-subtitle">${h(subtitulo)}</p></div>
         </div>
         <div class="result-grid">
-          <div>Latitud<b>${h(lat)}</b></div>
-          <div>Longitud<b>${h(lon)}</b></div>
+          <div>Latitud<b>${h(lat.toFixed(7))}</b></div>
+          <div>Longitud<b>${h(lon.toFixed(7))}</b></div>
           ${base.extra ? `<div style="grid-column:1/-1;">Referencia base<b>${h(base.extra)}</b></div>` : ''}
         </div>
         <div class="link-row">
@@ -141,14 +156,31 @@
       resultCard.className = 'result-card card show';
     }
 
+    function mostrarSoloUbicacion(lat, lon, precision) {
+      asegurarMapa();
+      if (userLayer) userLayer.clearLayers();
+      const popup = precision ? `Tu ubicación<br>Precisión aprox.: ${Math.round(precision)} m` : 'Tu ubicación';
+      L.marker([lat, lon], {
+        icon: L.icon({
+          iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30]
+        })
+      }).addTo(userLayer).bindPopup(popup).openPopup();
+      map.setView([lat, lon], 15);
+      mostrarBase({ titulo: 'Tu ubicación actual', lat, lon, extra: '' }, 'Ubicación detectada. Calculando elementos cercanos.');
+      refrescarMapa();
+    }
+
     function mostrarCercanos(base, cercanos) {
       const h = DLSRCore.htmlSeguro;
       asegurarMapa();
-      resultLayer.clearLayers();
+      if (resultLayer) resultLayer.clearLayers();
 
       if (!cercanos || !cercanos.length) {
-        tablaVacia('No se encontraron resultados.');
-        setStatus('No se encontraron resultados.', 'error');
+        tablaVacia('No se encontraron resultados cercanos.');
+        setStatus('No se encontraron resultados cercanos.', 'error');
+        if (base) mostrarBase(base, 'Punto consultado. No se encontraron elementos cercanos.');
         return;
       }
 
@@ -157,10 +189,13 @@
       const bounds = [];
       for (const item of cercanos) {
         marcadorResultado(item).addTo(resultLayer);
-        bounds.push([item.lat, item.lon]);
+        bounds.push([Number(item.lat), Number(item.lon)]);
       }
-      if (bounds.length > 1) map.fitBounds(bounds, { padding: [32, 32], maxZoom: 15 });
+      if (base && DLSRCore.coordValida(base.lat, base.lon)) bounds.push([Number(base.lat), Number(base.lon)]);
+
+      if (bounds.length > 1) map.fitBounds(bounds, { padding: [34, 34], maxZoom: 15 });
       else map.setView(bounds[0], 16);
+      refrescarMapa();
 
       tbody.innerHTML = cercanos.map(item => {
         const gmaps = `https://www.google.com/maps?q=${item.lat},${item.lon}`;
@@ -177,9 +212,9 @@
       setTimeout(() => {
         resultLayer.eachLayer(layer => {
           const pos = layer.getLatLng();
-          if (Number(pos.lat) === Number(first.lat) && Number(pos.lng) === Number(first.lon)) layer.openPopup();
+          if (Math.abs(Number(pos.lat) - Number(first.lat)) < 0.000001 && Math.abs(Number(pos.lng) - Number(first.lon)) < 0.000001) layer.openPopup();
         });
-      }, 120);
+      }, 140);
       setStatus('Resultados actualizados.', 'ok');
     }
 
@@ -197,7 +232,7 @@
       }
 
       try {
-        setBusy(true);
+        setBusy(true, 'buscar');
         setStatus(datosPreparados ? 'Buscando' : 'Preparando búsqueda', 'loading');
         const respuesta = await DLSRData.cercanosDesdeConsulta(valorOriginal, 10);
         datosPreparados = true;
@@ -206,49 +241,96 @@
         setStatus(err.message || 'Ocurrió un error al consultar los datos.', 'error');
         tablaVacia('No fue posible completar la búsqueda.');
       } finally {
-        setBusy(false);
+        setBusy(false, 'buscar');
       }
     }
 
-    function miUbicacion() {
-      ocultarResultado();
-      tablaVacia('Obteniendo ubicación.');
+    function getPosicion(options) {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+    }
+
+    function leerUbicacionGuardada() {
+      try {
+        const raw = sessionStorage.getItem('dlsr_maps_last_position');
+        if (!raw) return null;
+        const pos = JSON.parse(raw);
+        if (!pos || !DLSRCore.coordValida(pos.lat, pos.lon)) return null;
+        if (Date.now() - Number(pos.t || 0) > 10 * 60 * 1000) return null;
+        return pos;
+      } catch (_) { return null; }
+    }
+
+    function guardarUbicacion(lat, lon, accuracy) {
+      try {
+        sessionStorage.setItem('dlsr_maps_last_position', JSON.stringify({ lat, lon, accuracy, t: Date.now() }));
+      } catch (_) {}
+    }
+
+    async function obtenerUbicacionConFallback() {
+      const opcionesRapidas = { enableHighAccuracy: false, timeout: 6500, maximumAge: 300000 };
+      const opcionesPrecisas = { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 };
+      try {
+        return await getPosicion(opcionesRapidas);
+      } catch (errRapido) {
+        return await getPosicion(opcionesPrecisas);
+      }
+    }
+
+    async function miUbicacion() {
+      if (ubicacionEnProceso) return;
+      ubicacionEnProceso = true;
+      locationHint.hidden = false;
       asegurarMapa();
+      setBusy(true, 'ubicacion');
+      setStatus('Solicitando ubicación', 'loading');
+      tablaVacia('Esperando ubicación del navegador.');
+
+      const guardada = leerUbicacionGuardada();
+      if (guardada) {
+        mostrarSoloUbicacion(guardada.lat, guardada.lon, guardada.accuracy);
+        tablaVacia('Actualizando ubicación y preparando datos cercanos.');
+      }
+
       if (!navigator.geolocation) {
+        setBusy(false, 'ubicacion');
+        ubicacionEnProceso = false;
         setStatus('Este navegador no soporta geolocalización.', 'error');
         tablaVacia('Este navegador no soporta geolocalización.');
         return;
       }
-      setBusy(true);
-      setStatus('Obteniendo ubicación', 'loading');
-      navigator.geolocation.getCurrentPosition(async pos => {
-        try {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-          userLayer.clearLayers();
-          L.marker([lat, lon], {
-            icon: L.icon({
-              iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
-              iconSize: [30, 30],
-              iconAnchor: [15, 30]
-            })
-          }).addTo(userLayer).bindPopup('Tu ubicación').openPopup();
-          map.setView([lat, lon], 15);
-          const respuesta = await DLSRData.cercanosDesdePunto(lat, lon, 10);
-          respuesta.base = { titulo: 'Tu ubicación actual', lat, lon, extra: '' };
-          datosPreparados = true;
-          mostrarCercanos(respuesta.base, respuesta.cercanos);
-        } catch (err) {
-          setStatus(err.message || 'No fue posible calcular cercanos.', 'error');
-          tablaVacia('No fue posible calcular cercanos.');
-        } finally {
-          setBusy(false);
+
+      try {
+        const pos = await obtenerUbicacionConFallback();
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+        guardarUbicacion(lat, lon, accuracy);
+        mostrarSoloUbicacion(lat, lon, accuracy);
+        tablaVacia('Calculando elementos cercanos.');
+        setStatus(datosPreparados ? 'Calculando cercanos' : 'Preparando datos geográficos', 'loading');
+
+        const respuesta = await DLSRData.cercanosDesdePunto(lat, lon, 10);
+        respuesta.base = { titulo: 'Tu ubicación actual', lat, lon, extra: '' };
+        datosPreparados = true;
+        mostrarCercanos(respuesta.base, respuesta.cercanos);
+      } catch (err) {
+        const mensaje = err && err.code === 1
+          ? 'Permiso de ubicación denegado. Active la ubicación del navegador.'
+          : 'No se pudo obtener la ubicación. Intente nuevamente o ingrese coordenadas.';
+        setStatus(mensaje, 'error');
+        if (!guardada) {
+          tablaVacia('No se pudo obtener la ubicación.');
+          ocultarResultado();
+        } else {
+          tablaVacia('Se mantiene la última ubicación conocida, pero no fue posible actualizarla.');
         }
-      }, () => {
-        setBusy(false);
-        setStatus('No se pudo obtener la ubicación.', 'error');
-        tablaVacia('No se pudo obtener la ubicación.');
-      }, { enableHighAccuracy: true, timeout: 12000 });
+      } finally {
+        setBusy(false, 'ubicacion');
+        ubicacionEnProceso = false;
+        refrescarMapa();
+      }
     }
 
     function limpiar() {
@@ -258,12 +340,14 @@
       ocultarResultado();
       tablaVacia('Realice una búsqueda para ver resultados.');
       setStatus('Listo para buscar.', 'ok');
+      locationHint.hidden = true;
       input.focus();
     }
 
     btnBuscar.addEventListener('click', buscar);
     btnMiUbicacion.addEventListener('click', miUbicacion);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
     DLSRCore.precargar(async () => {
       await DLSRData.calentarPlacas();
       datosPreparados = true;

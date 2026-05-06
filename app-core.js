@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const APP_VERSION = "20260506-5";
+  const APP_VERSION = "20260506-6";
   const WORKER_URL = `./data-worker.js?v=${APP_VERSION}`;
 
   function normalizarTexto(valor) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dlsr-maps-v20260506-5';
+const CACHE_NAME = 'dlsr-maps-v20260506-6';
 const STATIC_ASSETS = [
   './logo_ui.png',
   './logo.png',

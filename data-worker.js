@@ -1,10 +1,10 @@
 /* global XLSX, DLSRMAPS_DATA_FILES, DLSRMAPS_DATA_VERSION */
 "use strict";
 
-importScripts("https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js", "./data-config.js?v=20260506-5");
+importScripts("https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js", "./data-config.js?v=20260506-6");
 
 const DATA_FILES = Array.isArray(self.DLSRMAPS_DATA_FILES) ? self.DLSRMAPS_DATA_FILES.slice() : [];
-const DATA_VERSION = self.DLSRMAPS_DATA_VERSION || "20260506-5";
+const DATA_VERSION = self.DLSRMAPS_DATA_VERSION || "20260506-6";
 
 const ALIAS = {
   referencia: ["REFERENCIA", "Referencia", "referencia", "PLACA", "Placa", "placa", "CODIGO", "Código", "codigo", "Ref", "REF"],
