@@ -3,8 +3,8 @@
   "short_name": "DLSR MAPS",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f4fbfa",
-  "theme_color": "#0056A1",
+  "background_color": "#f3faf9",
+  "theme_color": "#0f5f99",
   "orientation": "portrait",
   "icons": [
     {

@@ -4,57 +4,88 @@
   <meta charset="UTF-8" />
   <title>Búsqueda por placa — DLSR MAPS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f5f99" />
   <script>
     if (sessionStorage.getItem("delsur_maps_auth") !== "1") window.location.replace("./acceso.html");
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260506-3" />
+  <link rel="stylesheet" href="./styles.css?v=20260506-4" />
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-mini">
-        <img src="logo.png" alt="DLSR MAPS" />
+        <img src="logo_ui.png" alt="DLSR MAPS" />
         <div class="brand-title">
           <h1>Búsqueda por placa</h1>
-          <p>Consulta rápida por placa o referencia.</p>
+          <p>Busque por referencia completa, parcial o solo por número.</p>
         </div>
       </div>
-      <a class="btn btn-light" href="index.html">⬅ Inicio</a>
+      <a class="btn btn-light" href="index.html">← Inicio</a>
     </header>
 
     <section class="panel card">
       <div class="actions">
-        <label class="searchbox" for="inputValor">
-          <span>🪧</span>
-          <input id="inputValor" type="text" placeholder="Ingrese la placa o referencia" autocomplete="off" />
-        </label>
+        <div class="search-area">
+          <label class="searchbox" for="inputValor">
+            <span class="field-icon">⌕</span>
+            <input id="inputValor" type="text" placeholder="Ejemplo: CT1921, 1921 o 124-01" autocomplete="off" inputmode="search" />
+          </label>
+          <div class="mode-row" role="group" aria-label="Modo de búsqueda">
+            <button id="modoReferencia" class="mode-pill active" type="button">Referencia</button>
+            <button id="modoNumero" class="mode-pill" type="button">Número contenido</button>
+          </div>
+          <div id="suggestions" class="suggestions" hidden></div>
+        </div>
         <button id="btnBuscar" class="btn btn-green" type="button">🔎 Buscar</button>
-        <button class="btn btn-light" type="button" onclick="limpiar()">🧹 Limpiar</button>
+        <button class="btn btn-light" type="button" onclick="limpiar()">Limpiar</button>
       </div>
-      <div id="status" class="status loading">Preparando búsqueda</div>
+      <div id="status" class="status ok">Listo para buscar.</div>
     </section>
 
     <section id="resultCard" class="result-card card"></section>
-    <section class="map-card card"><div id="map"></div></section>
+    <section class="map-card card"><div id="map" class="map-placeholder"><div><strong>Mapa listo</strong>Realice una búsqueda para visualizar la ubicación.</div></div></section>
   </main>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="./data-config.js?v=20260506-3"></script>
-  <script src="./app-core.js?v=20260506-3"></script>
+  <script src="./data-config.js?v=20260506-4"></script>
+  <script src="./app-core.js?v=20260506-4"></script>
   <script>
-    const map = L.map('map', { zoomControl: true }).setView([13.7, -89.2], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    let map = null;
+    let markerLayer = null;
+    let datosPromise = null;
+    let modoBusqueda = 'referencia';
+    let sugerenciasActuales = [];
+    let sugerenciaActiva = -1;
+    let debounceTimer = null;
 
-    const markerLayer = L.layerGroup().addTo(map);
     const input = document.getElementById('inputValor');
     const btnBuscar = document.getElementById('btnBuscar');
     const statusEl = document.getElementById('status');
     const resultCard = document.getElementById('resultCard');
+    const suggestionsEl = document.getElementById('suggestions');
+    const modoReferencia = document.getElementById('modoReferencia');
+    const modoNumero = document.getElementById('modoNumero');
+
+    function asegurarMapa() {
+      if (map) return;
+      const mapEl = document.getElementById('map');
+      mapEl.className = '';
+      mapEl.innerHTML = '';
+      map = L.map('map', { zoomControl: true }).setView([13.7, -89.2], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      markerLayer = L.layerGroup().addTo(map);
+      setTimeout(() => map.invalidateSize(), 80);
+    }
+
+    function obtenerDatos() {
+      if (!datosPromise) datosPromise = DLSRCore.cargarPlacas();
+      return datosPromise;
+    }
 
     function setStatus(texto, tipo = 'info') {
       statusEl.textContent = texto;
@@ -71,8 +102,84 @@
       resultCard.innerHTML = '';
     }
 
+    function ocultarSugerencias() {
+      suggestionsEl.hidden = true;
+      suggestionsEl.innerHTML = '';
+      sugerenciasActuales = [];
+      sugerenciaActiva = -1;
+    }
+
+    function etiquetaModo() {
+      return modoBusqueda === 'numero' ? 'Número' : 'Referencia';
+    }
+
+    function renderSugerencias(items) {
+      const h = DLSRCore.htmlSeguro;
+      sugerenciasActuales = items || [];
+      sugerenciaActiva = -1;
+      if (!sugerenciasActuales.length) {
+        suggestionsEl.innerHTML = `<button class="suggestion-item" type="button" tabindex="-1"><span class="suggestion-main"><strong>Sin sugerencias</strong><small>Pruebe con más caracteres o revise el dato ingresado.</small></span></button>`;
+        suggestionsEl.hidden = false;
+        return;
+      }
+      suggestionsEl.innerHTML = sugerenciasActuales.map((row, idx) => `
+        <button class="suggestion-item" type="button" data-index="${idx}" tabindex="-1">
+          <span class="suggestion-main">
+            <strong>${h(row.item.referencia || row.label)}</strong>
+            <small>${h(row.item.alimentador || 'Sin alimentador')}</small>
+          </span>
+          <span class="suggestion-tag">${h(etiquetaModo())}</span>
+        </button>`).join('');
+      suggestionsEl.hidden = false;
+    }
+
+    async function actualizarSugerencias() {
+      const valor = input.value.trim();
+      if ((modoBusqueda === 'numero' && DLSRCore.soloDigitos(valor).length < 2) || (modoBusqueda !== 'numero' && DLSRCore.normalizarClave(valor).length < 2 && DLSRCore.soloDigitos(valor).length < 2)) {
+        ocultarSugerencias();
+        return;
+      }
+      try {
+        setStatus('Preparando sugerencias', 'loading');
+        const payload = await obtenerDatos();
+        const items = DLSRCore.sugerencias(payload.indice, valor, 9, modoBusqueda);
+        renderSugerencias(items);
+        setStatus('Seleccione una sugerencia o presione Buscar.', 'ok');
+      } catch (err) {
+        ocultarSugerencias();
+        setStatus(err.message || 'No fue posible preparar las sugerencias.', 'error');
+      }
+    }
+
+    function seleccionarSugerencia(idx, ejecutarBusqueda) {
+      const row = sugerenciasActuales[idx];
+      if (!row || !row.item) return;
+      input.value = row.item.referencia || row.label || '';
+      ocultarSugerencias();
+      if (ejecutarBusqueda) buscar(row.item);
+    }
+
+    function moverSugerencia(delta) {
+      if (suggestionsEl.hidden || !sugerenciasActuales.length) return;
+      const botones = [...suggestionsEl.querySelectorAll('.suggestion-item[data-index]')];
+      if (!botones.length) return;
+      sugerenciaActiva = (sugerenciaActiva + delta + botones.length) % botones.length;
+      botones.forEach((btn, idx) => btn.classList.toggle('active', idx === sugerenciaActiva));
+      botones[sugerenciaActiva].scrollIntoView({ block: 'nearest' });
+    }
+
+    function cambiarModo(modo) {
+      modoBusqueda = modo;
+      modoReferencia.classList.toggle('active', modo === 'referencia');
+      modoNumero.classList.toggle('active', modo === 'numero');
+      input.placeholder = modo === 'numero' ? 'Ejemplo: 1921 o 124-01' : 'Ejemplo: CT1921, 1921 o 124-01';
+      ocultarSugerencias();
+      input.focus();
+      actualizarSugerencias();
+    }
+
     function agregarMiUbicacion() {
-      if (!navigator.geolocation) return;
+      if (!navigator.geolocation || !markerLayer) return;
       navigator.geolocation.getCurrentPosition(pos => {
         L.marker([pos.coords.latitude, pos.coords.longitude], {
           icon: L.icon({
@@ -92,11 +199,15 @@
       const popup = `<b>${h(nombre)}</b><br>${item.lat}, ${item.lon}<br>${h(item.alimentador || 'Sin alimentador')}<br>` +
         `<a href='${gmaps}' target='_blank' rel='noopener'>Google Maps</a> | <a href='${waze}' target='_blank' rel='noopener'>Waze</a>`;
 
+      asegurarMapa();
+      markerLayer.clearLayers();
       L.marker([item.lat, item.lon]).addTo(markerLayer).bindPopup(popup).openPopup();
       map.setView([item.lat, item.lon], 16);
 
       resultCard.innerHTML = `
-        <h2 class="result-title">Registro encontrado</h2>
+        <div class="result-head">
+          <div><h2 class="result-title">Registro encontrado</h2><p class="result-subtitle">Resultado de búsqueda por placa.</p></div>
+        </div>
         <div class="result-grid">
           <div>Referencia<b>${h(nombre)}</b></div>
           <div>Alimentador<b>${h(item.alimentador || 'Sin alimentador')}</b></div>
@@ -108,15 +219,17 @@
           <a class="link-chip" href="${waze}" target="_blank" rel="noopener">🚗 Waze</a>
         </div>`;
       resultCard.className = 'result-card card show';
+      agregarMiUbicacion();
       setStatus('Registro encontrado.', 'ok');
     }
 
-    async function buscar() {
+    async function buscar(itemSugerido) {
       const valor = input.value.trim();
-      markerLayer.clearLayers();
       ocultarResultado();
-      if (!valor) {
-        setStatus('Ingrese una placa o referencia para buscar.', 'warn');
+      ocultarSugerencias();
+
+      if (!valor && !itemSugerido) {
+        setStatus('Ingrese una placa, referencia o número.', 'warn');
         input.focus();
         return;
       }
@@ -124,26 +237,22 @@
       try {
         setBusy(true);
         setStatus('Buscando', 'loading');
-        const { data, exacto } = await DLSRCore.cargarPlacas();
-        const key = DLSRCore.normalizarClave(valor);
-        let encontrado = exacto.get(key) || null;
-        if (!encontrado) encontrado = DLSRCore.buscarParcial(data, 'referencia', valor, 3);
+        const payload = await obtenerDatos();
+        const encontrado = itemSugerido || DLSRCore.buscarFlexible(payload, 'referencia', valor, modoBusqueda);
 
         if (!encontrado) {
-          setStatus('No se encontró la placa ingresada.', 'error');
-          alert('No se encontró la placa.');
+          if (markerLayer) markerLayer.clearLayers();
+          setStatus('No se encontró coincidencia.', 'error');
           return;
         }
         if (!DLSRCore.coordValida(encontrado.lat, encontrado.lon)) {
-          setStatus('La placa fue encontrada, pero no tiene coordenadas válidas.', 'error');
+          setStatus('El registro fue encontrado, pero no tiene coordenadas válidas.', 'error');
           return;
         }
 
-        agregarMiUbicacion();
         mostrarResultado(encontrado);
       } catch (err) {
         setStatus(err.message || 'Ocurrió un error al consultar los datos.', 'error');
-        alert(err.message || 'Ocurrió un error al consultar los datos.');
       } finally {
         setBusy(false);
       }
@@ -151,18 +260,47 @@
 
     function limpiar() {
       input.value = '';
-      markerLayer.clearLayers();
+      if (markerLayer) markerLayer.clearLayers();
       ocultarResultado();
+      ocultarSugerencias();
       setStatus('Listo para buscar.', 'ok');
       input.focus();
     }
 
-    btnBuscar.addEventListener('click', buscar);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+    suggestionsEl.addEventListener('mousedown', e => e.preventDefault());
+    suggestionsEl.addEventListener('click', e => {
+      const btn = e.target.closest('.suggestion-item[data-index]');
+      if (!btn) return;
+      seleccionarSugerencia(Number(btn.dataset.index), true);
+    });
 
-    DLSRCore.cargarPlacas()
-      .then(() => setStatus('Listo para buscar.', 'ok'))
-      .catch(err => setStatus(err.message || 'No fue posible preparar la búsqueda.', 'error'));
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(actualizarSugerencias, 140);
+    });
+    input.addEventListener('focus', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(actualizarSugerencias, 140);
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); moverSugerencia(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); moverSugerencia(-1); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!suggestionsEl.hidden && sugerenciaActiva >= 0) seleccionarSugerencia(sugerenciaActiva, true);
+        else buscar();
+      } else if (e.key === 'Escape') ocultarSugerencias();
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.search-area')) ocultarSugerencias();
+    });
+
+    modoReferencia.addEventListener('click', () => cambiarModo('referencia'));
+    modoNumero.addEventListener('click', () => cambiarModo('numero'));
+    btnBuscar.addEventListener('click', () => buscar());
+
+    DLSRCore.precargar(obtenerDatos);
   </script>
 </body>
 </html>

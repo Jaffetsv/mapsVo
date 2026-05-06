@@ -4,33 +4,59 @@
   <meta charset="UTF-8" />
   <title>DLSR MAPS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f5f99" />
   <script>
     if (sessionStorage.getItem("delsur_maps_auth") !== "1") window.location.replace("./acceso.html");
   </script>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="./styles.css?v=20260506-3" />
+  <link rel="preload" as="image" href="logo_ui.png" />
+  <link rel="stylesheet" href="./styles.css?v=20260506-4" />
 </head>
 <body>
   <main class="home">
-    <section class="home-card card">
-      <img class="home-logo" src="logo.png" alt="DLSR MAPS" />
-      <h1>Menú principal</h1>
-      <p>Seleccione el tipo de búsqueda que desea realizar.</p>
+    <section class="home-shell">
+      <div class="home-brand card">
+        <img class="home-logo" src="logo_ui.png" alt="DLSR MAPS" />
+        <span class="eyebrow">Sistema de consulta geográfica</span>
+        <h1>Consulta rápida, clara y segura.</h1>
+        <p>Seleccione el tipo de búsqueda y ubique registros en el mapa con accesos directos a Google Maps y Waze.</p>
+      </div>
 
-      <nav class="menu">
-        <a class="btn btn-primary" href="contrato.html">📄 Búsqueda por contrato</a>
-        <a class="btn btn-green" href="placa.html">🪧 Búsqueda por placa</a>
-        <a class="btn btn-primary" href="ubicacion.html">📍 Búsqueda por ubicación</a>
-      </nav>
+      <div class="home-menu card">
+        <h2>Menú principal</h2>
+        <p>Elija una opción para iniciar.</p>
 
-      <button class="btn btn-danger" style="width:100%; margin-top:18px;" onclick="sessionStorage.removeItem('delsur_maps_auth'); location.replace('./acceso.html');">Salir</button>
+        <nav class="menu" aria-label="Menú principal">
+          <a class="menu-card blue" href="contrato.html">
+            <span class="icon">📄</span>
+            <span><strong>Búsqueda por contrato</strong><span>Localice un cliente por número de contrato.</span></span>
+            <span class="arrow">›</span>
+          </a>
+
+          <a class="menu-card green" href="placa.html">
+            <span class="icon">🪧</span>
+            <span><strong>Búsqueda por placa</strong><span>Busque por referencia completa, parcial o por número.</span></span>
+            <span class="arrow">›</span>
+          </a>
+
+          <a class="menu-card slate" href="ubicacion.html">
+            <span class="icon">📍</span>
+            <span><strong>Búsqueda por ubicación</strong><span>Encuentre los elementos más cercanos a una coordenada o a su posición.</span></span>
+            <span class="arrow">›</span>
+          </a>
+        </nav>
+
+        <button class="btn logout-soft" onclick="sessionStorage.removeItem('delsur_maps_auth'); location.replace('./acceso.html');">Salir</button>
+      </div>
     </section>
   </main>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
+    window.addEventListener('load', () => {
+      if ('serviceWorker' in navigator) {
+        setTimeout(() => navigator.serviceWorker.register('sw.js?v=20260506-4').catch(() => {}), 900);
+      }
+    });
   </script>
 </body>
 </html>

@@ -4,42 +4,45 @@
   <meta charset="UTF-8" />
   <title>Búsqueda por ubicación — DLSR MAPS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f5f99" />
   <script>
     if (sessionStorage.getItem("delsur_maps_auth") !== "1") window.location.replace("./acceso.html");
   </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="./styles.css?v=20260506-3" />
+  <link rel="stylesheet" href="./styles.css?v=20260506-4" />
 </head>
 <body>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-mini">
-        <img src="logo.png" alt="DLSR MAPS" />
+        <img src="logo_ui.png" alt="DLSR MAPS" />
         <div class="brand-title">
           <h1>Búsqueda por ubicación</h1>
-          <p>Ingrese coordenadas, referencia o alimentador para encontrar los puntos más cercanos.</p>
+          <p>Ingrese coordenadas, referencia o alimentador para encontrar elementos cercanos.</p>
         </div>
       </div>
-      <a class="btn btn-light" href="index.html">⬅ Inicio</a>
+      <a class="btn btn-light" href="index.html">← Inicio</a>
     </header>
 
     <section class="panel card">
       <div class="actions">
-        <label class="searchbox" for="inputValor">
-          <span>📍</span>
-          <input id="inputValor" type="text" placeholder="Ejemplo: 13.70, -89.20 / referencia / alimentador" autocomplete="off" />
-        </label>
+        <div class="search-area">
+          <label class="searchbox" for="inputValor">
+            <span class="field-icon">⌕</span>
+            <input id="inputValor" type="text" placeholder="Ejemplo: 13.70, -89.20 / CT1921 / AL242" autocomplete="off" inputmode="search" />
+          </label>
+        </div>
         <button id="btnBuscar" class="btn btn-primary" type="button">🔎 Buscar</button>
         <button id="btnMiUbicacion" class="btn btn-green" type="button">📡 Mi ubicación</button>
-        <button class="btn btn-light" type="button" onclick="limpiar()">🧹 Limpiar</button>
+        <button class="btn btn-light" type="button" onclick="limpiar()">Limpiar</button>
       </div>
-      <div id="status" class="status loading">Preparando búsqueda</div>
+      <div id="status" class="status ok">Listo para buscar.</div>
     </section>
 
     <section id="resultCard" class="result-card card"></section>
-    <section class="map-card card"><div id="map"></div></section>
+    <section class="map-card card"><div id="map" class="map-placeholder"><div><strong>Mapa listo</strong>Realice una búsqueda o use su ubicación actual.</div></div></section>
 
-    <h2 class="table-title">10 elementos más cercanos</h2>
+    <h2 class="table-title">Elementos más cercanos</h2>
     <section class="table-wrap card">
       <table id="tablaCercanos">
         <thead>
@@ -59,23 +62,40 @@
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="./data-config.js?v=20260506-3"></script>
-  <script src="./app-core.js?v=20260506-3"></script>
+  <script src="./data-config.js?v=20260506-4"></script>
+  <script src="./app-core.js?v=20260506-4"></script>
   <script>
-    const map = L.map('map', { zoomControl: true }).setView([13.7, -89.2], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    let map = null;
+    let resultLayer = null;
+    let userLayer = null;
+    let datosPromise = null;
 
-    const resultLayer = L.layerGroup().addTo(map);
-    const userLayer = L.layerGroup().addTo(map);
     const input = document.getElementById('inputValor');
     const btnBuscar = document.getElementById('btnBuscar');
     const btnMiUbicacion = document.getElementById('btnMiUbicacion');
     const statusEl = document.getElementById('status');
     const resultCard = document.getElementById('resultCard');
     const tbody = document.querySelector('#tablaCercanos tbody');
+
+    function asegurarMapa() {
+      if (map) return;
+      const mapEl = document.getElementById('map');
+      mapEl.className = '';
+      mapEl.innerHTML = '';
+      map = L.map('map', { zoomControl: true }).setView([13.7, -89.2], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      resultLayer = L.layerGroup().addTo(map);
+      userLayer = L.layerGroup().addTo(map);
+      setTimeout(() => map.invalidateSize(), 80);
+    }
+
+    function obtenerDatos() {
+      if (!datosPromise) datosPromise = DLSRCore.cargarPlacas();
+      return datosPromise;
+    }
 
     function setStatus(texto, tipo = 'info') {
       statusEl.textContent = texto;
@@ -97,13 +117,12 @@
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">${DLSRCore.htmlSeguro(texto)}</td></tr>`;
     }
 
-    function marcadorResultado(item) {
-      const h = DLSRCore.htmlSeguro;
-      const gmaps = `https://www.google.com/maps?q=${item.lat},${item.lon}`;
-      const waze = `https://waze.com/ul?ll=${item.lat},${item.lon}&navigate=yes`;
-      const popup = `<b>${h(item.referencia || 'Sin referencia')}</b><br>${item.lat}, ${item.lon}<br>${h(item.alimentador || 'Sin alimentador')}<br>` +
-        `<a href='${gmaps}' target='_blank' rel='noopener'>Google Maps</a> | <a href='${waze}' target='_blank' rel='noopener'>Waze</a>`;
-      return L.marker([item.lat, item.lon]).bindPopup(popup);
+    function leerCoordenadas(texto) {
+      const match = texto.match(/^\s*(-?\d+(?:[\.,]\d+)?)\s*[,;\s]+\s*(-?\d+(?:[\.,]\d+)?)\s*$/);
+      if (!match) return null;
+      const lat = DLSRCore.parseCoord(match[1]);
+      const lon = DLSRCore.parseCoord(match[2]);
+      return { lat, lon };
     }
 
     function topCercanos(lat, lon, data) {
@@ -123,12 +142,23 @@
       return mejores;
     }
 
+    function marcadorResultado(item) {
+      const h = DLSRCore.htmlSeguro;
+      const gmaps = `https://www.google.com/maps?q=${item.lat},${item.lon}`;
+      const waze = `https://waze.com/ul?ll=${item.lat},${item.lon}&navigate=yes`;
+      const popup = `<b>${h(item.referencia || 'Sin referencia')}</b><br>${item.lat}, ${item.lon}<br>${h(item.alimentador || 'Sin alimentador')}<br>` +
+        `<a href='${gmaps}' target='_blank' rel='noopener'>Google Maps</a> | <a href='${waze}' target='_blank' rel='noopener'>Waze</a>`;
+      return L.marker([item.lat, item.lon]).bindPopup(popup);
+    }
+
     function mostrarBase(titulo, lat, lon, extra = '') {
       const h = DLSRCore.htmlSeguro;
       const gmaps = `https://www.google.com/maps?q=${lat},${lon}`;
       const waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
       resultCard.innerHTML = `
-        <h2 class="result-title">${h(titulo)}</h2>
+        <div class="result-head">
+          <div><h2 class="result-title">${h(titulo)}</h2><p class="result-subtitle">Punto base para calcular cercanía.</p></div>
+        </div>
         <div class="result-grid">
           <div>Latitud<b>${h(lat)}</b></div>
           <div>Longitud<b>${h(lon)}</b></div>
@@ -143,8 +173,9 @@
 
     function mostrarCercanos(lat, lon, data) {
       const h = DLSRCore.htmlSeguro;
-      const cercanos = topCercanos(lat, lon, data);
+      asegurarMapa();
       resultLayer.clearLayers();
+      const cercanos = topCercanos(lat, lon, data);
 
       if (!cercanos.length) {
         tablaVacia('No hay registros con coordenadas válidas.');
@@ -154,10 +185,10 @@
 
       const bounds = [];
       for (const item of cercanos) {
-        const marker = marcadorResultado(item).addTo(resultLayer);
+        marcadorResultado(item).addTo(resultLayer);
         bounds.push([item.lat, item.lon]);
       }
-      if (bounds.length > 1) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+      if (bounds.length > 1) map.fitBounds(bounds, { padding: [32, 32], maxZoom: 15 });
       else map.setView(bounds[0], 16);
 
       tbody.innerHTML = cercanos.map(item => {
@@ -177,23 +208,15 @@
           const pos = layer.getLatLng();
           if (Number(pos.lat) === Number(first.lat) && Number(pos.lng) === Number(first.lon)) layer.openPopup();
         });
-      }, 100);
+      }, 120);
       setStatus('Resultados actualizados.', 'ok');
-    }
-
-    function leerCoordenadas(texto) {
-      const match = texto.match(/^\s*(-?\d+(?:[\.,]\d+)?)\s*[,;\s]+\s*(-?\d+(?:[\.,]\d+)?)\s*$/);
-      if (!match) return null;
-      const lat = DLSRCore.parseCoord(match[1]);
-      const lon = DLSRCore.parseCoord(match[2]);
-      return { lat, lon };
     }
 
     async function buscar() {
       const valorOriginal = input.value.trim();
-      resultLayer.clearLayers();
       ocultarResultado();
       tablaVacia('Procesando búsqueda.');
+      if (resultLayer) resultLayer.clearLayers();
 
       if (!valorOriginal) {
         setStatus('Ingrese coordenadas, referencia o alimentador.', 'warn');
@@ -205,7 +228,8 @@
       try {
         setBusy(true);
         setStatus('Buscando', 'loading');
-        const { data, exacto } = await DLSRCore.cargarPlacas();
+        const payload = await obtenerDatos();
+        const data = payload.data;
         const coords = leerCoordenadas(valorOriginal);
 
         if (coords) {
@@ -219,56 +243,47 @@
           return;
         }
 
-        const buscadoClave = DLSRCore.normalizarClave(valorOriginal);
-        const buscadoTexto = DLSRCore.normalizarTexto(valorOriginal);
-        let base = exacto.get(buscadoClave) || null;
-        if (!base) {
-          base = data.find(item =>
-            DLSRCore.normalizarClave(item.referencia).includes(buscadoClave) ||
-            DLSRCore.normalizarTexto(item.alimentador).includes(buscadoTexto)
-          ) || null;
-        }
-
-        if (!base) {
-          setStatus('No se encontró ninguna coincidencia.', 'error');
-          tablaVacia('No se encontró ninguna coincidencia.');
-          alert('No se encontró ninguna coincidencia.');
-          return;
-        }
-        if (!DLSRCore.coordValida(base.lat, base.lon)) {
-          setStatus('La coincidencia encontrada no tiene coordenadas válidas.', 'error');
-          tablaVacia('La coincidencia encontrada no tiene coordenadas válidas.');
+        const porReferencia = DLSRCore.buscarFlexible(payload, 'referencia', valorOriginal, 'referencia');
+        if (porReferencia && DLSRCore.coordValida(porReferencia.lat, porReferencia.lon)) {
+          mostrarBase('Referencia consultada', porReferencia.lat, porReferencia.lon, porReferencia.referencia);
+          mostrarCercanos(porReferencia.lat, porReferencia.lon, data);
           return;
         }
 
-        mostrarBase('Punto base encontrado', base.lat, base.lon, base.referencia || base.alimentador || '');
-        mostrarCercanos(base.lat, base.lon, data);
+        const q = DLSRCore.normalizarTexto(valorOriginal);
+        const coincidenciaAlimentador = data.find(item => DLSRCore.normalizarTexto(item.alimentador).includes(q) && DLSRCore.coordValida(item.lat, item.lon));
+        if (coincidenciaAlimentador) {
+          mostrarBase('Alimentador consultado', coincidenciaAlimentador.lat, coincidenciaAlimentador.lon, coincidenciaAlimentador.alimentador);
+          mostrarCercanos(coincidenciaAlimentador.lat, coincidenciaAlimentador.lon, data);
+          return;
+        }
+
+        setStatus('No se encontró una referencia, coordenada o alimentador relacionado.', 'error');
+        tablaVacia('No se encontraron resultados.');
       } catch (err) {
         setStatus(err.message || 'Ocurrió un error al consultar los datos.', 'error');
         tablaVacia('No fue posible completar la búsqueda.');
-        alert(err.message || 'Ocurrió un error al consultar los datos.');
       } finally {
         setBusy(false);
       }
     }
 
-    async function miUbicacion() {
-      resultLayer.clearLayers();
-      userLayer.clearLayers();
+    function miUbicacion() {
       ocultarResultado();
-      tablaVacia('Esperando ubicación.');
-
+      tablaVacia('Obteniendo ubicación.');
+      asegurarMapa();
       if (!navigator.geolocation) {
-        setStatus('Geolocalización no soportada en este navegador.', 'error');
+        setStatus('Este navegador no soporta geolocalización.', 'error');
+        tablaVacia('Este navegador no soporta geolocalización.');
         return;
       }
-
       setBusy(true);
       setStatus('Obteniendo ubicación', 'loading');
       navigator.geolocation.getCurrentPosition(async pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
         try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          userLayer.clearLayers();
           L.marker([lat, lon], {
             icon: L.icon({
               iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/red-dot.png',
@@ -278,27 +293,25 @@
           }).addTo(userLayer).bindPopup('Tu ubicación').openPopup();
           map.setView([lat, lon], 15);
           mostrarBase('Tu ubicación actual', lat, lon);
-          setStatus('Buscando puntos cercanos', 'loading');
-          const { data } = await DLSRCore.cargarPlacas();
+          const { data } = await obtenerDatos();
           mostrarCercanos(lat, lon, data);
         } catch (err) {
-          setStatus(err.message || 'Ocurrió un error al consultar los datos.', 'error');
-          tablaVacia('No fue posible completar la búsqueda.');
-          alert(err.message || 'Ocurrió un error al consultar los datos.');
+          setStatus(err.message || 'No fue posible calcular cercanos.', 'error');
+          tablaVacia('No fue posible calcular cercanos.');
         } finally {
           setBusy(false);
         }
       }, () => {
         setBusy(false);
-        setStatus('No se pudo obtener su ubicación.', 'error');
-        tablaVacia('No se pudo obtener su ubicación.');
-      }, { enableHighAccuracy: true, timeout: 10000 });
+        setStatus('No se pudo obtener la ubicación.', 'error');
+        tablaVacia('No se pudo obtener la ubicación.');
+      }, { enableHighAccuracy: true, timeout: 12000 });
     }
 
     function limpiar() {
       input.value = '';
-      resultLayer.clearLayers();
-      userLayer.clearLayers();
+      if (resultLayer) resultLayer.clearLayers();
+      if (userLayer) userLayer.clearLayers();
       ocultarResultado();
       tablaVacia('Realice una búsqueda para ver resultados.');
       setStatus('Listo para buscar.', 'ok');
@@ -308,10 +321,7 @@
     btnBuscar.addEventListener('click', buscar);
     btnMiUbicacion.addEventListener('click', miUbicacion);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
-
-    DLSRCore.cargarPlacas()
-      .then(() => setStatus('Listo para buscar.', 'ok'))
-      .catch(err => setStatus(err.message || 'No fue posible preparar la búsqueda.', 'error'));
+    DLSRCore.precargar(obtenerDatos);
   </script>
 </body>
 </html>
