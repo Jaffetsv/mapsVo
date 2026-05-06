@@ -1,15 +1,22 @@
-DLSR MAPS - versión optimizada v6
+DLSR MAPS - Versión v7 profesional
 
-Cambios incluidos:
-- Inicio móvil más compacto para que logo, descripción y botones principales quepan mejor sin desplazamiento innecesario.
-- Botones del menú suavizados y ajustados para teléfono, web app instalada y navegador de PC.
-- Corrección de búsqueda por ubicación: mejor manejo de permiso, precisión, caché temporal de ubicación y cálculo de cercanos sin dejar la página en blanco.
-- El mapa se invalida y recalcula tamaño automáticamente para evitar recuadros vacíos en móvil.
-- Se mantiene búsqueda por contrato, placa, número contenido, coordenadas, mi ubicación, Google Maps y Waze.
-- No se muestran nombres internos de archivos de datos ni cantidad de registros al usuario final.
+Archivos principales:
+- index.html: menú principal compacto y adaptable a teléfono.
+- buscar.html: búsqueda general inteligente.
+- placa.html: búsqueda por placa con sugerencias.
+- contrato.html: búsqueda por contrato con sugerencias.
+- ubicacion.html: búsqueda de cercanos por coordenadas, referencia, alimentador o ubicación actual.
+- campo.html: modo campo para celular.
+- favoritos.html: favoritos y recientes guardados localmente.
+- estado.html: revisión del sistema.
+- convertidor.html: genera JSON optimizado desde Excel.
 
-Instalación:
-1. Subir todos los archivos de esta carpeta a la raíz del repositorio de GitHub Pages.
-2. Mantener en la raíz los archivos Excel declarados en data-config.js.
-3. Si se agrega una nueva data, incluir su nombre en data-config.js. El sistema usa automáticamente la más reciente según la fecha del nombre.
-4. Tras subir cambios, abrir el sitio y hacer recarga forzada para limpiar caché.
+Datos:
+- La app intenta usar data_placas.json, data_contratos.json o data_index.json si existen.
+- Si no existen, usa automáticamente el Excel más reciente declarado en data-config.js.
+- Para mejor rendimiento móvil, genere los JSON desde convertidor.html y súbalos a la raíz del repositorio.
+
+Importante después de subir:
+1. Reemplazar todos los archivos anteriores en la raíz del repositorio.
+2. Mantener los Excel en la raíz si aún no usa JSON.
+3. Hacer recarga forzada en el navegador o limpiar caché desde estado.html.

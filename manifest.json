@@ -3,19 +3,11 @@
   "short_name": "DLSR MAPS",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f3faf9",
-  "theme_color": "#0f5f99",
+  "background_color": "#f7fdfc",
+  "theme_color": "#155e83",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "logo_fondo_blanco.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "logo_fondo_blanco.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "logo_fondo_blanco.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "logo_fondo_blanco.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
